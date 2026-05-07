@@ -1,0 +1,36 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker local override
+docker-compose.override.yml
+
+# Node.js
+node_modules/
+.next/
+
+# Gradle / Java
+build/
+.gradle/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test output
+coverage/
+test-results/
+playwright-report/

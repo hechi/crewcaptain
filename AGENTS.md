@@ -108,23 +108,191 @@ Project Name: CrewCaptain
 Follow this sequence for **every** task, no matter how small:
 
 ```
-1. READ   →  Read PROGRESS.md to understand current state
-2. PLAN   →  State what you will do and how you will test it
-3. TEST   →  Write or update tests FIRST (TDD preferred)
-4. CODE   →  Implement the change
-5. VERIFY →  Run all relevant tests; confirm they pass
-6. DOCS   →  Update README.md and any relevant docs/
-7. LOG    →  Update PROGRESS.md
-8. DONE   →  Declare task complete with summary
+1. BRANCH →  Create a branch from main (see §4 for naming)
+2. READ   →  Read PROGRESS.md to understand current state
+3. PLAN   →  State what you will do and how you will test it
+4. TEST   →  Write or update tests FIRST (TDD preferred)
+5. CODE   →  Implement the change
+6. VERIFY →  Run all relevant tests; confirm they pass
+7. DOCS   →  Update README.md and any relevant docs/
+8. LOG    →  Update PROGRESS.md
+9. COMMIT →  Commit with a conventional commit message (see §4)
+10. DONE  →  Declare task complete with summary
 ```
 
-**Never skip steps 3, 6, or 7.**
+**Never skip steps 4, 7, 8, or 9.**
 
 ---
 
-## 4. Testing Requirements
+## 4. Git Branching & Commit Workflow
 
-### 4.1 Mandatory Coverage Rules
+### 4.1 Branch Strategy
+
+All work happens on feature/fix branches off `main`. Never commit directly to
+`main`.
+
+**Branch naming convention:**
+
+| Type        | Pattern                              | Example                                  |
+|-------------|--------------------------------------|------------------------------------------|
+| Feature     | `feat/<short-description>`           | `feat/person-crud-api`                   |
+| Bugfix      | `fix/<short-description>`            | `fix/userid-scoping-on-action-items`     |
+| Refactor    | `refactor/<short-description>`       | `refactor/extract-notification-port`     |
+| Chore       | `chore/<short-description>`          | `chore/upgrade-spring-boot-3.4`          |
+| Docs        | `docs/<short-description>`           | `docs/add-authentik-setup-guide`         |
+| Hotfix      | `hotfix/<short-description>`         | `hotfix/fix-jwt-validation-crash`        |
+
+**Rules:**
+- Use lowercase kebab-case for the description
+- Keep branch names short but descriptive (max ~50 chars)
+- One logical change per branch — don't mix unrelated features
+- Delete branches after merge
+
+### 4.2 Branch Lifecycle
+
+```
+main ─────────────────────────────────────────────────── main
+  │                                                       ↑
+  └── feat/person-crud-api ──●──●──●── (squash merge) ──┘
+```
+
+1. **Create branch** from latest `main`:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feat/<description>
+   ```
+
+2. **Work on the branch** — commit early and often with meaningful messages.
+
+3. **Push the branch** when ready for review:
+   ```bash
+   git push -u origin feat/<description>
+   ```
+
+4. **Create a Pull Request** via `gh pr create` (GitHub) or equivalent.
+
+5. **Merge** — prefer squash merge to keep `main` history clean.
+
+6. **Delete** the branch after merge.
+
+### 4.3 Commit Message Convention
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/) strictly:
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+| Type       | When to use                                          |
+|------------|------------------------------------------------------|
+| `feat`     | A new feature or user-facing capability               |
+| `fix`      | A bug fix                                            |
+| `refactor` | Code restructuring without behavior change           |
+| `test`     | Adding or updating tests only                        |
+| `docs`     | Documentation changes only                           |
+| `chore`    | Build config, dependencies, CI, tooling              |
+| `style`    | Formatting, whitespace (no logic change)             |
+| `perf`     | Performance improvement                              |
+| `ci`       | CI/CD pipeline changes                               |
+
+**Scopes** (optional but encouraged):
+
+| Scope       | Meaning                        |
+|-------------|--------------------------------|
+| `api`       | Backend (Spring Boot)          |
+| `web`       | Frontend (Next.js)             |
+| `db`        | Database / migrations          |
+| `docker`    | Docker / Compose               |
+| `auth`      | Authentication / OIDC          |
+| `domain`    | Domain layer                   |
+| `infra`     | Infrastructure / tooling       |
+
+**Subject rules:**
+- Use imperative mood: "add", "fix", "remove" — not "added", "fixes", "removed"
+- Lowercase first letter, no period at the end
+- Max 72 characters for the subject line
+- Reference issue/ticket if applicable in the footer
+
+**Examples:**
+
+```bash
+# Feature
+feat(api): add person CRUD endpoints
+
+Implement GET/POST/PUT/DELETE for /api/v1/persons.
+All endpoints enforce userId scoping.
+
+Refs: #12
+
+# Bug fix
+fix(api): enforce userId scoping on action item queries
+
+Previously, findByPersonId did not filter by userId,
+allowing cross-manager data access.
+
+# Refactor
+refactor(domain): extract notification scheduling to port interface
+
+# Chore
+chore(docker): upgrade postgres image from 15 to 16
+
+# Docs
+docs: add authentik OIDC setup instructions to README
+
+# Test
+test(api): add integration tests for person repository
+```
+
+### 4.4 Commit Granularity
+
+- **One logical change per commit.** Don't mix feature code with formatting fixes.
+- **Tests and implementation in the same commit** (they belong together).
+- **Documentation updates** can be in the same commit if directly related to the
+  code change, or a separate `docs:` commit if standalone.
+- **Migrations** get their own commit: `feat(db): add persons table migration`
+
+### 4.5 When the User Asks to Commit
+
+When the user says "commit", "commit this", or "commit the changes":
+
+1. **Stage only related files** — use `git add <specific files>`, not `git add .`
+2. **Write a proper conventional commit message** following §4.3
+3. **Include a body** if the change is non-trivial (more than a one-liner)
+4. **Never amend** commits that have been pushed unless explicitly asked
+5. **Never force push** unless explicitly asked
+
+### 4.6 Pull Request Guidelines
+
+When creating a PR (via `gh pr create` or equivalent):
+
+- **Title**: Same format as commit subject — `<type>(<scope>): <subject>`
+- **Description** must include:
+  - Summary of what changed and why
+  - How it was tested
+  - Any breaking changes or migration steps
+  - Blocked/follow-up items (if any)
+- **Labels**: Apply relevant labels (feature, bugfix, docs, etc.)
+- **Keep PRs focused** — one feature/fix per PR
+
+### 4.7 Protected Branch Rules
+
+- `main` is the stable branch — always deployable
+- All changes to `main` go through pull requests
+- PRs require all tests to pass before merge
+- Prefer squash merge for clean history on `main`
+
+---
+
+## 5. Testing Requirements
+
+### 5.1 Mandatory Coverage Rules
 
 | Layer                     | Required Tests                              | Framework                        |
 |---------------------------|---------------------------------------------|----------------------------------|
@@ -137,7 +305,7 @@ Follow this sequence for **every** task, no matter how small:
 | Frontend Pages            | Integration test for page-level flows       | Jest + React Testing Library    |
 | End-to-End (critical paths) | Happy path for core flows                 | Playwright                      |
 
-### 4.2 Non-Negotiable Test Cases
+### 5.2 Non-Negotiable Test Cases
 
 The following **must always have tests** — these are security and correctness invariants:
 
@@ -149,7 +317,7 @@ The following **must always have tests** — these are security and correctness 
 - [ ] Sensitive-flagged content is marked in API responses
 - [ ] Notification generation does not leak cross-user data
 
-### 4.3 Running Tests
+### 5.3 Running Tests
 
 ```bash
 # Backend — all tests
@@ -175,7 +343,7 @@ npm run test:e2e
 docker compose -f docker-compose.test.yml up --abort-on-container-exit
 ```
 
-### 4.4 Test Quality Standards
+### 5.4 Test Quality Standards
 
 - Tests must be **meaningful** — no coverage padding with trivial assertions.
 - Test names must read as specifications:
@@ -187,9 +355,9 @@ docker compose -f docker-compose.test.yml up --abort-on-container-exit
 
 ---
 
-## 5. Architecture Rules
+## 6. Architecture Rules
 
-### 5.1 Hexagonal Architecture (Backend)
+### 6.1 Hexagonal Architecture (Backend)
 
 ```
 [Web / Auth / Scheduler Adapters]
@@ -208,7 +376,7 @@ docker compose -f docker-compose.test.yml up --abort-on-container-exit
 
 **Violations of this rule must be flagged and corrected before merging.**
 
-### 5.2 Data Scoping (Security Invariant)
+### 6.2 Data Scoping (Security Invariant)
 
 Every repository method and use case that returns data MUST accept and enforce `userId`:
 
@@ -222,7 +390,7 @@ fun findPersonById(personId: PersonId): Person?
 
 This must be verified at the use case layer AND the persistence layer.
 
-### 5.3 Domain Rules to Enforce
+### 6.3 Domain Rules to Enforce
 
 - `Person` belongs to exactly one `User` (manager). No sharing.
 - `OneOnOneEntry` is always scoped: `userId` + `personId`.
@@ -232,7 +400,7 @@ This must be verified at the use case layer AND the persistence layer.
 - `Notification` is always private to the owning `User`.
 - Morale values: `GREEN | YELLOW | RED | UNKNOWN` — no freeform values.
 
-### 5.4 API Conventions
+### 6.4 API Conventions
 
 - All endpoints require `Authorization: Bearer <jwt>` header.
 - Base path: `/api/v1/`
@@ -254,16 +422,16 @@ This must be verified at the use case layer AND the persistence layer.
 
 ---
 
-## 6. Frontend Rules
+## 7. Frontend Rules
 
-### 6.1 Auth
+### 7.1 Auth
 
 - Use **Auth.js (NextAuth)** with the OIDC provider pointed at authentik.
 - The access token must be forwarded as `Authorization: Bearer` to all API calls.
 - Never store tokens in `localStorage` — use httpOnly cookies via Auth.js.
 - Wrap all authenticated pages in the session guard.
 
-### 6.2 Component Standards
+### 7.2 Component Standards
 
 - All new components must have a co-located test file:
   `ComponentName.tsx` → `ComponentName.test.tsx`
@@ -272,7 +440,7 @@ This must be verified at the use case layer AND the persistence layer.
 - Sensitive content (where `sensitive: true`) must render with a visual indicator
   and respect the "hide sensitive" toggle state.
 
-### 6.3 UI/UX Rules
+### 7.3 UI/UX Rules
 
 - Morale flags must use consistent color coding: GREEN=green, YELLOW=amber, RED=red,
   UNKNOWN=gray.
@@ -282,7 +450,7 @@ This must be verified at the use case layer AND the persistence layer.
 
 ---
 
-## 7. Database & Migrations
+## 8. Database & Migrations
 
 - All schema changes MUST be done via **Flyway migrations**.
 - Migration file naming: `V{timestamp}__{description}.sql`
@@ -294,7 +462,7 @@ This must be verified at the use case layer AND the persistence layer.
 
 ---
 
-## 8. Security Checklist (Run Before Every Task Completion)
+## 9. Security Checklist (Run Before Every Task Completion)
 
 Before marking any backend task done, verify:
 
@@ -309,9 +477,9 @@ Before marking any backend task done, verify:
 
 ---
 
-## 9. Docker & Deployment
+## 10. Docker & Deployment
 
-### 9.1 Services
+### 10.1 Services
 
 ```yaml
 services:
@@ -320,7 +488,7 @@ services:
   db:         # PostgreSQL 16 — port 5432 (internal only)
 ```
 
-### 9.2 Environment Variables
+### 10.2 Environment Variables
 
 **API service:**
 
@@ -346,7 +514,7 @@ services:
 
 *`ENCRYPTION_KEY` is required if sensitive field encryption is enabled.
 
-### 9.3 Rules for Docker Changes
+### 10.3 Rules for Docker Changes
 
 - Any change to `docker-compose.yml` must be tested by running
   `docker compose up --build` and verifying all services start and health checks pass.
@@ -357,7 +525,7 @@ services:
 
 ---
 
-## 10. Local Development (`dev.sh`)
+## 11. Local Development (`dev.sh`)
 
 It must **always** be possible to run the backend and frontend locally on the
 developer's machine using the `./dev.sh` helper script:
@@ -388,7 +556,7 @@ developer's machine using the `./dev.sh` helper script:
 
 ---
 
-## 11. PROGRESS.md Specification
+## 12. PROGRESS.md Specification
 
 `PROGRESS.md` is the **session handoff document**. It must always be current.
 
@@ -437,7 +605,7 @@ developer's machine using the `./dev.sh` helper script:
 
 ---
 
-## 12. README.md Update Checklist
+## 13. README.md Update Checklist
 
 When updating `README.md`, ensure the following sections exist and are current:
 
@@ -454,7 +622,7 @@ When updating `README.md`, ensure the following sections exist and are current:
 
 ---
 
-## 13. Architecture Decision Records (ADRs)
+## 14. Architecture Decision Records (ADRs)
 
 When making a non-trivial architectural decision:
 
@@ -484,7 +652,7 @@ Accepted | Superseded by ADR-{NNN}
 
 ---
 
-## 14. What Agents Must NOT Do
+## 15. What Agents Must NOT Do
 
 - ❌ Delete or modify existing Flyway migration files
 - ❌ Remove test files or comment out failing tests to make a build pass
@@ -502,7 +670,7 @@ Accepted | Superseded by ADR-{NNN}
 
 ---
 
-## 15. Checklist — Task Completion Gate
+## 16. Checklist — Task Completion Gate
 
 Before declaring any task done, confirm **all** of the following:
 
