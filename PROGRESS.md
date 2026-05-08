@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-09T14:00:00Z — Frontend redesigned with CrewCaptain branding and design system
+2026-05-09T16:00:00Z — Branding refresh: updated DESIGN.md v2.0, new color palette, Plus Jakarta Sans heading font, motion tokens
 
 ## Current Status
-The frontend has been fully redesigned with the CrewCaptain brand identity from DESIGN.md. A comprehensive CSS design token system (CSS custom properties) has been implemented with the brand's deep navy primary, teal secondary, and warm clay accent color palette. Inter font is loaded via Google Fonts. All components and pages now use the design tokens consistently. A new Navigation component provides persistent branding and user controls. All 233 frontend tests pass and the build succeeds. The next priority is Action Items.
+The frontend has been refreshed with an updated brand identity (DESIGN.md v2.0). Key changes: refined color palette (deeper navy #162340, richer teal #1A9E8F, warm amber #E8763A), Plus Jakarta Sans as the heading font for differentiation, Inter retained for body text, new motion/transition tokens, hover elevation on cards, and semantic morale colors aligned with the design system. All 233 frontend tests pass and the build succeeds. The next priority is Action Items.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -30,6 +30,7 @@ The frontend has been fully redesigned with the CrewCaptain brand identity from 
 - [x] 1:1 Entry Management Frontend — TypeScript types, API client, components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle), pages (2026-05-08)
 - [x] 1:1 Frontend tests — Component tests, page tests, API client tests (2026-05-08)
 - [x] Frontend branding redesign — CSS design tokens, Inter font, Navigation component, brand colors across all components/pages (2026-05-09)
+- [x] Branding refresh v2.0 — Plus Jakarta Sans heading font, refined color palette (deeper navy, richer teal, warm amber), motion/transition tokens, hover elevation, semantic morale colors (2026-05-09)
 
 ## In Progress
 - (none)
@@ -53,9 +54,15 @@ The frontend has been fully redesigned with the CrewCaptain brand identity from 
 9. Data export functionality (per-person Markdown)
 
 ## Architecture Decisions Made This Session
+- DESIGN.md upgraded to v2.0 with refined branding based on 2026 SaaS trends research
+- Plus Jakarta Sans chosen for headings over Montserrat/Source Sans Pro — more distinctive, geometric warmth, pairs well with Inter
+- Color palette refined: deeper navy (#162340) for more premium feel, richer teal (#1A9E8F) less minty, warm amber (#E8763A) for better contrast
+- Morale colors aligned with semantic colors (success green, warning gold, error red) for consistency
+- Motion/transition tokens added as CSS custom properties (--transition-fast, --transition-normal, --transition-slow)
+- Shadow system updated to use primary navy at low opacity for visual cohesion
 - CSS custom properties (design tokens) chosen over CSS-in-JS or Tailwind for brand styling — keeps zero-dependency approach, works with inline styles, and provides a single source of truth for design tokens
 - Navigation component renders only when authenticated — avoids showing nav on login/landing pages
-- Inter font loaded via Google Fonts CDN in layout head — simple, performant, no build-time font processing needed
+- Fonts loaded via Google Fonts CDN in layout head — simple, performant, no build-time font processing needed
 - Color system uses semantic variable names (--color-primary, --color-accent, etc.) mapped to DESIGN.md palette values
 
 ## Environment / Setup Notes

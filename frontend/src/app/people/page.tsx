@@ -55,7 +55,7 @@ export default function PeopleListPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'var(--space-6)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ margin: 0, fontSize: 'var(--text-h2)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>People</h1>
+        <h1 style={{ margin: 0, fontSize: 'var(--text-h2)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>People</h1>
         <button
           type="button"
           onClick={() => router.push('/people/new')}

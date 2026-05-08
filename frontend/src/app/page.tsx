@@ -54,6 +54,7 @@ export default function Home() {
         <h1
           style={{
             fontSize: 'var(--text-h1)',
+            fontFamily: 'var(--font-heading)',
             fontWeight: 'var(--weight-bold)',
             color: 'var(--color-primary)',
             marginBottom: 'var(--space-2)',
@@ -86,7 +87,7 @@ export default function Home() {
             fontWeight: 'var(--weight-semibold)',
             cursor: 'pointer',
             boxShadow: 'var(--shadow-md)',
-            transition: 'background-color 0.15s, box-shadow 0.15s',
+            transition: 'background-color var(--transition-fast), box-shadow var(--transition-normal)',
           }}
         >
           Sign in

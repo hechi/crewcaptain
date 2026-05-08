@@ -58,7 +58,7 @@ export default function CreatePersonPage() {
         ← Back to People
       </button>
 
-      <h1 style={{ margin: '0 0 var(--space-6)', fontSize: 'var(--text-h2)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>Add New Person</h1>
+      <h1 style={{ margin: '0 0 var(--space-6)', fontSize: 'var(--text-h2)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>Add New Person</h1>
 
       {error && (
         <div data-testid="error-message" style={{ color: 'var(--color-error)', marginBottom: 'var(--space-4)' }}>

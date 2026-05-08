@@ -23,12 +23,12 @@ export default function PersonCard({ person }: PersonCardProps) {
         cursor: 'pointer',
         backgroundColor: 'var(--color-neutral-surface)',
         boxShadow: 'var(--shadow-sm)',
-        transition: 'box-shadow 0.15s, border-color 0.15s',
+        transition: 'box-shadow var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal)',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>{person.name}</h3>
+          <h3 style={{ margin: 0, fontSize: '16px', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>{person.name}</h3>
           {person.roleTitle && (
             <p style={{ margin: '4px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)' }}>
               {person.roleTitle}

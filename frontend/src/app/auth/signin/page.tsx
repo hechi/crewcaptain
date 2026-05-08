@@ -31,6 +31,7 @@ export default function SignInPage() {
         <h1
           style={{
             fontSize: 'var(--text-h1)',
+            fontFamily: 'var(--font-heading)',
             fontWeight: 'var(--weight-bold)',
             color: 'var(--color-primary)',
             marginBottom: 'var(--space-2)',
