@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-08T21:15:00Z — 1:1 Entry Management backend implemented (domain, application, persistence, web layers + tests)
+2026-05-09T14:00:00Z — Frontend redesigned with CrewCaptain branding and design system
 
 ## Current Status
-The 1:1 Entry Management backend feature is fully implemented. The API provides endpoints for managing 1:1 series configuration (cadence + template) and 1:1 entries (CRUD with agenda items, Markdown notes, outcomes, and sensitive flag). The Person at-a-glance panel now includes the actual last 1:1 date computed from entry data. All new code has comprehensive test coverage across domain, application, and web layers. The frontend implementation for 1:1 entries is the next step.
+The frontend has been fully redesigned with the CrewCaptain brand identity from DESIGN.md. A comprehensive CSS design token system (CSS custom properties) has been implemented with the brand's deep navy primary, teal secondary, and warm clay accent color palette. Inter font is loaded via Google Fonts. All components and pages now use the design tokens consistently. A new Navigation component provides persistent branding and user controls. All 233 frontend tests pass and the build succeeds. The next priority is Action Items.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -26,10 +26,13 @@ The 1:1 Entry Management backend feature is fully implemented. The API provides 
 - [x] README.md — Updated documentation reflecting current project state (2026-05-08)
 - [x] 1:1 Entry Management Backend — Series config (cadence + template), entry CRUD, agenda items, sensitive flag, at-a-glance last 1:1 date (2026-05-08)
 - [x] 1:1 Database migrations — one_on_one_series, one_on_one_entries, agenda_items tables (2026-05-08)
-- [x] 1:1 Backend tests — Domain unit tests, application service tests, controller slice tests (2026-05-08)
+- [x] 1:1 Backend tests — Domain unit tests, application service tests, controller slice tests, property tests, integration tests (2026-05-08)
+- [x] 1:1 Entry Management Frontend — TypeScript types, API client, components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle), pages (2026-05-08)
+- [x] 1:1 Frontend tests — Component tests, page tests, API client tests (2026-05-08)
+- [x] Frontend branding redesign — CSS design tokens, Inter font, Navigation component, brand colors across all components/pages (2026-05-09)
 
 ## In Progress
-- [ ] 1:1 Entry Management Frontend — TypeScript types, API client, components (timeline, entry editor, series config), pages
+- (none)
 
 ## Known Issues / Bugs
 | ID  | Description                                          | Severity | Status |
@@ -39,23 +42,21 @@ The 1:1 Entry Management backend feature is fully implemented. The API provides 
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. 1:1 Entry Management Frontend (types, API client, components, pages)
-2. Action Items (create, track, complete follow-ups from 1:1s)
-3. PDP Goal tracking (personal development plans with status transitions)
-4. Kudos recording (positive feedback and achievements)
-5. Quick Notes ("Inbox") — global capture, attach to person/1:1
-6. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
-7. Sensitive content encryption (flag and encrypt private notes)
-8. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-9. Search (full-text across all manager data)
-10. Data export functionality (per-person Markdown)
+1. Action Items (create, track, complete follow-ups from 1:1s)
+2. PDP Goal tracking (personal development plans with status transitions)
+3. Kudos recording (positive feedback and achievements)
+4. Quick Notes ("Inbox") — global capture, attach to person/1:1
+5. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+6. Sensitive content encryption (flag and encrypt private notes)
+7. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+8. Search (full-text across all manager data)
+9. Data export functionality (per-person Markdown)
 
 ## Architecture Decisions Made This Session
-- 1:1 entries nested under Person in URL structure: `/api/v1/persons/{personId}/one-on-one-entries/...` — enforces person-centric navigation
-- Upsert semantics for series: PUT creates-or-updates since there's exactly one series per (user, person)
-- Agenda items managed as embedded list within entry aggregate (full list replacement on update)
-- Template prefill is server-side logic (applied during entry creation when notes are null)
-- At-a-glance last1on1Date computed from actual entry data (not denormalized)
+- CSS custom properties (design tokens) chosen over CSS-in-JS or Tailwind for brand styling — keeps zero-dependency approach, works with inline styles, and provides a single source of truth for design tokens
+- Navigation component renders only when authenticated — avoids showing nav on login/landing pages
+- Inter font loaded via Google Fonts CDN in layout head — simple, performant, no build-time font processing needed
+- Color system uses semantic variable names (--color-primary, --color-accent, etc.) mapped to DESIGN.md palette values
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -68,7 +69,9 @@ The 1:1 Entry Management backend feature is fully implemented. The API provides 
 ## Test Coverage Summary
 - Backend: 181 tests total — domain, application, controller slice, property, integration (last run: 2026-05-08)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 7 component tests, 6 page tests (including auth pages), 1 API client test — 111 total (last run: 2026-05-08)
+- Frontend: 233 total — component tests (including Navigation), page tests (including auth pages), API client tests (last run: 2026-05-09)
+  - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)
+  - Includes Navigation component tests (8 tests)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review

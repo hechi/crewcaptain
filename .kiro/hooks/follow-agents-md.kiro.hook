@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Follow AGENTS.md",
+  "description": "Reminds the agent to follow the AGENTS.md operating manual on every prompt, ensuring compliance with project rules including testing, documentation updates, security invariants, and userId scoping.",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before proceeding, remember to follow all rules in AGENTS.md: 1) No code change without a test. 2) Always update README.md when features/config change. 3) Always update PROGRESS.md at session end. 4) Never break the build — run the full test suite. 5) Never cross manager data boundaries — every query MUST be scoped by userId. 6) Ask before inventing if requirements are ambiguous. Follow the mandatory workflow: BRANCH → READ → PLAN → TEST → CODE → VERIFY → DOCS → LOG → COMMIT → DONE. Ensure hexagonal architecture dependency rules are respected, security checklist is verified, and the task completion gate is satisfied before declaring done."
+  }
+}

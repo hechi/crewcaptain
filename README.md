@@ -18,11 +18,11 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **OIDC Authentication** — Secure login via authentik (OAuth2/OIDC) with automatic user provisioning
 - **Data Isolation** — All queries scoped by authenticated user (manager) — no cross-user data access
 - **Frontend UI** — People list, person detail, create person pages with filter bar, morale indicators, and empty states
-- **1:1 Entry Management (Backend)** — Series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, and sensitive flag
+- **Brand Design System** — CrewCaptain branding with deep navy/teal color palette, Inter typography, CSS custom properties design tokens, and consistent navigation
+- **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date
 
 ### Planned
 
-- **1:1 Management Frontend** — UI for 1:1 timeline, entry editor, series configuration
 - **PDP Tracking** — Track personal development goals with status transitions
 - **Action Items** — Create, assign, and track follow-ups from meetings
 - **Kudos** — Record positive feedback and achievements
