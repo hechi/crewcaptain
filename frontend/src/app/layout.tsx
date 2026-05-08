@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
+import SessionProvider from '@/components/SessionProvider'
+import Navigation from '@/components/Navigation'
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'CrewCaptain',
-  description: 'Self-hosted manager-only CRM for 1:1s, PDP tracking, action items, and kudos',
+  description: 'A private cockpit for people context — self-hosted manager workspace for 1:1s, PDP tracking, action items, and kudos',
 }
 
 export default function RootLayout({
@@ -12,7 +15,27 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body>
+        <SessionProvider>
+          <Navigation />
+          <main>{children}</main>
+        </SessionProvider>
+      </body>
     </html>
   )
 }

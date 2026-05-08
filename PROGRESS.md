@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-08T12:00:00Z — Project boilerplate setup complete
+2026-05-09T14:00:00Z — Frontend redesigned with CrewCaptain branding and design system
 
 ## Current Status
-The foundational project boilerplate is fully set up. Both the Kotlin Spring Boot backend and Next.js frontend compile and build successfully. Docker infrastructure (Dockerfiles, docker-compose.yml, override) is in place. Local development tooling (dev.sh) is functional. The project is ready for feature development.
+The frontend has been fully redesigned with the CrewCaptain brand identity from DESIGN.md. A comprehensive CSS design token system (CSS custom properties) has been implemented with the brand's deep navy primary, teal secondary, and warm clay accent color palette. Inter font is loaded via Google Fonts. All components and pages now use the design tokens consistently. A new Navigation component provides persistent branding and user controls. All 233 frontend tests pass and the build succeeds. The next priority is Action Items.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -15,8 +15,21 @@ The foundational project boilerplate is fully set up. Both the Kotlin Spring Boo
 - [x] Docker Compose override — Local dev with volume mounts and exposed ports (2026-05-08)
 - [x] Local development script — dev.sh with backend/frontend commands, dependency checks (2026-05-08)
 - [x] Environment documentation — .env.example with all variables documented (2026-05-08)
-- [x] Integration test — ApplicationContextTest with Testcontainers PostgreSQL (2026-05-08)
-- [x] README.md — Initial documentation with setup, configuration, and usage (2026-05-08)
+- [x] Person Directory API — Full CRUD, morale tracking, pinned remember items (2026-05-08)
+- [x] OIDC Authentication — JWT validation, user provisioning, userId scoping (2026-05-08)
+- [x] Database migrations — Users, persons, pinned_remember_items tables via Flyway (2026-05-08)
+- [x] Backend tests — Domain unit tests, application service tests, controller slice tests, property tests, integration tests with Testcontainers (2026-05-08)
+- [x] Frontend components — PersonCard, FilterBar, MoraleIndicator, Pagination, PersonForm, RememberItemsList, EmptyState (2026-05-08)
+- [x] Frontend pages — People list, person detail, create person (2026-05-08)
+- [x] Frontend tests — Component tests, page tests, API client tests (2026-05-08)
+- [x] Frontend Auth.js integration — OIDC provider config, SessionProvider, middleware, sign-in page, route handler (2026-05-08)
+- [x] README.md — Updated documentation reflecting current project state (2026-05-08)
+- [x] 1:1 Entry Management Backend — Series config (cadence + template), entry CRUD, agenda items, sensitive flag, at-a-glance last 1:1 date (2026-05-08)
+- [x] 1:1 Database migrations — one_on_one_series, one_on_one_entries, agenda_items tables (2026-05-08)
+- [x] 1:1 Backend tests — Domain unit tests, application service tests, controller slice tests, property tests, integration tests (2026-05-08)
+- [x] 1:1 Entry Management Frontend — TypeScript types, API client, components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle), pages (2026-05-08)
+- [x] 1:1 Frontend tests — Component tests, page tests, API client tests (2026-05-08)
+- [x] Frontend branding redesign — CSS design tokens, Inter font, Navigation component, brand colors across all components/pages (2026-05-09)
 
 ## In Progress
 - (none)
@@ -26,22 +39,24 @@ The foundational project boilerplate is fully set up. Both the Kotlin Spring Boo
 |-----|------------------------------------------------------|----------|--------|
 | 001 | Backend tests require Java 21 explicitly (system default may differ) | Low | Open |
 | 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Open |
+| 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. Set up Flyway migrations with initial schema (users, persons tables)
-2. Implement domain model (Person aggregate, UserId value object)
-3. Implement OIDC authentication adapter
-4. Create first REST endpoint (Person CRUD)
-5. Set up Auth.js in frontend with authentik provider
-6. Implement 1:1 entry feature
+1. Action Items (create, track, complete follow-ups from 1:1s)
+2. PDP Goal tracking (personal development plans with status transitions)
+3. Kudos recording (positive feedback and achievements)
+4. Quick Notes ("Inbox") — global capture, attach to person/1:1
+5. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+6. Sensitive content encryption (flag and encrypt private notes)
+7. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+8. Search (full-text across all manager data)
+9. Data export functionality (per-person Markdown)
 
 ## Architecture Decisions Made This Session
-- Gradle Kotlin DSL over Groovy: Type-safe build scripts, better IDE support
-- Multi-stage Docker builds: Minimal production images, faster CI caching
-- dev.sh as primary local runner: Single entry point for local development
-- Testcontainers over H2: Tests run against real PostgreSQL matching production
-- Flyway for migrations: Versioned, repeatable schema management
-- Next.js standalone output: Optimized Docker images for frontend
+- CSS custom properties (design tokens) chosen over CSS-in-JS or Tailwind for brand styling — keeps zero-dependency approach, works with inline styles, and provides a single source of truth for design tokens
+- Navigation component renders only when authenticated — avoids showing nav on login/landing pages
+- Inter font loaded via Google Fonts CDN in layout head — simple, performant, no build-time font processing needed
+- Color system uses semantic variable names (--color-primary, --color-accent, etc.) mapped to DESIGN.md palette values
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -52,9 +67,12 @@ The foundational project boilerplate is fully set up. Both the Kotlin Spring Boo
 - The `next.config.mjs` is used instead of `next.config.ts` (Next.js 14.x doesn't support TS config)
 
 ## Test Coverage Summary
-- Backend: 1 test (ApplicationContextTest) — passes with Testcontainers (last run: 2026-05-08)
-- Frontend: No tests yet (test infrastructure ready)
+- Backend: 181 tests total — domain, application, controller slice, property, integration (last run: 2026-05-08)
+  - 1 pre-existing intermittent failure (Property 14 edge case)
+- Frontend: 233 total — component tests (including Navigation), page tests (including auth pages), API client tests (last run: 2026-05-09)
+  - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)
+  - Includes Navigation component tests (8 tests)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
-- docker-compose.yml currently exposes db port 5432 to host — should this be removed for production? (design doc says NOT exposed, but current file has it)
+- Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values

@@ -77,7 +77,8 @@ run_frontend() {
     exit 1
   fi
 
-  # Load frontend environment
+  # Load base environment first, then override with .env.local if present
+  load_env "$SCRIPT_DIR/.env"
   load_env "$SCRIPT_DIR/.env.local"
 
   # Change to frontend directory
