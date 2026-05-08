@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-08T12:00:00Z — Project boilerplate setup complete
+2026-05-08T21:15:00Z — 1:1 Entry Management backend implemented (domain, application, persistence, web layers + tests)
 
 ## Current Status
-The foundational project boilerplate is fully set up. Both the Kotlin Spring Boot backend and Next.js frontend compile and build successfully. Docker infrastructure (Dockerfiles, docker-compose.yml, override) is in place. Local development tooling (dev.sh) is functional. The project is ready for feature development.
+The 1:1 Entry Management backend feature is fully implemented. The API provides endpoints for managing 1:1 series configuration (cadence + template) and 1:1 entries (CRUD with agenda items, Markdown notes, outcomes, and sensitive flag). The Person at-a-glance panel now includes the actual last 1:1 date computed from entry data. All new code has comprehensive test coverage across domain, application, and web layers. The frontend implementation for 1:1 entries is the next step.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -15,33 +15,47 @@ The foundational project boilerplate is fully set up. Both the Kotlin Spring Boo
 - [x] Docker Compose override — Local dev with volume mounts and exposed ports (2026-05-08)
 - [x] Local development script — dev.sh with backend/frontend commands, dependency checks (2026-05-08)
 - [x] Environment documentation — .env.example with all variables documented (2026-05-08)
-- [x] Integration test — ApplicationContextTest with Testcontainers PostgreSQL (2026-05-08)
-- [x] README.md — Initial documentation with setup, configuration, and usage (2026-05-08)
+- [x] Person Directory API — Full CRUD, morale tracking, pinned remember items (2026-05-08)
+- [x] OIDC Authentication — JWT validation, user provisioning, userId scoping (2026-05-08)
+- [x] Database migrations — Users, persons, pinned_remember_items tables via Flyway (2026-05-08)
+- [x] Backend tests — Domain unit tests, application service tests, controller slice tests, property tests, integration tests with Testcontainers (2026-05-08)
+- [x] Frontend components — PersonCard, FilterBar, MoraleIndicator, Pagination, PersonForm, RememberItemsList, EmptyState (2026-05-08)
+- [x] Frontend pages — People list, person detail, create person (2026-05-08)
+- [x] Frontend tests — Component tests, page tests, API client tests (2026-05-08)
+- [x] Frontend Auth.js integration — OIDC provider config, SessionProvider, middleware, sign-in page, route handler (2026-05-08)
+- [x] README.md — Updated documentation reflecting current project state (2026-05-08)
+- [x] 1:1 Entry Management Backend — Series config (cadence + template), entry CRUD, agenda items, sensitive flag, at-a-glance last 1:1 date (2026-05-08)
+- [x] 1:1 Database migrations — one_on_one_series, one_on_one_entries, agenda_items tables (2026-05-08)
+- [x] 1:1 Backend tests — Domain unit tests, application service tests, controller slice tests (2026-05-08)
 
 ## In Progress
-- (none)
+- [ ] 1:1 Entry Management Frontend — TypeScript types, API client, components (timeline, entry editor, series config), pages
 
 ## Known Issues / Bugs
 | ID  | Description                                          | Severity | Status |
 |-----|------------------------------------------------------|----------|--------|
 | 001 | Backend tests require Java 21 explicitly (system default may differ) | Low | Open |
 | 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Open |
+| 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. Set up Flyway migrations with initial schema (users, persons tables)
-2. Implement domain model (Person aggregate, UserId value object)
-3. Implement OIDC authentication adapter
-4. Create first REST endpoint (Person CRUD)
-5. Set up Auth.js in frontend with authentik provider
-6. Implement 1:1 entry feature
+1. 1:1 Entry Management Frontend (types, API client, components, pages)
+2. Action Items (create, track, complete follow-ups from 1:1s)
+3. PDP Goal tracking (personal development plans with status transitions)
+4. Kudos recording (positive feedback and achievements)
+5. Quick Notes ("Inbox") — global capture, attach to person/1:1
+6. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+7. Sensitive content encryption (flag and encrypt private notes)
+8. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+9. Search (full-text across all manager data)
+10. Data export functionality (per-person Markdown)
 
 ## Architecture Decisions Made This Session
-- Gradle Kotlin DSL over Groovy: Type-safe build scripts, better IDE support
-- Multi-stage Docker builds: Minimal production images, faster CI caching
-- dev.sh as primary local runner: Single entry point for local development
-- Testcontainers over H2: Tests run against real PostgreSQL matching production
-- Flyway for migrations: Versioned, repeatable schema management
-- Next.js standalone output: Optimized Docker images for frontend
+- 1:1 entries nested under Person in URL structure: `/api/v1/persons/{personId}/one-on-one-entries/...` — enforces person-centric navigation
+- Upsert semantics for series: PUT creates-or-updates since there's exactly one series per (user, person)
+- Agenda items managed as embedded list within entry aggregate (full list replacement on update)
+- Template prefill is server-side logic (applied during entry creation when notes are null)
+- At-a-glance last1on1Date computed from actual entry data (not denormalized)
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -52,9 +66,10 @@ The foundational project boilerplate is fully set up. Both the Kotlin Spring Boo
 - The `next.config.mjs` is used instead of `next.config.ts` (Next.js 14.x doesn't support TS config)
 
 ## Test Coverage Summary
-- Backend: 1 test (ApplicationContextTest) — passes with Testcontainers (last run: 2026-05-08)
-- Frontend: No tests yet (test infrastructure ready)
+- Backend: 181 tests total — domain, application, controller slice, property, integration (last run: 2026-05-08)
+  - 1 pre-existing intermittent failure (Property 14 edge case)
+- Frontend: 7 component tests, 6 page tests (including auth pages), 1 API client test — 111 total (last run: 2026-05-08)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
-- docker-compose.yml currently exposes db port 5432 to host — should this be removed for production? (design doc says NOT exposed, but current file has it)
+- Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values
