@@ -75,18 +75,23 @@ export default function PersonForm({ mode, initialData, onSubmit, onCancel }: Pe
   const inputStyle = {
     width: '100%',
     padding: '8px 12px',
-    border: '1px solid var(--color-neutral-border)',
+    border: '1px solid var(--color-border)',
     borderRadius: 'var(--radius-medium)',
     fontSize: 'var(--text-body)',
-    backgroundColor: 'var(--color-neutral-surface)',
+    backgroundColor: 'var(--color-bg-elevated)',
+    color: 'var(--color-text-primary)',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
   };
 
   const labelStyle = {
     display: 'block' as const,
     marginBottom: '4px',
-    fontSize: 'var(--text-body)',
+    fontSize: 'var(--text-caption)',
     fontWeight: 500,
-    color: 'var(--color-neutral-text)',
+    fontFamily: 'var(--font-mono)' as const,
+    color: 'var(--color-text-secondary)',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase' as const,
   };
 
   const fieldStyle = {
@@ -97,7 +102,7 @@ export default function PersonForm({ mode, initialData, onSubmit, onCancel }: Pe
     <form onSubmit={handleSubmit} data-testid="person-form">
       <div style={fieldStyle}>
         <label htmlFor="name" style={labelStyle}>
-          Name <span style={{ color: 'var(--color-error)' }}>*</span>
+          Name <span style={{ color: 'var(--color-alert)' }}>*</span>
         </label>
         <input
           id="name"
@@ -107,13 +112,14 @@ export default function PersonForm({ mode, initialData, onSubmit, onCancel }: Pe
           onChange={handleChange}
           style={{
             ...inputStyle,
-            borderColor: errors.name ? 'var(--color-error)' : 'var(--color-neutral-border)',
+            borderColor: errors.name ? 'var(--color-alert)' : 'var(--color-border)',
+            boxShadow: errors.name ? 'var(--glow-alert)' : 'none',
           }}
           aria-required="true"
           aria-invalid={!!errors.name}
         />
         {errors.name && (
-          <p data-testid="name-error" style={{ color: 'var(--color-error)', fontSize: 'var(--text-caption)', marginTop: '4px' }}>
+          <p data-testid="name-error" style={{ color: 'var(--color-alert)', fontSize: 'var(--text-caption)', marginTop: '4px' }}>
             {errors.name}
           </p>
         )}
@@ -197,14 +203,16 @@ export default function PersonForm({ mode, initialData, onSubmit, onCancel }: Pe
           type="submit"
           style={{
             padding: '10px 20px',
-            backgroundColor: 'var(--color-accent)',
-            color: '#fff',
+            backgroundColor: 'var(--color-primary)',
+            color: 'var(--color-bg-base)',
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-medium)',
+            fontWeight: 'var(--weight-semibold)',
+            fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)',
+            boxShadow: 'var(--glow-primary)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           {mode === 'create' ? 'Create Person' : 'Save Changes'}
@@ -215,13 +223,14 @@ export default function PersonForm({ mode, initialData, onSubmit, onCancel }: Pe
             onClick={onCancel}
             style={{
               padding: '10px 20px',
-              backgroundColor: 'var(--color-neutral-bg)',
-              color: 'var(--color-neutral-text)',
-              border: '1px solid var(--color-neutral-border)',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-medium)',
               fontSize: 'var(--text-body)',
               fontWeight: 'var(--weight-medium)',
               cursor: 'pointer',
+              transition: 'border-color 0.2s',
             }}
           >
             Cancel

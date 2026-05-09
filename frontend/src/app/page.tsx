@@ -23,10 +23,10 @@ export default function Home() {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          backgroundColor: 'var(--color-neutral-bg)',
+          backgroundColor: 'var(--color-bg-base)',
         }}
       >
-        <p style={{ color: 'var(--color-neutral-text-muted)' }}>Loading...</p>
+        <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
       </main>
     );
   }
@@ -42,7 +42,7 @@ export default function Home() {
         minHeight: '100vh',
         padding: 'var(--space-6)',
         fontFamily: 'var(--font-ui)',
-        backgroundColor: 'var(--color-neutral-bg)',
+        backgroundColor: 'var(--color-bg-base)',
       }}
     >
       <div
@@ -56,9 +56,11 @@ export default function Home() {
             fontSize: 'var(--text-h1)',
             fontFamily: 'var(--font-heading)',
             fontWeight: 'var(--weight-bold)',
+            fontFamily: 'var(--font-heading)',
             color: 'var(--color-primary)',
             marginBottom: 'var(--space-2)',
             letterSpacing: '-0.5px',
+            textShadow: '0 0 20px rgba(0, 240, 255, 0.3)',
           }}
         >
           CrewCaptain
@@ -66,7 +68,7 @@ export default function Home() {
         <p
           style={{
             fontSize: '18px',
-            color: 'var(--color-neutral-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 'var(--space-8)',
             lineHeight: '1.5',
           }}
@@ -79,15 +81,16 @@ export default function Home() {
           data-testid="signin-button"
           style={{
             padding: '14px 32px',
-            backgroundColor: 'var(--color-accent)',
-            color: '#fff',
+            backgroundColor: 'var(--color-primary)',
+            color: 'var(--color-bg-base)',
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: '16px',
-            fontWeight: 'var(--weight-semibold)',
+            fontWeight: 'var(--weight-bold)',
+            fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
-            boxShadow: 'var(--shadow-md)',
-            transition: 'background-color var(--transition-fast), box-shadow var(--transition-normal)',
+            boxShadow: 'var(--glow-primary-strong)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           Sign in
@@ -96,7 +99,8 @@ export default function Home() {
           style={{
             marginTop: 'var(--space-6)',
             fontSize: 'var(--text-caption)',
-            color: 'var(--color-neutral-text-muted)',
+            color: 'var(--color-text-muted)',
+            fontFamily: 'var(--font-mono)',
           }}
         >
           Lead with memory. Act with clarity.

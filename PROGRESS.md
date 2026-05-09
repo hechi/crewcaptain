@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-09T16:00:00Z — Branding refresh: updated DESIGN.md v2.0, new color palette, Plus Jakarta Sans heading font, motion tokens
+2026-05-09T16:00:00Z — Cyberpunk-lite dark theme redesign implemented
 
 ## Current Status
-The frontend has been refreshed with an updated brand identity (DESIGN.md v2.0). Key changes: refined color palette (deeper navy #162340, richer teal #1A9E8F, warm amber #E8763A), Plus Jakarta Sans as the heading font for differentiation, Inter retained for body text, new motion/transition tokens, hover elevation on cards, and semantic morale colors aligned with the design system. All 233 frontend tests pass and the build succeeds. The next priority is Action Items.
+The frontend has been completely redesigned with a cyberpunk-lite dark theme per the updated DESIGN.md v2.0. The UI now features a dark-first interface with layered depth (base/surface/elevated), electric cyan and neon violet accent colors, JetBrains Mono for headings and data, glassmorphism-style cards, neon glow effects on interactive elements, and morale indicators with colored borders and glow. All 246 frontend tests pass (including 13 new theme token tests) and the build succeeds. The design maintains WCAG AA contrast compliance throughout.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -30,7 +30,7 @@ The frontend has been refreshed with an updated brand identity (DESIGN.md v2.0).
 - [x] 1:1 Entry Management Frontend — TypeScript types, API client, components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle), pages (2026-05-08)
 - [x] 1:1 Frontend tests — Component tests, page tests, API client tests (2026-05-08)
 - [x] Frontend branding redesign — CSS design tokens, Inter font, Navigation component, brand colors across all components/pages (2026-05-09)
-- [x] Branding refresh v2.0 — Plus Jakarta Sans heading font, refined color palette (deeper navy, richer teal, warm amber), motion/transition tokens, hover elevation, semantic morale colors (2026-05-09)
+- [x] Cyberpunk-lite dark theme redesign — Dark-first UI, JetBrains Mono headings, electric cyan/neon violet accents, glassmorphism cards, glow effects, morale indicators with neon borders, updated DESIGN.md v2.0 (2026-05-09)
 
 ## In Progress
 - (none)
@@ -52,18 +52,16 @@ The frontend has been refreshed with an updated brand identity (DESIGN.md v2.0).
 7. Notification scheduling (reminders for overdue items and upcoming 1:1s)
 8. Search (full-text across all manager data)
 9. Data export functionality (per-person Markdown)
+10. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- DESIGN.md upgraded to v2.0 with refined branding based on 2026 SaaS trends research
-- Plus Jakarta Sans chosen for headings over Montserrat/Source Sans Pro — more distinctive, geometric warmth, pairs well with Inter
-- Color palette refined: deeper navy (#162340) for more premium feel, richer teal (#1A9E8F) less minty, warm amber (#E8763A) for better contrast
-- Morale colors aligned with semantic colors (success green, warning gold, error red) for consistency
-- Motion/transition tokens added as CSS custom properties (--transition-fast, --transition-normal, --transition-slow)
-- Shadow system updated to use primary navy at low opacity for visual cohesion
-- CSS custom properties (design tokens) chosen over CSS-in-JS or Tailwind for brand styling — keeps zero-dependency approach, works with inline styles, and provides a single source of truth for design tokens
-- Navigation component renders only when authenticated — avoids showing nav on login/landing pages
-- Fonts loaded via Google Fonts CDN in layout head — simple, performant, no build-time font processing needed
-- Color system uses semantic variable names (--color-primary, --color-accent, etc.) mapped to DESIGN.md palette values
+- Dark-first theme chosen as default (no light mode toggle yet) — aligns with 2026 design trends and target audience (younger managers)
+- JetBrains Mono for headings/data, Inter for body — monospace conveys technical credibility per DESIGN.md v2.0
+- Glassmorphism via backdrop-filter + semi-transparent backgrounds — modern depth without heavy shadows
+- Neon glow effects on interactive elements (buttons, focus states, morale indicators) — cyberpunk-lite aesthetic
+- Morale indicators redesigned: muted background + bright text/border + glow (instead of solid filled badges) — better dark theme contrast
+- CSS custom property aliases maintained for backward compatibility — existing components using `--color-neutral-*` still work
+- `prefers-reduced-motion` media query added to globals.css — accessibility requirement for glow/transition effects
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -72,14 +70,17 @@ The frontend has been refreshed with an updated brand identity (DESIGN.md v2.0).
 - Copy `.env.example` to `.env` before running `./dev.sh backend`
 - Copy `.env.example` to `.env.local` for frontend-specific overrides
 - The `next.config.mjs` is used instead of `next.config.ts` (Next.js 14.x doesn't support TS config)
+- JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
 - Backend: 181 tests total — domain, application, controller slice, property, integration (last run: 2026-05-08)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 233 total — component tests (including Navigation), page tests (including auth pages), API client tests (last run: 2026-05-09)
+- Frontend: 246 total — component tests (including Navigation, ThemeTokens), page tests (including auth pages), API client tests (last run: 2026-05-09)
   - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)
   - Includes Navigation component tests (8 tests)
+  - Includes ThemeTokens design system tests (13 tests)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
 - Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values
+- Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference?

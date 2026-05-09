@@ -18,7 +18,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **OIDC Authentication** — Secure login via authentik (OAuth2/OIDC) with automatic user provisioning
 - **Data Isolation** — All queries scoped by authenticated user (manager) — no cross-user data access
 - **Frontend UI** — People list, person detail, create person pages with filter bar, morale indicators, and empty states
-- **Brand Design System** — CrewCaptain branding with deep navy/teal color palette, Inter typography, CSS custom properties design tokens, and consistent navigation
+- **Cyberpunk-Lite Design System** — Dark-first UI with electric cyan/neon violet accents, JetBrains Mono headings, glassmorphism cards, glow effects, Inter body text, CSS custom properties design tokens, and consistent navigation
 - **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date
 
 ### Planned

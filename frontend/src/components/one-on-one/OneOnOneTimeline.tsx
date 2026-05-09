@@ -35,12 +35,12 @@ export default function OneOnOneTimeline({
         style={{
           textAlign: 'center',
           padding: '48px 24px',
-          border: '2px dashed var(--color-neutral-border)',
+          border: '1px dashed var(--color-border)',
           borderRadius: 'var(--radius-large)',
-          backgroundColor: 'var(--color-neutral-surface)',
+          backgroundColor: 'var(--color-bg-surface)',
         }}
       >
-        <p style={{ fontSize: '16px', color: 'var(--color-neutral-text-muted)', marginBottom: 'var(--space-4)' }}>
+        <p style={{ fontSize: '16px', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
           No 1:1s yet — start tracking your meetings.
         </p>
         <button
@@ -49,14 +49,15 @@ export default function OneOnOneTimeline({
           data-testid="start-one-on-one-button"
           style={{
             padding: '10px 20px',
-            backgroundColor: 'var(--color-accent)',
-            color: '#fff',
+            backgroundColor: 'var(--color-primary)',
+            color: 'var(--color-bg-base)',
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-medium)',
+            fontWeight: 'var(--weight-semibold)',
+            fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)',
+            boxShadow: 'var(--glow-primary)',
           }}
         >
           Start 1:1
@@ -82,8 +83,9 @@ export default function OneOnOneTimeline({
             alignItems: 'center',
             gap: '8px',
             fontSize: 'var(--text-small)',
-            color: 'var(--color-neutral-text-muted)',
+            color: 'var(--color-text-secondary)',
             cursor: 'pointer',
+            fontFamily: 'var(--font-mono)',
           }}
         >
           <input

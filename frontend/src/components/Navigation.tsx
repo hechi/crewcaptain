@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 
 /**
  * Top navigation bar with CrewCaptain branding.
- * Shows brand name (Plus Jakarta Sans heading font), nav links, and user session controls.
+ * Dark theme with subtle bottom glow border and monospace brand name.
  */
 export default function Navigation() {
   const { data: session, status } = useSession();
@@ -23,9 +23,10 @@ export default function Navigation() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '12px 24px',
-        backgroundColor: 'var(--color-primary)',
-        color: '#fff',
-        boxShadow: 'var(--shadow-md)',
+        backgroundColor: 'var(--color-bg-surface)',
+        color: 'var(--color-text-primary)',
+        borderBottom: '1px solid var(--color-border)',
+        boxShadow: '0 1px 8px rgba(0, 240, 255, 0.05)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
@@ -36,9 +37,10 @@ export default function Navigation() {
             fontSize: '18px',
             fontFamily: 'var(--font-heading)',
             fontWeight: 700,
-            color: '#fff',
+            fontFamily: 'var(--font-heading)',
+            color: 'var(--color-primary)',
             textDecoration: 'none',
-            letterSpacing: '-0.3px',
+            letterSpacing: '-0.5px',
           }}
         >
           CrewCaptain
@@ -49,10 +51,10 @@ export default function Navigation() {
             data-testid="nav-people"
             style={{
               fontSize: '14px',
-              color: 'rgba(255, 255, 255, 0.85)',
+              color: 'var(--color-text-secondary)',
               textDecoration: 'none',
               fontWeight: 500,
-              transition: 'color 100ms ease',
+              transition: 'color 0.2s',
             }}
           >
             People
@@ -63,7 +65,11 @@ export default function Navigation() {
         {session?.user?.name && (
           <span
             data-testid="nav-user-name"
-            style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.75)' }}
+            style={{
+              fontSize: '13px',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'var(--font-mono)',
+            }}
           >
             {session.user.name}
           </span>
@@ -76,12 +82,12 @@ export default function Navigation() {
             padding: '6px 14px',
             fontSize: '13px',
             fontWeight: 500,
-            color: '#fff',
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
+            color: 'var(--color-primary)',
+            backgroundColor: 'var(--color-primary-muted)',
+            border: '1px solid var(--color-border-glow)',
             borderRadius: 'var(--radius-small)',
             cursor: 'pointer',
-            transition: 'background-color var(--transition-fast)',
+            transition: 'background-color 0.2s, box-shadow 0.2s',
           }}
         >
           Sign out

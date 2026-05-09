@@ -47,21 +47,31 @@ export default function CreatePersonPage() {
         style={{
           marginBottom: 'var(--space-4)',
           padding: '6px 12px',
-          background: 'var(--color-neutral-surface)',
-          border: '1px solid var(--color-neutral-border)',
+          background: 'var(--color-bg-elevated)',
+          border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-medium)',
           cursor: 'pointer',
           fontSize: 'var(--text-body)',
-          color: 'var(--color-neutral-text-secondary)',
+          color: 'var(--color-text-secondary)',
+          transition: 'border-color 0.2s',
         }}
       >
         ← Back to People
       </button>
 
-      <h1 style={{ margin: '0 0 var(--space-6)', fontSize: 'var(--text-h2)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>Add New Person</h1>
+      <h1 style={{
+        margin: '0 0 var(--space-6)',
+        fontSize: 'var(--text-h2)',
+        fontWeight: 'var(--weight-bold)',
+        fontFamily: 'var(--font-heading)',
+        color: 'var(--color-text-primary)',
+        letterSpacing: '-0.3px',
+      }}>
+        Add New Person
+      </h1>
 
       {error && (
-        <div data-testid="error-message" style={{ color: 'var(--color-error)', marginBottom: 'var(--space-4)' }}>
+        <div data-testid="error-message" style={{ color: 'var(--color-alert)', marginBottom: 'var(--space-4)' }}>
           {error}
         </div>
       )}

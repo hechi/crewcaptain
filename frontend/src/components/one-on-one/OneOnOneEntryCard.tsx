@@ -45,14 +45,13 @@ export default function OneOnOneEntryCard({ entry, personId, hideSensitiveConten
       style={{
         display: 'block',
         padding: 'var(--space-4)',
-        border: `1px solid ${isSensitive ? 'var(--color-warning-border)' : 'var(--color-neutral-border)'}`,
+        border: `1px solid ${isSensitive ? 'rgba(255, 214, 0, 0.3)' : 'var(--color-border)'}`,
         borderRadius: 'var(--radius-medium)',
         textDecoration: 'none',
         color: 'inherit',
         cursor: 'pointer',
-        backgroundColor: isSensitive ? 'var(--color-warning-bg)' : 'var(--color-neutral-surface)',
-        boxShadow: 'var(--shadow-sm)',
-        transition: 'box-shadow 0.15s',
+        backgroundColor: isSensitive ? 'var(--color-warning-muted)' : 'var(--color-bg-surface)',
+        transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
       aria-label={`1:1 entry from ${formattedDate}${isSensitive ? ' (sensitive)' : ''}`}
     >
@@ -61,11 +60,11 @@ export default function OneOnOneEntryCard({ entry, personId, hideSensitiveConten
         <div>
           <span
             data-testid="entry-card-date"
-            style={{ fontSize: '15px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}
+            style={{ fontSize: '15px', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}
           >
             {formattedDate}
           </span>
-          <span style={{ fontSize: 'var(--text-small)', color: 'var(--color-neutral-text-muted)', marginLeft: '8px' }}>
+          <span style={{ fontSize: 'var(--text-small)', color: 'var(--color-text-muted)', marginLeft: '8px', fontFamily: 'var(--font-mono)' }}>
             {formattedTime}
           </span>
         </div>
@@ -75,10 +74,11 @@ export default function OneOnOneEntryCard({ entry, personId, hideSensitiveConten
               data-testid="entry-card-agenda-count"
               style={{
                 fontSize: 'var(--text-caption)',
-                color: 'var(--color-neutral-text-muted)',
-                backgroundColor: 'var(--color-neutral-bg)',
+                color: 'var(--color-text-secondary)',
+                backgroundColor: 'var(--color-bg-elevated)',
                 padding: '2px 8px',
                 borderRadius: 'var(--radius-full)',
+                fontFamily: 'var(--font-mono)',
               }}
             >
               {agendaCount} item{agendaCount !== 1 ? 's' : ''}
@@ -92,7 +92,7 @@ export default function OneOnOneEntryCard({ entry, personId, hideSensitiveConten
       {shouldHideContent ? (
         <p
           data-testid="entry-card-hidden"
-          style={{ margin: 0, fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)', fontStyle: 'italic' }}
+          style={{ margin: 0, fontSize: 'var(--text-body)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}
         >
           Sensitive content hidden
         </p>
@@ -102,7 +102,7 @@ export default function OneOnOneEntryCard({ entry, personId, hideSensitiveConten
           style={{
             margin: 0,
             fontSize: 'var(--text-body)',
-            color: isSensitive ? '#92400e' : 'var(--color-neutral-text-secondary)',
+            color: isSensitive ? 'var(--color-warning)' : 'var(--color-text-secondary)',
             lineHeight: '1.4',
           }}
         >
@@ -111,7 +111,7 @@ export default function OneOnOneEntryCard({ entry, personId, hideSensitiveConten
       ) : (
         <p
           data-testid="entry-card-no-notes"
-          style={{ margin: 0, fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)', fontStyle: 'italic' }}
+          style={{ margin: 0, fontSize: 'var(--text-body)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}
         >
           No notes
         </p>

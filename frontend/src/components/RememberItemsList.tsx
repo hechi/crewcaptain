@@ -39,10 +39,20 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
 
   return (
     <div data-testid="remember-items-list">
-      <h4 style={{ margin: '0 0 12px', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>Pinned Remember Items</h4>
+      <h4 style={{
+        margin: '0 0 12px',
+        fontSize: 'var(--text-caption)',
+        fontWeight: 'var(--weight-semibold)',
+        fontFamily: 'var(--font-mono)',
+        color: 'var(--color-primary)',
+        letterSpacing: '0.5px',
+        textTransform: 'uppercase',
+      }}>
+        Pinned Remember Items
+      </h4>
 
       {items.length === 0 && (
-        <p style={{ color: 'var(--color-neutral-text-muted)', fontSize: 'var(--text-body)', fontStyle: 'italic' }}>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-body)', fontStyle: 'italic' }}>
           No pinned items yet.
         </p>
       )}
@@ -57,7 +67,7 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
               alignItems: 'center',
               gap: '8px',
               padding: '8px',
-              borderBottom: '1px solid var(--color-neutral-border-light)',
+              borderBottom: '1px solid var(--color-border-subtle)',
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -69,11 +79,12 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
                 style={{
                   padding: '2px 6px',
                   fontSize: '10px',
-                  border: '1px solid var(--color-neutral-border)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-small)',
                   cursor: index === 0 ? 'not-allowed' : 'pointer',
                   opacity: index === 0 ? 0.5 : 1,
-                  background: 'var(--color-neutral-surface)',
+                  background: 'var(--color-bg-elevated)',
+                  color: 'var(--color-text-secondary)',
                 }}
               >
                 ▲
@@ -86,17 +97,18 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
                 style={{
                   padding: '2px 6px',
                   fontSize: '10px',
-                  border: '1px solid var(--color-neutral-border)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-small)',
                   cursor: index === items.length - 1 ? 'not-allowed' : 'pointer',
                   opacity: index === items.length - 1 ? 0.5 : 1,
-                  background: 'var(--color-neutral-surface)',
+                  background: 'var(--color-bg-elevated)',
+                  color: 'var(--color-text-secondary)',
                 }}
               >
                 ▼
               </button>
             </div>
-            <span style={{ flex: 1, fontSize: 'var(--text-body)' }}>{item.text}</span>
+            <span style={{ flex: 1, fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{item.text}</span>
             <button
               type="button"
               onClick={() => onRemove(item.id)}
@@ -104,11 +116,12 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
               style={{
                 padding: '4px 8px',
                 fontSize: 'var(--text-caption)',
-                color: 'var(--color-error)',
-                border: '1px solid var(--color-error-border)',
+                color: 'var(--color-alert)',
+                border: '1px solid var(--color-alert-muted)',
                 borderRadius: 'var(--radius-small)',
                 cursor: 'pointer',
-                background: 'var(--color-neutral-surface)',
+                background: 'var(--color-alert-muted)',
+                fontFamily: 'var(--font-mono)',
               }}
             >
               Remove
@@ -128,10 +141,12 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
           style={{
             flex: 1,
             padding: '8px 12px',
-            border: '1px solid var(--color-neutral-border)',
+            border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
-            backgroundColor: 'var(--color-neutral-surface)',
+            backgroundColor: 'var(--color-bg-elevated)',
+            color: 'var(--color-text-primary)',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
           }}
         />
         <button
@@ -144,7 +159,10 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
+            fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
+            boxShadow: '0 0 8px rgba(168, 85, 247, 0.2)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           Add
