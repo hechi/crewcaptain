@@ -58,6 +58,17 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
     onSave(data);
   }
 
+  const labelStyle = {
+    display: 'block' as const,
+    fontSize: 'var(--text-caption)',
+    fontWeight: 500,
+    fontFamily: 'var(--font-mono)' as const,
+    marginBottom: '8px',
+    color: 'var(--color-text-secondary)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  };
+
   return (
     <form
       data-testid="series-config-panel"
@@ -67,20 +78,25 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
         flexDirection: 'column',
         gap: '20px',
         padding: '20px',
-        border: '1px solid var(--color-neutral-border)',
+        border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-medium)',
-        backgroundColor: 'var(--color-neutral-surface)',
+        backgroundColor: 'var(--color-bg-surface)',
       }}
     >
-      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>
+      <h3 style={{
+        margin: 0,
+        fontSize: 'var(--text-h3)',
+        fontWeight: 'var(--weight-semibold)',
+        fontFamily: 'var(--font-heading)',
+        color: 'var(--color-text-primary)',
+        letterSpacing: '-0.2px',
+      }}>
         1:1 Series Configuration
       </h3>
 
       {/* Cadence Type Selector */}
       <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-        <legend
-          style={{ fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '8px', color: 'var(--color-neutral-text)' }}
-        >
+        <legend style={labelStyle}>
           Meeting Cadence
         </legend>
         <div
@@ -97,13 +113,15 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
                 alignItems: 'center',
                 gap: '6px',
                 padding: '8px 14px',
-                border: `1px solid ${cadenceType === option.value ? 'var(--color-secondary)' : 'var(--color-neutral-border)'}`,
+                border: `1px solid ${cadenceType === option.value ? 'var(--color-secondary)' : 'var(--color-border)'}`,
                 borderRadius: 'var(--radius-medium)',
                 fontSize: 'var(--text-body)',
                 cursor: 'pointer',
-                backgroundColor: cadenceType === option.value ? 'rgba(47, 180, 163, 0.08)' : 'var(--color-neutral-surface)',
-                color: cadenceType === option.value ? 'var(--color-secondary-dark)' : 'var(--color-neutral-text)',
+                backgroundColor: cadenceType === option.value ? 'var(--color-secondary-muted)' : 'var(--color-bg-elevated)',
+                color: cadenceType === option.value ? 'var(--color-secondary)' : 'var(--color-text-secondary)',
                 fontWeight: cadenceType === option.value ? 'var(--weight-medium)' : 'var(--weight-regular)',
+                fontFamily: 'var(--font-mono)',
+                transition: 'border-color 0.2s, background-color 0.2s',
               }}
             >
               <input
@@ -127,10 +145,7 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
       {/* Custom Interval (shown only when Custom selected) */}
       {cadenceType === 'CUSTOM' && (
         <div data-testid="custom-interval-section">
-          <label
-            htmlFor="custom-interval"
-            style={{ display: 'block', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '6px', color: 'var(--color-neutral-text)' }}
-          >
+          <label htmlFor="custom-interval" style={labelStyle}>
             Custom Interval (days)
           </label>
           <input
@@ -149,9 +164,12 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
             style={{
               width: '120px',
               padding: '8px 12px',
-              border: `1px solid ${error ? 'var(--color-error)' : 'var(--color-neutral-border)'}`,
+              border: `1px solid ${error ? 'var(--color-alert)' : 'var(--color-border)'}`,
               borderRadius: 'var(--radius-medium)',
               fontSize: 'var(--text-body)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'var(--font-mono)',
             }}
           />
           {error && (
@@ -159,7 +177,7 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
               id="custom-interval-error"
               data-testid="custom-interval-error"
               role="alert"
-              style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-error)' }}
+              style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-alert)' }}
             >
               {error}
             </p>
@@ -169,12 +187,10 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
 
       {/* Template Markdown Editor */}
       <div>
-        <label
-          style={{ display: 'block', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '6px', color: 'var(--color-neutral-text)' }}
-        >
+        <label style={labelStyle}>
           Meeting Template
         </label>
-        <p style={{ margin: '0 0 8px', fontSize: 'var(--text-small)', color: 'var(--color-neutral-text-muted)' }}>
+        <p style={{ margin: '0 0 8px', fontSize: 'var(--text-small)', color: 'var(--color-text-muted)' }}>
           This template will prefill the notes field when creating new 1:1 entries.
         </p>
         <MarkdownEditor
@@ -193,13 +209,16 @@ export default function SeriesConfigPanel({ series, onSave, isSaving = false }: 
           data-testid="series-config-save"
           style={{
             padding: '10px 20px',
-            backgroundColor: isSaving ? 'var(--color-secondary-light)' : 'var(--color-secondary)',
-            color: '#fff',
+            backgroundColor: isSaving ? 'var(--color-secondary-muted)' : 'var(--color-secondary)',
+            color: isSaving ? 'var(--color-secondary)' : '#fff',
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-medium)',
+            fontWeight: 'var(--weight-semibold)',
+            fontFamily: 'var(--font-mono)',
             cursor: isSaving ? 'not-allowed' : 'pointer',
+            boxShadow: isSaving ? 'none' : '0 0 8px rgba(168, 85, 247, 0.2)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           {isSaving ? 'Saving...' : 'Save Configuration'}

@@ -29,7 +29,7 @@ export default function SensitiveToggle({ checked, onChange, label = 'Mark as se
           height: '24px',
           borderRadius: '12px',
           border: 'none',
-          backgroundColor: checked ? 'var(--color-warning)' : 'var(--color-neutral-border)',
+          backgroundColor: checked ? 'var(--color-warning)' : 'var(--color-border)',
           cursor: 'pointer',
           transition: 'background-color 0.2s',
           padding: 0,
@@ -43,9 +43,9 @@ export default function SensitiveToggle({ checked, onChange, label = 'Mark as se
             width: '20px',
             height: '20px',
             borderRadius: '50%',
-            backgroundColor: '#fff',
+            backgroundColor: checked ? 'var(--color-bg-base)' : 'var(--color-text-muted)',
             transition: 'left 0.2s',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            boxShadow: checked ? '0 0 6px rgba(255, 214, 0, 0.4)' : '0 1px 3px rgba(0,0,0,0.3)',
           }}
         />
       </button>
@@ -56,7 +56,7 @@ export default function SensitiveToggle({ checked, onChange, label = 'Mark as se
           alignItems: 'center',
           gap: '4px',
           fontSize: 'var(--text-body)',
-          color: checked ? '#92400e' : 'var(--color-neutral-text)',
+          color: checked ? 'var(--color-warning)' : 'var(--color-text-secondary)',
           cursor: 'pointer',
           fontWeight: checked ? 'var(--weight-medium)' : 'var(--weight-regular)',
         }}

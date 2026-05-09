@@ -1,4 +1,4 @@
-# CrewCaptain Design Guide (v2.0)
+# CrewCaptain Design Guide (v2.0 — Cyber Captain)
 
 Primary domain: crewcaptain.de
 
@@ -17,18 +17,28 @@ This design guide is crafted for AI agents to generate, validate, and hand off d
 ## 2) Brand Identity
 
 - Brand Essence: A privacy-first, manager-focused platform that helps multi-manager teams organize people context, 1:1 history, development goals, and follow-ups in one self-hosted workspace.
-- Vibe: Calm, capable, human-centric; leadership with warmth, clarity, and personal touch.
-- Positioning: Not HR software; a private cockpit for people context and progress.
+- Vibe: High-tech, capable, human-centric; leadership with clarity, precision, and a digital-native edge. A captain's cockpit for the modern era.
+- Positioning: Not HR software; a private digital cockpit for people context and progress. Built for a generation of managers who grew up with technology.
+
+- Visual Direction: **Cyberpunk-lite / Dark-first futurism**
+  - Dark-first interface with layered depth (not flat black)
+  - Neon accent colors used sparingly for status, CTAs, and focus states
+  - Glassmorphism on cards and modals (frosted glass over dark gradients)
+  - Subtle grid/scan-line textures in backgrounds
+  - Monospace typography for headings and data — technical credibility
+  - Glowing borders and status indicators
+  - Professional and intuitive despite the aesthetic — never sacrifices usability
 
 - Voice & Tone:
-  - Tone: confident, warm, practical; avoid HR jargon.
+  - Tone: confident, direct, technical-but-warm; avoid HR jargon.
   - Core messages: private manager workspace, memory-driven leadership, single source of truth for people context, data ownership and export.
-  - Primary Tagline: "Your private cockpit for people context."
-  - Secondary Taglines:
-    - Remember more. Lead better.
+  - Tagline options:
+    - Your private cockpit for people context.
     - Lead with memory. Act with clarity.
     - The captain's log for modern managers.
     - Navigate your crew with context and care.
+    - Remember more. Lead better.
+    - Command your crew data. Own your leadership memory.
 
 ---
 
@@ -36,194 +46,239 @@ This design guide is crafted for AI agents to generate, validate, and hand off d
 
 - Primary domain: crewcaptain.de
 - Testable future domains: crewcaptain.app, crewcaptain.io, thecrewcaptain.co
-- Visual motif: Modern nautical navigation — compass, direction, guidance. Clean geometric forms that scale from favicon to full lockup.
+- Visual motif: Digital captain's cockpit / HUD (heads-up display) with nautical undertones. The interface should feel like piloting a ship through data — glowing instruments, layered panels, clear status readouts.
 
-### Logo Direction (Primary: Concept A — Compass Rose)
+Logo Concepts (3 directions)
+- Concept A: Minimalist compass icon with neon glow outline + "CC" monogram
+- Concept B: Captain's wheel rendered as a HUD element with scan-line texture
+- Concept C: Abstract "C" letterform with circuit-board / data-flow lines
 
-The chosen logo direction is an abstract geometric compass rose with an integrated human element:
-
-- The compass rose communicates direction, guidance, and navigation — mapping to "guiding your team."
-- The compass needle doubles as a subtle person silhouette, reinforcing "people-first leadership."
-- Geometric construction ensures clean scaling from 16px favicon to full-size lockup.
-- Avoid overly literal nautical imagery (anchors, ship wheels) which feel heavy for a software product.
-
-Deliverables (for design handoff): SVGs for compass rose mark, horizontal and stacked lockups, app/icon variants, monochrome and color versions, favicon sizes (16, 32, 48, 192, 512px).
-
-### Iconography System
-
-Custom icon set reinforcing the nautical/navigation theme:
-
-| Feature | Icon Concept |
-|---------|-------------|
-| People/Crew | Simplified crew silhouettes (2-3 people) |
-| 1:1 Meetings | Two compass needles meeting at a point |
-| Action Items | Small nautical signal flag |
-| Goals/PDP | North star or lighthouse |
-| Notes | Captain's log book |
-| Morale | Weather indicators (sun, clouds, storm) |
-| Dashboard | Simplified helm (geometric) |
+Deliverables (for design handoff): SVGs for each concept, horizontal and stacked lockups, app/icon variants, monochrome and color versions, favicon sizes. All logos must work on dark backgrounds.
 
 ---
 
 ## 4) Color System
 
-### Primary Palette
+### Dark Theme (Primary — Default)
 
-| Role | HEX | Usage |
-|------|-----|-------|
-| Primary (Deep Navy) | `#162340` | Headers, navigation, primary surfaces, sidebar |
-| Primary Light | `#1E3258` | Hover states, secondary surfaces |
-| Primary Dark | `#0D1520` | Dark mode base, deep backgrounds |
-| Secondary (Rich Teal) | `#1A9E8F` | Interactive elements, links, controls |
-| Secondary Light | `#3DBDAE` | Hover states, light accents |
-| Secondary Dark | `#147A6E` | Active states, pressed buttons |
-| Accent (Warm Amber) | `#E8763A` | Primary CTAs, highlights, key actions |
-| Accent Light | `#F09560` | Hover states for accent elements |
-| Accent Dark | `#C4612A` | Active/pressed accent states |
+| Role | Token Name | Hex | Usage |
+|------|-----------|-----|-------|
+| Base background | `--color-bg-base` | `#0D0F14` | Page background, deepest layer |
+| Surface | `--color-bg-surface` | `#161A22` | Cards, panels, content areas |
+| Elevated surface | `--color-bg-elevated` | `#1E2330` | Modals, dropdowns, hover states |
+| Overlay | `--color-bg-overlay` | `rgba(22, 26, 34, 0.85)` | Glassmorphism card backgrounds |
+| Primary accent | `--color-primary` | `#00F0FF` | CTAs, active states, primary links |
+| Primary accent hover | `--color-primary-hover` | `#33F5FF` | Hover state for primary elements |
+| Primary accent muted | `--color-primary-muted` | `rgba(0, 240, 255, 0.15)` | Subtle backgrounds, glow effects |
+| Secondary accent | `--color-secondary` | `#A855F7` | Secondary actions, tags, categories |
+| Secondary accent hover | `--color-secondary-hover` | `#C084FC` | Hover state for secondary elements |
+| Alert / Destructive | `--color-alert` | `#FF2D7B` | Errors, destructive actions, overdue items |
+| Alert muted | `--color-alert-muted` | `rgba(255, 45, 123, 0.15)` | Error backgrounds |
+| Success | `--color-success` | `#39FF85` | Completed items, positive status |
+| Success muted | `--color-success-muted` | `rgba(57, 255, 133, 0.15)` | Success backgrounds |
+| Warning | `--color-warning` | `#FFD600` | Caution states, approaching deadlines |
+| Warning muted | `--color-warning-muted` | `rgba(255, 214, 0, 0.15)` | Warning backgrounds |
+| Text primary | `--color-text-primary` | `#E8ECF0` | Main body text, headings |
+| Text secondary | `--color-text-secondary` | `#7A8599` | Descriptions, labels, metadata |
+| Text muted | `--color-text-muted` | `#4A5568` | Placeholders, disabled text |
+| Border default | `--color-border` | `#2A3040` | Card borders, dividers |
+| Border subtle | `--color-border-subtle` | `#1F2533` | Very subtle separators |
+| Border glow | `--color-border-glow` | `rgba(0, 240, 255, 0.2)` | Interactive element borders |
 
-### Neutrals
+### Morale Status Colors
 
-| Role | HEX | Usage |
-|------|-----|-------|
-| Text Primary | `#1A1D23` | Body text, headings on light bg |
-| Text Secondary | `#4A5568` | Supporting text, labels |
-| Text Muted | `#6B7280` | Placeholder text, disabled states |
-| Background | `#F8F9FB` | Page background |
-| Surface | `#FFFFFF` | Cards, panels, modals |
-| Border | `#E2E5EA` | Default borders |
-| Border Light | `#F0F1F3` | Subtle dividers |
+| Status | Color | Hex | Glow |
+|--------|-------|-----|------|
+| GREEN | Neon green | `#39FF85` | `0 0 8px rgba(57, 255, 133, 0.4)` |
+| YELLOW | Electric amber | `#FFD600` | `0 0 8px rgba(255, 214, 0, 0.4)` |
+| RED | Hot magenta | `#FF2D7B` | `0 0 8px rgba(255, 45, 123, 0.4)` |
+| UNKNOWN | Muted steel | `#4A5568` | none |
 
-### Semantic Colors
+### Glow Effects
 
-| Role | HEX | Usage |
-|------|-----|-------|
-| Success | `#2D8F6F` | Positive states, confirmations |
-| Warning | `#D4A843` | Caution states, attention needed |
-| Error | `#C94A4A` | Errors, destructive actions |
-| Error Background | `#FEF2F2` | Error message backgrounds |
-| Warning Background | `#FFFBEB` | Warning message backgrounds |
+```css
+/* Primary glow — for buttons, active nav items */
+--glow-primary: 0 0 12px rgba(0, 240, 255, 0.2);
+--glow-primary-strong: 0 0 20px rgba(0, 240, 255, 0.35);
 
-### Morale Colors
+/* Alert glow — for errors, destructive states */
+--glow-alert: 0 0 12px rgba(255, 45, 123, 0.2);
 
-| Status | HEX | Visual |
-|--------|-----|--------|
-| GREEN | `#2D8F6F` | Forest green — positive, thriving |
-| YELLOW | `#D4A843` | Gold — attention needed |
-| RED | `#C94A4A` | Muted red — concern |
-| UNKNOWN | `#9CA3AF` | Gray — no data |
+/* Success glow — for completed states */
+--glow-success: 0 0 12px rgba(57, 255, 133, 0.2);
 
-### Dark Mode Palette
+/* Card hover glow */
+--glow-card-hover: 0 0 16px rgba(0, 240, 255, 0.1);
+```
 
-For future dark mode implementation (reinforces "private cockpit" metaphor):
+### Glassmorphism
 
-| Role | HEX |
-|------|-----|
-| Dark Surface | `#0D1520` (very dark navy) |
-| Dark Card | `#162340` (primary becomes card bg) |
-| Dark Text | `#E8ECF2` (soft white) |
-| Dark Border | `#2A3A55` |
-| Accents | Same teal and amber (pop on dark backgrounds) |
+```css
+/* Standard glass card */
+--glass-bg: rgba(22, 26, 34, 0.85);
+--glass-border: 1px solid rgba(0, 240, 255, 0.1);
+--glass-blur: blur(12px);
 
-### Usage Principles
-
-- **60-30-10 Rule**: 60% neutrals (surfaces/backgrounds), 30% navy (headers, sidebars, navigation), 10% teal+amber (CTAs, highlights, interactive elements).
-- The accent amber should feel scarce and meaningful — only for primary CTAs and key highlights.
-- Ensure accessible contrast for text: minimum 4.5:1 for normal text, 3:1 for large text (WCAG AA).
+/* Elevated glass (modals, dropdowns) */
+--glass-elevated-bg: rgba(30, 35, 48, 0.9);
+--glass-elevated-border: 1px solid rgba(0, 240, 255, 0.15);
+--glass-elevated-blur: blur(16px);
+```
 
 ---
 
 ## 5) Typography
 
-### Font Stack
+| Role | Font | Weight | Size | Why |
+|------|------|--------|------|-----|
+| Headings / Stats | **JetBrains Mono** | 700 | H1: 28px, H2: 22px, H3: 18px | Monospace = technical credibility, cockpit readout feel |
+| Body / UI text | **Inter** | 400/500 | 14px | Proven readability, neutral, excellent for dense UIs |
+| Labels / Badges | **JetBrains Mono** | 500 | 12px | Compact, technical, great for status indicators |
+| Data / Numbers | **JetBrains Mono** | 600 | 14px | Tabular alignment, dashboard data |
+| Navigation | **Inter** | 500/600 | 14px | Clean, readable at small sizes |
 
-| Role | Font | Fallbacks | Usage |
-|------|------|-----------|-------|
-| Headings | Plus Jakarta Sans | system-ui, -apple-system, 'Segoe UI', sans-serif | H1-H3, brand name, page titles |
-| UI / Body | Inter | system-ui, -apple-system, 'Segoe UI', Arial, sans-serif | Body text, labels, buttons, form fields |
-| Monospace | JetBrains Mono | ui-monospace, SFMono-Regular, Menlo, Consolas, monospace | Code, data displays, technical content |
-
-### Why Plus Jakarta Sans for Headings
-
-- Geometric warmth — modern and approachable without being generic.
-- Distinctive from the ubiquitous Montserrat/Source Sans Pro used by most SaaS products.
-- Excellent weight range (200-800) for flexible heading hierarchy.
-- Free, well-hinted, and optimized for screen rendering.
-- Pairs naturally with Inter for body text.
+Font stacks:
+```css
+--font-heading: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+--font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+--font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+```
 
 ### Typography Scale
 
-| Level | Size | Weight | Line Height | Font |
-|-------|------|--------|-------------|------|
-| H1 | 32px | 700 (Bold) | 1.2 | Plus Jakarta Sans |
-| H2 | 24px | 600 (SemiBold) | 1.3 | Plus Jakarta Sans |
-| H3 | 20px | 600 (SemiBold) | 1.3 | Plus Jakarta Sans |
-| Body | 14px | 400 (Regular) | 1.5 | Inter |
-| Body Large | 16px | 400 (Regular) | 1.5 | Inter |
-| Small | 13px | 400 (Regular) | 1.4 | Inter |
-| Caption | 12px | 400 (Regular) | 1.4 | Inter |
-| Button | 14px | 500 (Medium) | 1 | Inter |
-
-### Accessibility
-
-- High contrast text on all backgrounds (minimum 4.5:1 ratio)
-- Scalable text — use rem/em units in production
-- Proper line heights for readability
-- Web font stacks include system fallbacks for fast initial render
+```json
+{
+  "h1": { "size": 28, "weight": 700, "font": "heading", "letterSpacing": "-0.5px" },
+  "h2": { "size": 22, "weight": 700, "font": "heading", "letterSpacing": "-0.3px" },
+  "h3": { "size": 18, "weight": 600, "font": "heading", "letterSpacing": "-0.2px" },
+  "body": { "size": 14, "weight": 400, "font": "ui", "letterSpacing": "0" },
+  "bodyMedium": { "size": 14, "weight": 500, "font": "ui", "letterSpacing": "0" },
+  "caption": { "size": 12, "weight": 400, "font": "ui", "letterSpacing": "0.2px" },
+  "label": { "size": 12, "weight": 500, "font": "mono", "letterSpacing": "0.5px", "textTransform": "uppercase" },
+  "data": { "size": 14, "weight": 600, "font": "mono", "letterSpacing": "0" }
+}
+```
 
 ---
 
 ## 6) Design System & UI Tokens
+
+### Spacing Grid
+
+```
+4, 8, 12, 16, 20, 24, 32, 40, 48, 64
+```
+
+### Border Radius
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--radius-small` | 4px | Badges, small elements |
+| `--radius-medium` | 8px | Cards, inputs, buttons |
+| `--radius-large` | 12px | Modals, large panels |
+| `--radius-full` | 9999px | Pills, circular indicators |
+
+### Shadows & Elevation
+
+In the dark theme, elevation is communicated through background lightness and glow rather than traditional drop shadows:
+
+| Level | Background | Border | Glow |
+|-------|-----------|--------|------|
+| Base (0) | `#0D0F14` | none | none |
+| Surface (1) | `#161A22` | `#2A3040` | none |
+| Elevated (2) | `#1E2330` | `rgba(0, 240, 255, 0.1)` | subtle |
+| Overlay (3) | `rgba(22, 26, 34, 0.85)` + blur | `rgba(0, 240, 255, 0.15)` | medium |
+
+### Component Patterns
+
+**Buttons:**
+- Primary: Filled with `--color-primary`, subtle glow shadow, text `#0D0F14`
+- Secondary: Ghost/outline with primary border, text `--color-primary`
+- Destructive: Filled with `--color-alert`, glow shadow
+- Disabled: `--color-bg-elevated` background, `--color-text-muted` text
+
+**Cards:**
+- Background: `var(--glass-bg)` with `backdrop-filter: var(--glass-blur)`
+- Border: `var(--glass-border)`
+- Hover: border brightens to `rgba(0, 240, 255, 0.25)`, add `--glow-card-hover`
+- Transition: `border-color 0.2s, box-shadow 0.2s`
+
+**Inputs:**
+- Background: `--color-bg-elevated`
+- Border: `--color-border` (default), `--color-primary` (focus)
+- Focus: add `--glow-primary` box-shadow
+- Text: `--color-text-primary`
+- Placeholder: `--color-text-muted`
+
+**Navigation:**
+- Background: `--color-bg-surface` with subtle bottom border glow
+- Active item: left border in `--color-primary` with glow
+- Brand text: `--color-primary` in monospace font
+- Links: `--color-text-secondary` default, `--color-text-primary` on hover
+
+**Status Indicators:**
+- Morale dots: 8px circles with color + matching glow
+- Pulsing animation on RED status (subtle, 2s cycle)
+- Badge style: pill shape with muted background + bright text
+
+**Tables / Data:**
+- Monospace font for data cells
+- Row hover: subtle background shift to `--color-bg-elevated`
+- Header: `--color-text-secondary` in uppercase label style
+- Alternating rows: barely perceptible shade difference (`#161A22` / `#181D26`)
 
 ### Design Tokens (JSON)
 
 ```json
 {
   "color": {
-    "primary": "#162340",
-    "primaryLight": "#1E3258",
-    "primaryDark": "#0D1520",
-    "secondary": "#1A9E8F",
-    "secondaryLight": "#3DBDAE",
-    "secondaryDark": "#147A6E",
-    "accent": "#E8763A",
-    "accentLight": "#F09560",
-    "accentDark": "#C4612A",
-    "neutral": {
-      "text": "#1A1D23",
-      "textSecondary": "#4A5568",
-      "textMuted": "#6B7280",
-      "bg": "#F8F9FB",
-      "surface": "#FFFFFF",
-      "border": "#E2E5EA",
-      "borderLight": "#F0F1F3"
+    "bg": {
+      "base": "#0D0F14",
+      "surface": "#161A22",
+      "elevated": "#1E2330",
+      "overlay": "rgba(22, 26, 34, 0.85)"
     },
-    "semantic": {
-      "success": "#2D8F6F",
-      "warning": "#D4A843",
-      "error": "#C94A4A",
-      "errorBg": "#FEF2F2",
-      "warningBg": "#FFFBEB"
+    "primary": "#00F0FF",
+    "primaryHover": "#33F5FF",
+    "primaryMuted": "rgba(0, 240, 255, 0.15)",
+    "secondary": "#A855F7",
+    "secondaryHover": "#C084FC",
+    "alert": "#FF2D7B",
+    "alertMuted": "rgba(255, 45, 123, 0.15)",
+    "success": "#39FF85",
+    "successMuted": "rgba(57, 255, 133, 0.15)",
+    "warning": "#FFD600",
+    "warningMuted": "rgba(255, 214, 0, 0.15)",
+    "text": {
+      "primary": "#E8ECF0",
+      "secondary": "#7A8599",
+      "muted": "#4A5568"
+    },
+    "border": {
+      "default": "#2A3040",
+      "subtle": "#1F2533",
+      "glow": "rgba(0, 240, 255, 0.2)"
     },
     "morale": {
-      "green": "#2D8F6F",
-      "yellow": "#D4A843",
-      "red": "#C94A4A",
-      "unknown": "#9CA3AF"
+      "green": "#39FF85",
+      "yellow": "#FFD600",
+      "red": "#FF2D7B",
+      "unknown": "#4A5568"
     }
   },
   "font": {
-    "heading": "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",
+    "heading": "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace",
     "ui": "'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif",
-    "mono": "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    "mono": "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace"
   },
   "typography": {
-    "h1": { "size": 32, "weight": 700, "lineHeight": 1.2 },
-    "h2": { "size": 24, "weight": 600, "lineHeight": 1.3 },
-    "h3": { "size": 20, "weight": 600, "lineHeight": 1.3 },
-    "body": { "size": 14, "weight": 400, "lineHeight": 1.5 },
-    "bodyLarge": { "size": 16, "weight": 400, "lineHeight": 1.5 },
-    "small": { "size": 13, "weight": 400, "lineHeight": 1.4 },
-    "caption": { "size": 12, "weight": 400, "lineHeight": 1.4 }
+    "h1": { "size": 28, "weight": 700, "letterSpacing": "-0.5px" },
+    "h2": { "size": 22, "weight": 700, "letterSpacing": "-0.3px" },
+    "h3": { "size": 18, "weight": 600, "letterSpacing": "-0.2px" },
+    "body": { "size": 14, "weight": 400 },
+    "caption": { "size": 12, "weight": 400 },
+    "label": { "size": 12, "weight": 500, "letterSpacing": "0.5px" },
+    "data": { "size": 14, "weight": 600 }
   },
   "radius": {
     "small": 4,
@@ -231,88 +286,43 @@ For future dark mode implementation (reinforces "private cockpit" metaphor):
     "large": 12,
     "full": 9999
   },
-  "spacing": [0, 4, 8, 12, 16, 20, 24, 32, 40, 48],
-  "shadow": {
-    "sm": "0 1px 2px rgba(22, 35, 64, 0.06)",
-    "md": "0 2px 8px rgba(22, 35, 64, 0.09)",
-    "lg": "0 4px 16px rgba(22, 35, 64, 0.13)",
-    "hover": "0 6px 20px rgba(22, 35, 64, 0.15)"
+  "spacing": [4, 8, 12, 16, 20, 24, 32, 40, 48, 64],
+  "glow": {
+    "primary": "0 0 12px rgba(0, 240, 255, 0.2)",
+    "primaryStrong": "0 0 20px rgba(0, 240, 255, 0.35)",
+    "alert": "0 0 12px rgba(255, 45, 123, 0.2)",
+    "success": "0 0 12px rgba(57, 255, 133, 0.2)",
+    "cardHover": "0 0 16px rgba(0, 240, 255, 0.1)"
+  },
+  "glass": {
+    "bg": "rgba(22, 26, 34, 0.85)",
+    "border": "1px solid rgba(0, 240, 255, 0.1)",
+    "blur": "blur(12px)"
   }
 }
 ```
 
-### CSS Custom Properties
-
-See `frontend/src/app/globals.css` for the live implementation of these tokens as CSS custom properties.
-
-### Components (baseline)
-
-- Button (primary, secondary, ghost variants)
-- TextInput, TextArea
-- Card (with hover elevation)
-- Badge (morale, status)
-- Navigation (top bar with brand)
-- Tooltip
-- EmptyState
-
-### Elevation/Shadows
-
-- Cards use `shadow-sm` at rest, `shadow-md` on hover — creating a sense of layered information.
-- Modals and dropdowns use `shadow-lg`.
-- Shadows use the primary navy color at low opacity for cohesion.
-
 ---
 
-## 7) Motion & Interaction
+## 7) Imagery & Accessibility
 
-### Principles
+- Imagery
+  - Use HUD/cockpit motifs with geometric shapes; avoid generic HR stock imagery.
+  - Prefer angular, technical illustrations with neon accent highlights.
+  - Icons: outlined style (not filled), with optional glow on active state.
+  - Background textures: subtle grid patterns, scan-lines at very low opacity (2-5%).
 
-- Motion is purposeful — it communicates state changes, not decoration.
-- Transitions are quick (150-200ms) and use ease-out curves.
-- Avoid motion that blocks user interaction.
-
-### Defined Transitions
-
-| Element | Property | Duration | Easing |
-|---------|----------|----------|--------|
-| Cards | box-shadow, border-color, transform | 150ms | ease-out |
-| Buttons | background-color, transform | 120ms | ease-out |
-| Navigation links | color, opacity | 100ms | ease |
-| Page content | opacity | 200ms | ease-in-out |
-| Modals | opacity, transform | 200ms | ease-out |
-
-### Micro-interactions
-
-- Cards lift slightly on hover (`translateY(-1px)` + shadow increase)
-- Buttons scale down subtly on press (`scale(0.98)`)
-- Loading states use a minimal compass-rose spinner (brand-aligned)
-- Success confirmations use a brief checkmark animation
-
-### Future Considerations
-
-- Scroll-triggered reveals for landing page sections
-- Compass logo mark subtle rotation on page load
-- Animated hero on landing page showing product in use
-
----
-
-## 8) Imagery & Accessibility
-
-### Imagery
-
-- Use compass/navigation motifs with human silhouettes; avoid generic HR stock imagery.
-- Prefer soft, rounded shapes; minimalistic illustrations or icons.
-- The compass rose can serve as a subtle watermark or section divider pattern.
-- Product screenshots should show real UI, not mockups.
-
-### Accessibility Requirements
-
-- Contrast: text minimum 4.5:1 for normal text, 3:1 for large text (WCAG 2.1 AA)
-- Focus states: visible keyboard focus outlines (2px solid secondary color, 2px offset)
-- Alt text: provide meaningful descriptions for all decorative visuals
-- Responsive typography: scale for readability on small screens
-- Color is never the sole indicator — always pair with text labels or icons
-- Morale indicators use both color AND text labels
+- Accessibility (CRITICAL — non-negotiable)
+  - Contrast: All text must meet WCAG AA minimum (4.5:1 for normal text, 3:1 for large text)
+  - `#E8ECF0` on `#0D0F14` = 14.7:1 ✓
+  - `#7A8599` on `#0D0F14` = 5.2:1 ✓
+  - `#00F0FF` on `#0D0F14` = 12.1:1 ✓
+  - `#4A5568` on `#0D0F14` = 3.3:1 ✓ (large text / decorative only)
+  - Focus states: visible glow outlines (2px solid `--color-primary` + glow shadow)
+  - Alt text: provide meaningful descriptions for all decorative visuals
+  - Responsive typography: scale for readability on small screens
+  - Motion: respect `prefers-reduced-motion` — disable glow pulses and transitions
+  - Color alone: never use color as the only indicator — always pair with text/icon
 
 ---
 
@@ -320,27 +330,24 @@ See `frontend/src/app/globals.css` for the live implementation of these tokens a
 
 ### Brand Voice
 
-- Tone: warm, confident, practical; no HR jargon
-- Personality: like a knowledgeable colleague, not a corporate tool
-
-### Key Messages
-
-- Private manager workspace — your data, your control
-- Memory-driven leadership — never forget context
-- One place for people context — 1:1s, goals, notes, actions
-- Data ownership and exportability — self-hosted, no vendor lock-in
-
-### Landing Page Copy
-
-**Variant A (Direct)**
-- Headline: CrewCaptain — Your private cockpit for people context
-- Subhead: Manage your crew with memory and clear actions. Self-hosted, data-owned, and scalable.
-- CTAs: Get Started · View Demo
-
-**Variant B (Story-focused)**
-- Headline: The captain's log for modern managers.
-- Subhead: Capture 1:1 history, track development goals, and follow up on actions — without HR clutter. Self-hosted and private by design.
-- CTAs: Try it on Docker · Learn More
+- Brand Voice
+  - Tone: direct, technical-but-warm, confident; no HR jargon
+  - Feels like talking to a sharp colleague, not a corporate tool
+- Key Messages to surface on site
+  - Private manager workspace
+  - Memory-driven leadership
+  - One place for people context
+  - Data ownership and exportability
+  - Built for the next generation of leaders
+- Landing Page Copy (two variants)
+  - Variant A (Direct / Technical)
+    - Headline: CrewCaptain — Your private cockpit for people context
+    - Subhead: Track 1:1s, development goals, and action items in one self-hosted workspace. Your data. Your crew. Your rules.
+    - CTAs: Get Started · View Demo
+  - Variant B (Story-focused)
+    - Headline: Lead with memory. Command with clarity.
+    - Subhead: A centralized command center for managers who believe great leadership starts with remembering what matters.
+    - CTAs: Deploy on Docker · Learn More
 
 ---
 
@@ -351,11 +358,25 @@ See `frontend/src/app/globals.css` for the live implementation of these tokens a
 
 ---
 
+## 10) Gamification & Engagement (for younger managers)
+
+Subtle gamification elements to increase engagement without feeling childish:
+
+- **Progress rings** for PDP goals (animated fill with glow effect)
+- **Streak counters** for consecutive 1:1s held (monospace display)
+- **Micro-animations** on task completion (checkmark with brief particle/glow burst)
+- **Achievement indicators** for milestones (first 1:1, 10 action items closed, etc.)
+- **Activity heat map** on dashboard (contribution-graph style, using accent colors)
+
+All gamification respects `prefers-reduced-motion` and can be disabled in user settings.
+
+---
+
 ## 11) Deliverables for AI Agent Handoff
 
-- Logo: Compass rose mark (SVG/PNG) with horizontal/stacked lockups, app/icon variants, monochrome/color versions, favicon set
-- Brand tokens: JSON design tokens (colors, typography, spacing, radii, shadows)
-- Landing page: two EN variants (copy blocks, CTAs, hero/subhead)
+- Logo concepts: 3 vector directions (SVG/PNG) with horizontal/stacked lockups, app/icon variants, monochrome/color versions, favicon set — all on dark backgrounds
+- Brand tokens: JSON/YAML design tokens (colors, typography, spacing, radii, glow effects)
+- Landing page: two EN variants (copy blocks, CTAs, hero/subhead) — dark theme
 - UI kit: components (buttons, inputs, cards, badges, nav) with token-driven styling
 - Copy-ready microcopy: form labels, placeholders, tooltips, error messages
 - Asset packaging: folder structure and naming conventions
@@ -364,44 +385,56 @@ See `frontend/src/app/globals.css` for the live implementation of these tokens a
 
 ## 12) File Naming Conventions & Directory Structure (AI-friendly)
 
-```
-assets/
-  logos/
-    compass-rose-mark.svg
-    compass-rose-lockup-horizontal.svg
-    compass-rose-lockup-stacked.svg
-    compass-rose-monochrome.svg
-  icons/
-  fonts/
-tokens/
-  design-tokens.json
-  colors.json
-  typography.json
-  spacing.json
-pages/
-  index_en.html
-copy/
-  hero_en.md
-  subhead_en.md
-  cta_en.md
-docs/
-  branding_guide.md
-  accessibility.md
-deliverables/
-  logo_variants/
-  ui_kit/
-  landing_pages/
-```
+- assets/
+  - logos/
+    - conceptA.svg
+    - conceptB.svg
+    - conceptC.svg
+  - icons/
+  - fonts/
+- tokens/
+  - colors.json
+  - typography.json
+  - spacing.json
+  - radii.json
+  - glow.json
+  - glass.json
+- pages/
+  - index_en.html
+  - index_en-docker.html
+- copy/
+  - hero_en.md
+  - subhead_en.md
+  - cta_en.md
+- docs/
+  - branding_guide.md
+  - accessibility.md
+- deliverables/
+  - logo_variants/
+  - ui_kit/
+  - landing_pages/
 
 ---
 
 ## 13) Acceptance Criteria for AI Agent
 
-- Generate compass rose logo concept with SVG/PNG variants and ready-to-use app icon assets.
-- Produce a cohesive design-token set (colors, typography, spacing, radii, shadows) in JSON plus CSS variable equivalents.
-- Create two landing page variants (EN) with hero, subhead, and CTAs ready to paste into a marketing site.
-- Output an accessible UI kit with buttons, inputs, cards, and nav styled to the tokens.
+- Generate 3 distinct logo concepts (A/B/C) with SVG/PNG variants and ready-to-use app icon assets — must work on dark backgrounds.
+- Produce a cohesive design-token set (colors, typography, spacing, radii, glow, glass) in JSON or YAML plus CSS variable equivalents.
+- Create two landing page variants (EN) with hero, subhead, and CTAs — dark theme with cyberpunk-lite aesthetic.
+- Output an accessible UI kit with buttons, inputs, cards, and nav styled to the tokens — all meeting WCAG AA contrast requirements.
 - Provide a brand usage guide and a one-page design brief for designers/branding AI.
 - Ensure domain-accurate guidance for CrewCaptain.de (and safe future domains if needed).
-- All color combinations must pass WCAG 2.1 AA contrast requirements.
-- Typography must use Plus Jakarta Sans for headings and Inter for body text.
+- All components must respect `prefers-reduced-motion` media query.
+
+---
+
+## 14) Design Principles (TL;DR)
+
+1. **Dark-first, depth through layers** — not flat black, but layered surfaces with subtle elevation
+2. **Neon accents are spice, not the meal** — 10-15% of visual surface, max
+3. **Monospace for authority** — headings and data in JetBrains Mono convey technical credibility
+4. **Glass for depth** — frosted panels create spatial hierarchy without heavy shadows
+5. **Glow for interactivity** — borders and shadows glow on hover/focus to signal affordance
+6. **Accessibility is non-negotiable** — every color choice must pass WCAG AA
+7. **Motion with purpose** — animations communicate state, never just decorate
+8. **Professional cyberpunk** — this is a work tool, not a game UI. Keep it usable.

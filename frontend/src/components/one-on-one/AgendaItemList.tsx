@@ -60,7 +60,16 @@ export default function AgendaItemList({ items, onChange }: AgendaItemListProps)
   return (
     <div data-testid="agenda-item-list">
       <label
-        style={{ display: 'block', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '8px', color: 'var(--color-neutral-text)' }}
+        style={{
+          display: 'block',
+          fontSize: 'var(--text-caption)',
+          fontWeight: 'var(--weight-medium)',
+          fontFamily: 'var(--font-mono)',
+          marginBottom: '8px',
+          color: 'var(--color-text-secondary)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}
       >
         Agenda Items
       </label>
@@ -81,7 +90,7 @@ export default function AgendaItemList({ items, onChange }: AgendaItemListProps)
                 alignItems: 'center',
                 gap: '8px',
                 padding: '8px',
-                borderBottom: '1px solid var(--color-neutral-border-light)',
+                borderBottom: '1px solid var(--color-border-subtle)',
               }}
             >
               <input
@@ -97,7 +106,7 @@ export default function AgendaItemList({ items, onChange }: AgendaItemListProps)
                   flex: 1,
                   fontSize: 'var(--text-body)',
                   textDecoration: item.checked ? 'line-through' : 'none',
-                  color: item.checked ? 'var(--color-neutral-text-muted)' : 'var(--color-neutral-text)',
+                  color: item.checked ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
                 }}
               >
                 {item.text}
@@ -111,7 +120,7 @@ export default function AgendaItemList({ items, onChange }: AgendaItemListProps)
                   padding: '4px 8px',
                   border: 'none',
                   background: 'none',
-                  color: 'var(--color-error)',
+                  color: 'var(--color-alert)',
                   cursor: 'pointer',
                   fontSize: 'var(--text-body)',
                   borderRadius: 'var(--radius-small)',
@@ -141,17 +150,20 @@ export default function AgendaItemList({ items, onChange }: AgendaItemListProps)
             style={{
               width: '100%',
               padding: '8px 12px',
-              border: `1px solid ${error ? 'var(--color-error)' : 'var(--color-neutral-border)'}`,
+              border: `1px solid ${error ? 'var(--color-alert)' : 'var(--color-border)'}`,
               borderRadius: 'var(--radius-medium)',
               fontSize: 'var(--text-body)',
               boxSizing: 'border-box',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
           />
           {error && (
             <p
               data-testid="agenda-item-error"
               role="alert"
-              style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-error)' }}
+              style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-alert)' }}
             >
               {error}
             </p>
@@ -169,8 +181,11 @@ export default function AgendaItemList({ items, onChange }: AgendaItemListProps)
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
             fontWeight: 'var(--weight-medium)',
+            fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
             whiteSpace: 'nowrap',
+            boxShadow: '0 0 8px rgba(168, 85, 247, 0.2)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           Add

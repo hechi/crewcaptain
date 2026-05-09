@@ -208,7 +208,7 @@ export default function PersonDetailPage() {
 
   if (error && !person) {
     return (
-      <div data-testid="error-message" style={{ color: 'var(--color-error)', padding: 'var(--space-6)' }}>
+      <div data-testid="error-message" style={{ color: 'var(--color-alert)', padding: 'var(--space-6)' }}>
         {error}
       </div>
     );
@@ -226,19 +226,20 @@ export default function PersonDetailPage() {
         style={{
           marginBottom: 'var(--space-4)',
           padding: '6px 12px',
-          background: 'var(--color-neutral-surface)',
-          border: '1px solid var(--color-neutral-border)',
+          background: 'var(--color-bg-elevated)',
+          border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-medium)',
           cursor: 'pointer',
           fontSize: 'var(--text-body)',
-          color: 'var(--color-neutral-text-secondary)',
+          color: 'var(--color-text-secondary)',
+          transition: 'border-color 0.2s',
         }}
       >
         ← Back to People
       </button>
 
       {error && (
-        <div data-testid="error-message" style={{ color: 'var(--color-error)', marginBottom: 'var(--space-4)' }}>
+        <div data-testid="error-message" style={{ color: 'var(--color-alert)', marginBottom: 'var(--space-4)' }}>
           {error}
         </div>
       )}
@@ -246,9 +247,18 @@ export default function PersonDetailPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 'var(--text-h2)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>{person.name}</h1>
+          <h1 style={{
+            margin: 0,
+            fontSize: 'var(--text-h2)',
+            fontWeight: 'var(--weight-bold)',
+            fontFamily: 'var(--font-heading)',
+            color: 'var(--color-text-primary)',
+            letterSpacing: '-0.3px',
+          }}>
+            {person.name}
+          </h1>
           {person.roleTitle && (
-            <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-neutral-text-muted)' }}>{person.roleTitle}</p>
+            <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>{person.roleTitle}</p>
           )}
         </div>
         <MoraleIndicator moraleStatus={person.moraleStatus} />
@@ -260,7 +270,7 @@ export default function PersonDetailPage() {
         style={{
           display: 'flex',
           gap: '0',
-          borderBottom: '2px solid var(--color-neutral-border)',
+          borderBottom: '1px solid var(--color-border)',
           marginBottom: 'var(--space-6)',
         }}
         role="tablist"
@@ -276,13 +286,15 @@ export default function PersonDetailPage() {
           style={{
             padding: '10px 20px',
             border: 'none',
-            borderBottom: activeTab === 'details' ? '2px solid var(--color-secondary)' : '2px solid transparent',
+            borderBottom: activeTab === 'details' ? '2px solid var(--color-primary)' : '2px solid transparent',
             background: 'none',
             fontSize: 'var(--text-body)',
             fontWeight: activeTab === 'details' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
-            color: activeTab === 'details' ? 'var(--color-secondary-dark)' : 'var(--color-neutral-text-muted)',
+            color: activeTab === 'details' ? 'var(--color-primary)' : 'var(--color-text-muted)',
             cursor: 'pointer',
-            marginBottom: '-2px',
+            marginBottom: '-1px',
+            fontFamily: 'var(--font-mono)',
+            transition: 'color 0.2s',
           }}
         >
           Details
@@ -297,13 +309,15 @@ export default function PersonDetailPage() {
           style={{
             padding: '10px 20px',
             border: 'none',
-            borderBottom: activeTab === 'one-on-ones' ? '2px solid var(--color-secondary)' : '2px solid transparent',
+            borderBottom: activeTab === 'one-on-ones' ? '2px solid var(--color-primary)' : '2px solid transparent',
             background: 'none',
             fontSize: 'var(--text-body)',
             fontWeight: activeTab === 'one-on-ones' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
-            color: activeTab === 'one-on-ones' ? 'var(--color-secondary-dark)' : 'var(--color-neutral-text-muted)',
+            color: activeTab === 'one-on-ones' ? 'var(--color-primary)' : 'var(--color-text-muted)',
             cursor: 'pointer',
-            marginBottom: '-2px',
+            marginBottom: '-1px',
+            fontFamily: 'var(--font-mono)',
+            transition: 'color 0.2s',
           }}
         >
           1:1s
@@ -321,13 +335,15 @@ export default function PersonDetailPage() {
               data-testid="edit-button"
               style={{
                 padding: '8px 16px',
-                border: '1px solid var(--color-neutral-border)',
+                border: '1px solid var(--color-border-glow)',
                 borderRadius: 'var(--radius-medium)',
                 cursor: 'pointer',
-                background: 'var(--color-neutral-surface)',
+                background: 'var(--color-primary-muted)',
                 fontSize: 'var(--text-body)',
                 color: 'var(--color-primary)',
                 fontWeight: 'var(--weight-medium)',
+                fontFamily: 'var(--font-mono)',
+                transition: 'box-shadow 0.2s',
               }}
             >
               {isEditing ? 'Cancel Edit' : 'Edit'}
@@ -338,12 +354,13 @@ export default function PersonDetailPage() {
               data-testid="delete-button"
               style={{
                 padding: '8px 16px',
-                border: '1px solid var(--color-error-border)',
+                border: '1px solid var(--color-alert-muted)',
                 borderRadius: 'var(--radius-medium)',
                 cursor: 'pointer',
-                background: 'var(--color-neutral-surface)',
-                color: 'var(--color-error)',
+                background: 'var(--color-alert-muted)',
+                color: 'var(--color-alert)',
                 fontSize: 'var(--text-body)',
+                fontFamily: 'var(--font-mono)',
               }}
             >
               Delete
@@ -352,8 +369,8 @@ export default function PersonDetailPage() {
 
           {/* Delete confirmation */}
           {showDeleteConfirm && (
-            <div data-testid="delete-confirmation" style={{ padding: 'var(--space-4)', border: '1px solid var(--color-error-border)', borderRadius: 'var(--radius-medium)', marginBottom: 'var(--space-6)', background: 'var(--color-error-bg)' }}>
-              <p style={{ margin: '0 0 12px', fontWeight: 'var(--weight-medium)' }}>Are you sure you want to delete this person?</p>
+            <div data-testid="delete-confirmation" style={{ padding: 'var(--space-4)', border: '1px solid var(--color-alert)', borderRadius: 'var(--radius-medium)', marginBottom: 'var(--space-6)', background: 'var(--color-alert-muted)' }}>
+              <p style={{ margin: '0 0 12px', fontWeight: 'var(--weight-medium)', color: 'var(--color-text-primary)' }}>Are you sure you want to delete this person?</p>
               <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                 <button
                   type="button"
@@ -361,12 +378,14 @@ export default function PersonDetailPage() {
                   data-testid="confirm-delete-button"
                   style={{
                     padding: '8px 16px',
-                    backgroundColor: 'var(--color-error)',
+                    backgroundColor: 'var(--color-alert)',
                     color: '#fff',
                     border: 'none',
                     borderRadius: 'var(--radius-medium)',
                     cursor: 'pointer',
                     fontSize: 'var(--text-body)',
+                    fontFamily: 'var(--font-mono)',
+                    boxShadow: 'var(--glow-alert)',
                   }}
                 >
                   Yes, Delete
@@ -377,11 +396,12 @@ export default function PersonDetailPage() {
                   data-testid="cancel-delete-button"
                   style={{
                     padding: '8px 16px',
-                    border: '1px solid var(--color-neutral-border)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-medium)',
                     cursor: 'pointer',
-                    background: 'var(--color-neutral-surface)',
+                    background: 'var(--color-bg-elevated)',
                     fontSize: 'var(--text-body)',
+                    color: 'var(--color-text-secondary)',
                   }}
                 >
                   Cancel
@@ -392,8 +412,8 @@ export default function PersonDetailPage() {
 
           {/* Edit form */}
           {isEditing && (
-            <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-neutral-surface)' }}>
-              <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>Edit Person</h2>
+            <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
+              <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }}>Edit Person</h2>
               <PersonForm
                 mode="edit"
                 initialData={person}
@@ -409,32 +429,32 @@ export default function PersonDetailPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
                 {person.preferredName && (
                   <div>
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Preferred Name</span>
-                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)' }}>{person.preferredName}</p>
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Preferred Name</span>
+                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{person.preferredName}</p>
                   </div>
                 )}
                 {person.email && (
                   <div>
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Email</span>
-                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)' }}>{person.email}</p>
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</span>
+                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{person.email}</p>
                   </div>
                 )}
                 {person.timezone && (
                   <div>
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Timezone</span>
-                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)' }}>{person.timezone}</p>
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Timezone</span>
+                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{person.timezone}</p>
                   </div>
                 )}
                 {person.startDate && (
                   <div>
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Start Date</span>
-                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)' }}>{person.startDate}</p>
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Start Date</span>
+                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{person.startDate}</p>
                   </div>
                 )}
                 {person.tags.length > 0 && (
                   <div>
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Tags</span>
-                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)' }}>{person.tags.join(', ')}</p>
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tags</span>
+                    <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{person.tags.join(', ')}</p>
                   </div>
                 )}
               </div>
@@ -442,17 +462,17 @@ export default function PersonDetailPage() {
           )}
 
           {/* Morale update section */}
-          <div data-testid="morale-section" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-neutral-surface)' }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>Morale</h3>
+          <div data-testid="morale-section" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: 'var(--text-caption)', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Morale</h3>
             <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
               <div>
-                <label htmlFor="morale-status" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)', marginBottom: '4px' }}>Status</label>
+                <label htmlFor="morale-status" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>Status</label>
                 <select
                   id="morale-status"
                   value={moraleFormStatus}
                   onChange={(e) => setMoraleFormStatus(e.target.value as MoraleStatus)}
                   data-testid="morale-status-select"
-                  style={{ padding: '8px 12px', border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)' }}
+                  style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
                 >
                   <option value="GREEN">Green</option>
                   <option value="YELLOW">Yellow</option>
@@ -461,7 +481,7 @@ export default function PersonDetailPage() {
                 </select>
               </div>
               <div style={{ flex: 1 }}>
-                <label htmlFor="morale-note" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)', marginBottom: '4px' }}>Note</label>
+                <label htmlFor="morale-note" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>Note</label>
                 <input
                   id="morale-note"
                   type="text"
@@ -469,7 +489,7 @@ export default function PersonDetailPage() {
                   onChange={(e) => setMoraleNote(e.target.value)}
                   placeholder="Optional note..."
                   data-testid="morale-note-input"
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)' }}
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
                 />
               </div>
               <button
@@ -485,6 +505,8 @@ export default function PersonDetailPage() {
                   fontSize: 'var(--text-body)',
                   cursor: 'pointer',
                   fontWeight: 'var(--weight-medium)',
+                  fontFamily: 'var(--font-mono)',
+                  boxShadow: '0 0 8px rgba(168, 85, 247, 0.2)',
                 }}
               >
                 Update Morale
@@ -493,7 +515,7 @@ export default function PersonDetailPage() {
           </div>
 
           {/* Remember Items */}
-          <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-neutral-surface)' }}>
+          <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
             <RememberItemsList
               items={person.pinnedRememberItems}
               onAdd={handleAddRememberItem}
@@ -503,26 +525,26 @@ export default function PersonDetailPage() {
           </div>
 
           {/* At-a-Glance */}
-          <div data-testid="at-a-glance-section" style={{ padding: 'var(--space-4)', border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-neutral-surface)' }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>At a Glance</h3>
+          <div data-testid="at-a-glance-section" style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: 'var(--text-caption)', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-heading)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>At a Glance</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
               <div>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Last 1:1</span>
-                <p data-testid="last-1on1-date" style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: person.atAGlance.last1on1Date ? 'var(--color-neutral-text)' : 'var(--color-neutral-text-muted)' }}>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>Last 1:1</span>
+                <p data-testid="last-1on1-date" style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', fontFamily: 'var(--font-mono)', color: person.atAGlance.last1on1Date ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
                   {person.atAGlance.last1on1Date
                     ? new Date(person.atAGlance.last1on1Date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                     : 'No 1:1s yet'}
                 </p>
               </div>
               <div>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Open Action Items</span>
-                <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)' }}>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>Open Actions</span>
+                <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-secondary)' }}>
                   {person.atAGlance.openActionItemsCount ?? 'N/A'}
                 </p>
               </div>
               <div>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-neutral-text-muted)' }}>Active PDP Goals</span>
-                <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)' }}>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>PDP Goals</span>
+                <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-secondary)' }}>
                   {person.atAGlance.activePdpGoalsSummary || 'No goals set'}
                 </p>
               </div>
@@ -542,14 +564,15 @@ export default function PersonDetailPage() {
               data-testid="start-one-on-one-nav-button"
               style={{
                 padding: '10px 20px',
-                backgroundColor: 'var(--color-accent)',
-                color: '#fff',
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-bg-base)',
                 border: 'none',
                 borderRadius: 'var(--radius-medium)',
                 fontSize: 'var(--text-body)',
-                fontWeight: 'var(--weight-medium)',
+                fontWeight: 'var(--weight-semibold)',
+                fontFamily: 'var(--font-mono)',
                 cursor: 'pointer',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: 'var(--glow-primary)',
               }}
             >
               Start 1:1
@@ -562,10 +585,10 @@ export default function PersonDetailPage() {
               title="1:1 series settings"
               style={{
                 padding: '8px',
-                border: '1px solid var(--color-neutral-border)',
+                border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-medium)',
                 cursor: 'pointer',
-                background: showSeriesConfig ? 'var(--color-secondary)' : 'var(--color-neutral-surface)',
+                background: showSeriesConfig ? 'var(--color-secondary)' : 'var(--color-bg-elevated)',
                 color: showSeriesConfig ? '#fff' : 'inherit',
                 fontSize: '18px',
                 lineHeight: 1,
@@ -588,7 +611,7 @@ export default function PersonDetailPage() {
 
           {/* Timeline */}
           {entriesLoading && !entries ? (
-            <div data-testid="entries-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-neutral-text-muted)' }}>
+            <div data-testid="entries-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
               Loading 1:1 entries...
             </div>
           ) : entries ? (

@@ -12,6 +12,7 @@ interface MarkdownEditorProps {
 /**
  * Lightweight Markdown editor with edit/preview toggle.
  * Renders basic Markdown formatting in preview mode without external dependencies.
+ * Styled with cyberpunk-lite dark theme.
  */
 export default function MarkdownEditor({ value, onChange, placeholder, label }: MarkdownEditorProps) {
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
@@ -19,14 +20,14 @@ export default function MarkdownEditor({ value, onChange, placeholder, label }: 
   const editorId = label ? `markdown-editor-${label.toLowerCase().replace(/\s+/g, '-')}` : 'markdown-editor';
 
   return (
-    <div data-testid="markdown-editor" style={{ border: '1px solid var(--color-neutral-border)', borderRadius: 'var(--radius-medium)', overflow: 'hidden' }}>
+    <div data-testid="markdown-editor" style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div
         style={{
           display: 'flex',
           gap: '0',
-          borderBottom: '1px solid var(--color-neutral-border)',
-          backgroundColor: 'var(--color-neutral-bg)',
+          borderBottom: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-bg-elevated)',
         }}
         role="tablist"
         aria-label={label ? `${label} editor mode` : 'Editor mode'}
@@ -41,11 +42,13 @@ export default function MarkdownEditor({ value, onChange, placeholder, label }: 
             padding: '8px 16px',
             fontSize: 'var(--text-small)',
             fontWeight: mode === 'edit' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+            fontFamily: 'var(--font-mono)',
             border: 'none',
-            borderBottom: mode === 'edit' ? '2px solid var(--color-secondary)' : '2px solid transparent',
+            borderBottom: mode === 'edit' ? '2px solid var(--color-primary)' : '2px solid transparent',
             backgroundColor: 'transparent',
-            color: mode === 'edit' ? 'var(--color-secondary-dark)' : 'var(--color-neutral-text-muted)',
+            color: mode === 'edit' ? 'var(--color-primary)' : 'var(--color-text-muted)',
             cursor: 'pointer',
+            transition: 'color 0.2s',
           }}
         >
           Edit
@@ -60,11 +63,13 @@ export default function MarkdownEditor({ value, onChange, placeholder, label }: 
             padding: '8px 16px',
             fontSize: 'var(--text-small)',
             fontWeight: mode === 'preview' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+            fontFamily: 'var(--font-mono)',
             border: 'none',
-            borderBottom: mode === 'preview' ? '2px solid var(--color-secondary)' : '2px solid transparent',
+            borderBottom: mode === 'preview' ? '2px solid var(--color-primary)' : '2px solid transparent',
             backgroundColor: 'transparent',
-            color: mode === 'preview' ? 'var(--color-secondary-dark)' : 'var(--color-neutral-text-muted)',
+            color: mode === 'preview' ? 'var(--color-primary)' : 'var(--color-text-muted)',
             cursor: 'pointer',
+            transition: 'color 0.2s',
           }}
         >
           Preview
@@ -101,7 +106,8 @@ export default function MarkdownEditor({ value, onChange, placeholder, label }: 
               fontFamily: 'var(--font-mono)',
               lineHeight: '1.6',
               boxSizing: 'border-box',
-              backgroundColor: 'var(--color-neutral-surface)',
+              backgroundColor: 'var(--color-bg-surface)',
+              color: 'var(--color-text-primary)',
             }}
           />
         </div>
@@ -119,13 +125,14 @@ export default function MarkdownEditor({ value, onChange, placeholder, label }: 
             padding: '12px',
             fontSize: 'var(--text-body)',
             lineHeight: '1.6',
-            backgroundColor: 'var(--color-neutral-surface)',
+            backgroundColor: 'var(--color-bg-surface)',
+            color: 'var(--color-text-primary)',
           }}
         >
           {value ? (
             <div dangerouslySetInnerHTML={{ __html: renderMarkdown(value) }} />
           ) : (
-            <p style={{ color: 'var(--color-neutral-text-muted)', fontStyle: 'italic' }}>Nothing to preview</p>
+            <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Nothing to preview</p>
           )}
         </div>
       )}
@@ -141,15 +148,15 @@ function renderMarkdown(markdown: string): string {
   let html = escapeHtml(markdown);
 
   // Code blocks (``` ... ```)
-  html = html.replace(/```([\s\S]*?)```/g, '<pre style="background:var(--color-neutral-bg);padding:12px;border-radius:var(--radius-medium);overflow-x:auto;font-size:13px;"><code>$1</code></pre>');
+  html = html.replace(/```([\s\S]*?)```/g, '<pre style="background:var(--color-bg-elevated);padding:12px;border-radius:var(--radius-medium);overflow-x:auto;font-size:13px;border:1px solid var(--color-border);"><code>$1</code></pre>');
 
   // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code style="background:var(--color-neutral-bg);padding:2px 6px;border-radius:var(--radius-small);font-size:13px;">$1</code>');
+  html = html.replace(/`([^`]+)`/g, '<code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:var(--radius-small);font-size:13px;color:var(--color-primary);">$1</code>');
 
   // Headings (h1-h3)
-  html = html.replace(/^### (.+)$/gm, '<h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;color:var(--color-primary);">$1</h3>');
-  html = html.replace(/^## (.+)$/gm, '<h2 style="font-size:18px;font-weight:600;margin:16px 0 8px;color:var(--color-primary);">$1</h2>');
-  html = html.replace(/^# (.+)$/gm, '<h1 style="font-size:20px;font-weight:700;margin:16px 0 8px;color:var(--color-primary);">$1</h1>');
+  html = html.replace(/^### (.+)$/gm, '<h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;color:var(--color-text-primary);font-family:var(--font-heading);">$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2 style="font-size:18px;font-weight:600;margin:16px 0 8px;color:var(--color-text-primary);font-family:var(--font-heading);">$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1 style="font-size:20px;font-weight:700;margin:16px 0 8px;color:var(--color-text-primary);font-family:var(--font-heading);">$1</h1>');
 
   // Bold
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -163,7 +170,7 @@ function renderMarkdown(markdown: string): string {
   html = html.replace(/^- (.+)$/gm, '<li style="margin-left:20px;">$1</li>');
 
   // Links [text](url)
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--color-secondary-dark);text-decoration:underline;">$1</a>');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--color-primary);text-decoration:underline;">$1</a>');
 
   // Line breaks (double newline = paragraph break)
   html = html.replace(/\n\n/g, '</p><p style="margin:8px 0;">');

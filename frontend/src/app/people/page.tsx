@@ -55,21 +55,32 @@ export default function PeopleListPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'var(--space-6)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ margin: 0, fontSize: 'var(--text-h2)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>People</h1>
+        <h1 style={{
+          margin: 0,
+          fontSize: 'var(--text-h2)',
+          fontWeight: 'var(--weight-bold)',
+          fontFamily: 'var(--font-heading)',
+          color: 'var(--color-text-primary)',
+          letterSpacing: '-0.3px',
+        }}>
+          People
+        </h1>
         <button
           type="button"
           onClick={() => router.push('/people/new')}
           data-testid="add-person-button"
           style={{
             padding: '10px 20px',
-            backgroundColor: 'var(--color-accent)',
-            color: '#fff',
+            backgroundColor: 'var(--color-primary)',
+            color: 'var(--color-bg-base)',
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-medium)',
+            fontWeight: 'var(--weight-semibold)',
+            fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)',
+            boxShadow: 'var(--glow-primary)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           Add Person
@@ -85,10 +96,10 @@ export default function PeopleListPage() {
         initialMorale={filters.morale}
       />
 
-      {loading && <div data-testid="loading">Loading...</div>}
+      {loading && <div data-testid="loading" style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>}
 
       {error && (
-        <div data-testid="error-message" style={{ color: 'var(--color-error)', padding: 'var(--space-4)' }}>
+        <div data-testid="error-message" style={{ color: 'var(--color-alert)', padding: 'var(--space-4)' }}>
           {error}
         </div>
       )}

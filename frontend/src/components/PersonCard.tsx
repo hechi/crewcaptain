@@ -16,21 +16,34 @@ export default function PersonCard({ person }: PersonCardProps) {
       style={{
         display: 'block',
         padding: 'var(--space-4)',
-        border: '1px solid var(--color-neutral-border)',
+        border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-medium)',
         textDecoration: 'none',
         color: 'inherit',
         cursor: 'pointer',
-        backgroundColor: 'var(--color-neutral-surface)',
-        boxShadow: 'var(--shadow-sm)',
-        transition: 'box-shadow var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal)',
+        backgroundColor: 'var(--color-bg-surface)',
+        backdropFilter: 'var(--glass-blur)',
+        transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: '16px', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>{person.name}</h3>
+          <h3 style={{
+            margin: 0,
+            fontSize: '16px',
+            fontWeight: 'var(--weight-semibold)',
+            fontFamily: 'var(--font-heading)',
+            color: 'var(--color-text-primary)',
+            letterSpacing: '-0.2px',
+          }}>
+            {person.name}
+          </h3>
           {person.roleTitle && (
-            <p style={{ margin: '4px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)' }}>
+            <p style={{
+              margin: '4px 0 0',
+              fontSize: 'var(--text-body)',
+              color: 'var(--color-text-secondary)',
+            }}>
               {person.roleTitle}
             </p>
           )}

@@ -21,11 +21,13 @@ export default function SensitiveBadge({ className }: SensitiveBadgeProps) {
         alignItems: 'center',
         gap: '4px',
         padding: '2px 8px',
-        backgroundColor: 'var(--color-warning-bg)',
-        color: '#92400e',
+        backgroundColor: 'var(--color-warning-muted)',
+        color: 'var(--color-warning)',
         borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-caption)',
         fontWeight: 'var(--weight-medium)',
+        fontFamily: 'var(--font-mono)',
+        border: '1px solid rgba(255, 214, 0, 0.3)',
       }}
     >
       <svg
