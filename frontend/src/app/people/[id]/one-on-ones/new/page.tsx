@@ -94,7 +94,7 @@ export default function CreateOneOnOneEntryPage() {
 
   if (error && !person) {
     return (
-      <div data-testid="error-message" style={{ color: 'var(--color-error)', padding: 'var(--space-6)' }}>
+      <div data-testid="error-message" style={{ color: 'var(--color-alert)', padding: 'var(--space-6)' }}>
         {error}
       </div>
     );
@@ -112,26 +112,34 @@ export default function CreateOneOnOneEntryPage() {
         style={{
           marginBottom: 'var(--space-4)',
           padding: '6px 12px',
-          background: 'var(--color-neutral-surface)',
-          border: '1px solid var(--color-neutral-border)',
+          background: 'var(--color-bg-elevated)',
+          border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-medium)',
           cursor: 'pointer',
           fontSize: 'var(--text-body)',
-          color: 'var(--color-neutral-text-secondary)',
+          color: 'var(--color-text-secondary)',
+          transition: 'border-color 0.2s',
         }}
       >
         ← Back to {person.preferredName || person.name}
       </button>
 
-      <h1 style={{ margin: '0 0 8px', fontSize: 'var(--text-h2)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>
+      <h1 style={{
+        margin: '0 0 8px',
+        fontSize: 'var(--text-h2)',
+        fontWeight: 'var(--weight-bold)',
+        fontFamily: 'var(--font-heading)',
+        color: 'var(--color-text-primary)',
+        letterSpacing: '-0.3px',
+      }}>
         New 1:1 with {person.preferredName || person.name}
       </h1>
-      <p style={{ margin: '0 0 var(--space-6)', fontSize: 'var(--text-body)', color: 'var(--color-neutral-text-muted)' }}>
+      <p style={{ margin: '0 0 var(--space-6)', fontSize: 'var(--text-body)', color: 'var(--color-text-secondary)' }}>
         Record your meeting notes, agenda items, and outcomes.
       </p>
 
       {error && (
-        <div data-testid="error-message" style={{ color: 'var(--color-error)', marginBottom: 'var(--space-4)', padding: '12px', border: '1px solid var(--color-error-border)', borderRadius: 'var(--radius-medium)', background: 'var(--color-error-bg)' }}>
+        <div data-testid="error-message" style={{ color: 'var(--color-alert)', marginBottom: 'var(--space-4)', padding: '12px', border: '1px solid var(--color-alert)', borderRadius: 'var(--radius-medium)', background: 'var(--color-alert-muted)' }}>
           {error}
         </div>
       )}

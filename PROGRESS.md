@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-09T16:00:00Z — Cyberpunk-lite dark theme redesign implemented
+2026-05-09T17:00:00Z — Cyberpunk theme applied to 1:1 entry pages and form components
 
 ## Current Status
-The frontend has been completely redesigned with a cyberpunk-lite dark theme per the updated DESIGN.md v2.0. The UI now features a dark-first interface with layered depth (base/surface/elevated), electric cyan and neon violet accent colors, JetBrains Mono for headings and data, glassmorphism-style cards, neon glow effects on interactive elements, and morale indicators with colored borders and glow. All 246 frontend tests pass (including 13 new theme token tests) and the build succeeds. The design maintains WCAG AA contrast compliance throughout.
+The frontend has been completely redesigned with a cyberpunk-lite dark theme per the updated DESIGN.md v2.0. The UI now features a dark-first interface with layered depth (base/surface/elevated), electric cyan and neon violet accent colors, JetBrains Mono for headings and data, glassmorphism-style cards, neon glow effects on interactive elements, and morale indicators with colored borders and glow. All pages and components — including the 1:1 entry form, Markdown editor, agenda items, and series config — are fully themed. All 246 frontend tests pass and the build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)

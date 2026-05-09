@@ -100,6 +100,17 @@ export default function OneOnOneEntryForm({
     onSubmit(formData);
   }
 
+  const labelStyle = {
+    display: 'block' as const,
+    fontSize: 'var(--text-caption)',
+    fontWeight: 500,
+    fontFamily: 'var(--font-mono)' as const,
+    marginBottom: '6px',
+    color: 'var(--color-text-secondary)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  };
+
   return (
     <form
       data-testid="one-on-one-entry-form"
@@ -108,10 +119,7 @@ export default function OneOnOneEntryForm({
     >
       {/* Meeting Date */}
       <div>
-        <label
-          htmlFor="meeting-date"
-          style={{ display: 'block', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '6px', color: 'var(--color-neutral-text)' }}
-        >
+        <label htmlFor="meeting-date" style={labelStyle}>
           Meeting Date *
         </label>
         <input
@@ -129,10 +137,14 @@ export default function OneOnOneEntryForm({
           style={{
             width: '100%',
             padding: '8px 12px',
-            border: `1px solid ${dateError ? 'var(--color-error)' : 'var(--color-neutral-border)'}`,
+            border: `1px solid ${dateError ? 'var(--color-alert)' : 'var(--color-border)'}`,
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
             boxSizing: 'border-box',
+            backgroundColor: 'var(--color-bg-elevated)',
+            color: 'var(--color-text-primary)',
+            fontFamily: 'var(--font-mono)',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
           }}
         />
         {dateError && (
@@ -140,7 +152,7 @@ export default function OneOnOneEntryForm({
             id="meeting-date-error"
             data-testid="meeting-date-error"
             role="alert"
-            style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-error)' }}
+            style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-alert)' }}
           >
             {dateError}
           </p>
@@ -152,9 +164,7 @@ export default function OneOnOneEntryForm({
 
       {/* Notes */}
       <div>
-        <label
-          style={{ display: 'block', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '6px', color: 'var(--color-neutral-text)' }}
-        >
+        <label style={labelStyle}>
           Notes
         </label>
         <MarkdownEditor
@@ -167,9 +177,7 @@ export default function OneOnOneEntryForm({
 
       {/* Outcomes */}
       <div>
-        <label
-          style={{ display: 'block', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-medium)', marginBottom: '6px', color: 'var(--color-neutral-text)' }}
-        >
+        <label style={labelStyle}>
           Outcomes
         </label>
         <MarkdownEditor
@@ -192,13 +200,14 @@ export default function OneOnOneEntryForm({
             data-testid="entry-form-cancel"
             style={{
               padding: '10px 20px',
-              border: '1px solid var(--color-neutral-border)',
+              border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-medium)',
               fontSize: 'var(--text-body)',
               fontWeight: 'var(--weight-medium)',
               cursor: 'pointer',
-              backgroundColor: 'var(--color-neutral-surface)',
-              color: 'var(--color-neutral-text)',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-secondary)',
+              transition: 'border-color 0.2s',
             }}
           >
             Cancel
@@ -210,13 +219,16 @@ export default function OneOnOneEntryForm({
           data-testid="entry-form-submit"
           style={{
             padding: '10px 20px',
-            backgroundColor: isSubmitting ? 'var(--color-accent-light)' : 'var(--color-accent)',
-            color: '#fff',
+            backgroundColor: isSubmitting ? 'var(--color-primary-muted)' : 'var(--color-primary)',
+            color: isSubmitting ? 'var(--color-primary)' : 'var(--color-bg-base)',
             border: 'none',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-medium)',
+            fontWeight: 'var(--weight-semibold)',
+            fontFamily: 'var(--font-mono)',
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            boxShadow: isSubmitting ? 'none' : 'var(--glow-primary)',
+            transition: 'box-shadow 0.2s',
           }}
         >
           {isSubmitting ? 'Saving...' : isEditMode ? 'Update Entry' : 'Create Entry'}
