@@ -48,8 +48,23 @@ enum class MoraleStatus {
     GREEN, YELLOW, RED, UNKNOWN
 }
 
+@JvmInline
+value class ActionItemId(val value: UUID) {
+    companion object {
+        fun generate(): ActionItemId = ActionItemId(UUID.randomUUID())
+    }
+}
+
 enum class CadenceType {
     WEEKLY, BIWEEKLY, MONTHLY, CUSTOM
+}
+
+enum class ActionItemStatus {
+    OPEN, DONE, CANCELED
+}
+
+enum class ActionItemOwnerType {
+    MANAGER, PERSON
 }
 
 data class OidcIdentity(

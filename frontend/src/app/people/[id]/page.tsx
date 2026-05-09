@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Person, MoraleStatus, PaginatedResponse } from '@/types/person';
 import { OneOnOneEntry, OneOnOneSeries } from '@/types/one-on-one';
+import { ActionItem, ActionItemStatus, PaginatedActionItemResponse, CreateActionItemRequest, UpdateActionItemRequest } from '@/types/action-item';
 import {
   getPerson,
   updatePerson,
@@ -16,6 +17,12 @@ import {
   listOneOnOneEntries,
   getOneOnOneSeries,
   upsertOneOnOneSeries,
+  listActionItemsByPerson,
+  createActionItem,
+  completeActionItem,
+  cancelActionItem,
+  deleteActionItem,
+  updateActionItem,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
 import PersonForm from '@/components/PersonForm';
@@ -23,8 +30,10 @@ import MoraleIndicator from '@/components/MoraleIndicator';
 import RememberItemsList from '@/components/RememberItemsList';
 import OneOnOneTimeline from '@/components/one-on-one/OneOnOneTimeline';
 import SeriesConfigPanel from '@/components/one-on-one/SeriesConfigPanel';
+import ActionItemList from '@/components/action-items/ActionItemList';
+import ActionItemForm from '@/components/action-items/ActionItemForm';
 
-type Tab = 'details' | 'one-on-ones';
+type Tab = 'details' | 'one-on-ones' | 'action-items';
 
 export default function PersonDetailPage() {
   const { data: session, status } = useSession();
@@ -50,6 +59,15 @@ export default function PersonDetailPage() {
   const [series, setSeries] = useState<OneOnOneSeries | null>(null);
   const [showSeriesConfig, setShowSeriesConfig] = useState(false);
   const [seriesSaving, setSeriesSaving] = useState(false);
+
+  // Action items state
+  const [actionItems, setActionItems] = useState<PaginatedActionItemResponse | null>(null);
+  const [actionItemsLoading, setActionItemsLoading] = useState(false);
+  const [actionItemsPage, setActionItemsPage] = useState(0);
+  const [actionItemsStatusFilter, setActionItemsStatusFilter] = useState<ActionItemStatus | null>(null);
+  const [showActionItemForm, setShowActionItemForm] = useState(false);
+  const [editingActionItem, setEditingActionItem] = useState<ActionItem | null>(null);
+  const [actionItemSubmitting, setActionItemSubmitting] = useState(false);
 
   const token = session?.accessToken as string;
 
@@ -96,6 +114,23 @@ export default function PersonDetailPage() {
     }
   }, [token, status, personId]);
 
+  const fetchActionItems = useCallback(async (page: number = 0, statusFilter: ActionItemStatus | null = null) => {
+    if (status !== 'authenticated' || !token) return;
+
+    setActionItemsLoading(true);
+    try {
+      const result = await listActionItemsByPerson(token, personId, {
+        page,
+        status: statusFilter || undefined,
+      });
+      setActionItems(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load action items');
+    } finally {
+      setActionItemsLoading(false);
+    }
+  }, [token, status, personId]);
+
   useEffect(() => {
     fetchPerson();
   }, [fetchPerson]);
@@ -106,6 +141,12 @@ export default function PersonDetailPage() {
       fetchSeries();
     }
   }, [activeTab, entriesPage, fetchEntries, fetchSeries]);
+
+  useEffect(() => {
+    if (activeTab === 'action-items') {
+      fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+    }
+  }, [activeTab, actionItemsPage, actionItemsStatusFilter, fetchActionItems]);
 
   const handleUpdate = async (data: {
     name: string;
@@ -191,6 +232,68 @@ export default function PersonDetailPage() {
       setError(err instanceof Error ? err.message : 'Failed to save series configuration');
     } finally {
       setSeriesSaving(false);
+    }
+  };
+
+  const handleCreateActionItem = async (data: CreateActionItemRequest | UpdateActionItemRequest) => {
+    setActionItemSubmitting(true);
+    try {
+      await createActionItem(token, personId, data as CreateActionItemRequest);
+      setShowActionItemForm(false);
+      fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create action item');
+    } finally {
+      setActionItemSubmitting(false);
+    }
+  };
+
+  const handleUpdateActionItem = async (data: CreateActionItemRequest | UpdateActionItemRequest) => {
+    if (!editingActionItem) return;
+    setActionItemSubmitting(true);
+    try {
+      await updateActionItem(token, personId, editingActionItem.id, data as UpdateActionItemRequest);
+      setEditingActionItem(null);
+      fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update action item');
+    } finally {
+      setActionItemSubmitting(false);
+    }
+  };
+
+  const handleCompleteActionItem = async (id: string) => {
+    try {
+      await completeActionItem(token, personId, id);
+      fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete action item');
+    }
+  };
+
+  const handleCancelActionItem = async (id: string) => {
+    try {
+      await cancelActionItem(token, personId, id);
+      fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel action item');
+    }
+  };
+
+  const handleDeleteActionItem = async (id: string) => {
+    try {
+      await deleteActionItem(token, personId, id);
+      fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete action item');
+    }
+  };
+
+  const handleEditActionItem = (id: string) => {
+    const item = actionItems?.content.find((i) => i.id === id);
+    if (item) {
+      setEditingActionItem(item);
+      setShowActionItemForm(false);
     }
   };
 
@@ -321,6 +424,29 @@ export default function PersonDetailPage() {
           }}
         >
           1:1s
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'action-items'}
+          aria-controls="tab-panel-action-items"
+          onClick={() => setActiveTab('action-items')}
+          data-testid="tab-action-items"
+          style={{
+            padding: '10px 20px',
+            border: 'none',
+            borderBottom: activeTab === 'action-items' ? '2px solid var(--color-primary)' : '2px solid transparent',
+            background: 'none',
+            fontSize: 'var(--text-body)',
+            fontWeight: activeTab === 'action-items' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+            color: activeTab === 'action-items' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            cursor: 'pointer',
+            marginBottom: '-1px',
+            fontFamily: 'var(--font-mono)',
+            transition: 'color 0.2s',
+          }}
+        >
+          Action Items
         </button>
       </div>
 
@@ -620,6 +746,91 @@ export default function PersonDetailPage() {
               personId={personId}
               onPageChange={handlePageChange}
               onStartOneOnOne={handleStartOneOnOne}
+            />
+          ) : null}
+        </div>
+      )}
+
+      {/* Action Items Tab Panel */}
+      {activeTab === 'action-items' && (
+        <div id="tab-panel-action-items" role="tabpanel" aria-labelledby="tab-action-items">
+          {/* Toolbar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <button
+              type="button"
+              onClick={() => { setShowActionItemForm(true); setEditingActionItem(null); }}
+              data-testid="create-action-item-btn"
+              style={{
+                padding: '10px 20px',
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-bg-base)',
+                border: 'none',
+                borderRadius: 'var(--radius-medium)',
+                fontSize: 'var(--text-body)',
+                fontWeight: 'var(--weight-semibold)',
+                fontFamily: 'var(--font-mono)',
+                cursor: 'pointer',
+                boxShadow: 'var(--glow-primary)',
+              }}
+            >
+              + New Action Item
+            </button>
+          </div>
+
+          {/* Create Form */}
+          {showActionItemForm && (
+            <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }}>
+                New Action Item
+              </h3>
+              <ActionItemForm
+                mode="create"
+                onSubmit={handleCreateActionItem}
+                onCancel={() => setShowActionItemForm(false)}
+                isSubmitting={actionItemSubmitting}
+              />
+            </div>
+          )}
+
+          {/* Edit Form */}
+          {editingActionItem && (
+            <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }}>
+                Edit Action Item
+              </h3>
+              <ActionItemForm
+                mode="edit"
+                initialData={{
+                  title: editingActionItem.title,
+                  description: editingActionItem.description,
+                  ownerType: editingActionItem.ownerType,
+                  dueDate: editingActionItem.dueDate,
+                }}
+                onSubmit={handleUpdateActionItem}
+                onCancel={() => setEditingActionItem(null)}
+                isSubmitting={actionItemSubmitting}
+              />
+            </div>
+          )}
+
+          {/* List */}
+          {actionItemsLoading && !actionItems ? (
+            <div data-testid="action-items-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
+              Loading action items...
+            </div>
+          ) : actionItems ? (
+            <ActionItemList
+              data={actionItems}
+              onComplete={handleCompleteActionItem}
+              onCancel={handleCancelActionItem}
+              onDelete={handleDeleteActionItem}
+              onEdit={handleEditActionItem}
+              onPageChange={(page) => setActionItemsPage(page)}
+              statusFilter={actionItemsStatusFilter}
+              onStatusFilterChange={setActionItemsStatusFilter}
+              showCreateButton={!showActionItemForm}
+              onCreateClick={() => setShowActionItemForm(true)}
+              emptyMessage="No action items yet — click '+ New Action Item' to create one"
             />
           ) : null}
         </div>
