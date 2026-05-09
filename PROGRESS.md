@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-09T17:00:00Z — Cyberpunk theme applied to 1:1 entry pages and form components
+2026-05-10T02:00:00Z — Action Items full-stack implementation complete (backend API + frontend UI)
 
 ## Current Status
-The frontend has been completely redesigned with a cyberpunk-lite dark theme per the updated DESIGN.md v2.0. The UI now features a dark-first interface with layered depth (base/surface/elevated), electric cyan and neon violet accent colors, JetBrains Mono for headings and data, glassmorphism-style cards, neon glow effects on interactive elements, and morale indicators with colored borders and glow. All pages and components — including the 1:1 entry form, Markdown editor, agenda items, and series config — are fully themed. All 246 frontend tests pass and the build succeeds.
+The Action Items feature is fully implemented end-to-end. The backend provides full CRUD with status transitions, data isolation, and overdue filtering. The frontend includes TypeScript types, API client functions, reusable components (ActionItemCard, ActionItemForm, ActionItemList, ActionItemStatusBadge), and an integrated "Action Items" tab on the person detail page with inline create/edit forms, status filtering, complete/cancel/delete actions, and overdue visual indicators. All 297 frontend tests and 329 backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -31,6 +31,11 @@ The frontend has been completely redesigned with a cyberpunk-lite dark theme per
 - [x] 1:1 Frontend tests — Component tests, page tests, API client tests (2026-05-08)
 - [x] Frontend branding redesign — CSS design tokens, Inter font, Navigation component, brand colors across all components/pages (2026-05-09)
 - [x] Cyberpunk-lite dark theme redesign — Dark-first UI, JetBrains Mono headings, electric cyan/neon violet accents, glassmorphism cards, glow effects, morale indicators with neon borders, updated DESIGN.md v2.0 (2026-05-09)
+- [x] Action Items Backend API — Full CRUD, status transitions (OPEN→DONE, OPEN→CANCELED), owner type (MANAGER/PERSON), due dates, originating 1:1 entry link, per-person and cross-person listing, overdue filtering, data isolation (2026-05-10)
+- [x] Action Items Database migration — action_items table with indexes (2026-05-10)
+- [x] Action Items Backend tests — Domain unit tests (20 tests), application service tests (15 tests), controller slice tests (15 tests), integration tests with data isolation verification (15 tests) (2026-05-10)
+- [x] Action Items Frontend — TypeScript types, API client (8 functions), components (ActionItemCard, ActionItemForm, ActionItemList, ActionItemStatusBadge), person detail "Action Items" tab with inline create/edit, status filter, complete/cancel/delete (2026-05-10)
+- [x] Action Items Frontend tests — Component tests (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3), API client tests (15) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -43,25 +48,22 @@ The frontend has been completely redesigned with a cyberpunk-lite dark theme per
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. Action Items (create, track, complete follow-ups from 1:1s)
-2. PDP Goal tracking (personal development plans with status transitions)
-3. Kudos recording (positive feedback and achievements)
-4. Quick Notes ("Inbox") — global capture, attach to person/1:1
-5. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
-6. Sensitive content encryption (flag and encrypt private notes)
-7. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-8. Search (full-text across all manager data)
-9. Data export functionality (per-person Markdown)
-10. Gamification elements (progress rings, streak counters, micro-animations)
+1. PDP Goal tracking (personal development plans with status transitions)
+2. Kudos recording (positive feedback and achievements)
+3. Quick Notes ("Inbox") — global capture, attach to person/1:1
+4. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+5. Sensitive content encryption (flag and encrypt private notes)
+6. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+7. Search (full-text across all manager data)
+8. Data export functionality (per-person Markdown)
+9. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- Dark-first theme chosen as default (no light mode toggle yet) — aligns with 2026 design trends and target audience (younger managers)
-- JetBrains Mono for headings/data, Inter for body — monospace conveys technical credibility per DESIGN.md v2.0
-- Glassmorphism via backdrop-filter + semi-transparent backgrounds — modern depth without heavy shadows
-- Neon glow effects on interactive elements (buttons, focus states, morale indicators) — cyberpunk-lite aesthetic
-- Morale indicators redesigned: muted background + bright text/border + glow (instead of solid filled badges) — better dark theme contrast
-- CSS custom property aliases maintained for backward compatibility — existing components using `--color-neutral-*` still work
-- `prefers-reduced-motion` media query added to globals.css — accessibility requirement for glow/transition effects
+- Action Items stored as a flat table with userId + personId scoping (not nested under 1:1 entries) — allows items to exist independently of 1:1s while optionally linking via `originating_entry_id`
+- Status transitions enforced at domain level (ActionItem.complete() / cancel()) — prevents invalid state changes regardless of caller
+- Separate cross-person endpoint (`GET /api/v1/action-items`) for manager-wide views — avoids needing to aggregate across persons client-side
+- Overdue filtering done at database level (WHERE status='OPEN' AND due_date < reference_date) — efficient for dashboard queries
+- ownerType stored as VARCHAR (not enum) in DB for flexibility — mapped to Kotlin enum in domain layer
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -73,9 +75,11 @@ The frontend has been completely redesigned with a cyberpunk-lite dark theme per
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
-- Backend: 181 tests total — domain, application, controller slice, property, integration (last run: 2026-05-08)
+- Backend: 329 tests total — domain (including ActionItem), application (including ActionItemService), controller slice (including ActionItemController), property, integration (including ActionItem data isolation) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 246 total — component tests (including Navigation, ThemeTokens), page tests (including auth pages), API client tests (last run: 2026-05-09)
+- Frontend: 297 total — component tests (including ActionItem components), page tests (including auth pages), API client tests (including action items) (last run: 2026-05-10)
+  - Includes action item components (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3)
+  - Includes action item API client tests (15)
   - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)
   - Includes Navigation component tests (8 tests)
   - Includes ThemeTokens design system tests (13 tests)

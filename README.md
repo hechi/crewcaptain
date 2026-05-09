@@ -20,11 +20,11 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Frontend UI** — People list, person detail, create person pages with filter bar, morale indicators, and empty states
 - **Cyberpunk-Lite Design System** — Dark-first UI with electric cyan/neon violet accents, JetBrains Mono headings, glassmorphism cards, glow effects, Inter body text, CSS custom properties design tokens, and consistent navigation
 - **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date
+- **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components.
 
 ### Planned
 
 - **PDP Tracking** — Track personal development goals with status transitions
-- **Action Items** — Create, assign, and track follow-ups from meetings
 - **Kudos** — Record positive feedback and achievements
 - **Sensitive Content** — Flag and hide sensitive notes with encryption support
 - **Notifications** — Scheduled reminders for overdue items and upcoming 1:1s
@@ -126,6 +126,37 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | PUT    | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}`   | Update a 1:1 entry                 |
 | DELETE | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}`   | Delete a 1:1 entry                 |
 
+### Action Items
+
+| Method | Endpoint                                                              | Description                          |
+|--------|-----------------------------------------------------------------------|--------------------------------------|
+| POST   | `/api/v1/persons/{personId}/action-items`                             | Create an action item                |
+| GET    | `/api/v1/persons/{personId}/action-items`                             | List action items for a person       |
+| GET    | `/api/v1/persons/{personId}/action-items/{actionItemId}`              | Get an action item                   |
+| PUT    | `/api/v1/persons/{personId}/action-items/{actionItemId}`              | Update an action item                |
+| POST   | `/api/v1/persons/{personId}/action-items/{actionItemId}/complete`     | Mark action item as DONE             |
+| POST   | `/api/v1/persons/{personId}/action-items/{actionItemId}/cancel`       | Mark action item as CANCELED         |
+| DELETE | `/api/v1/persons/{personId}/action-items/{actionItemId}`              | Delete an action item                |
+| GET    | `/api/v1/action-items`                                                | List all action items (cross-person) |
+
+**Action Item fields:**
+- `title` — Required (max 500 chars)
+- `description` — Optional text
+- `ownerType` — MANAGER or PERSON (default: MANAGER)
+- `dueDate` — Optional date (ISO 8601 date, e.g., 2026-05-20)
+- `originatingEntryId` — Optional UUID linking to a 1:1 entry
+
+**Query parameters for action items list endpoints:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `status` — Filter by status (OPEN, DONE, CANCELED)
+- `overdueOnly` — Only return overdue items (cross-person endpoint only, default: false)
+
+**Status transitions:**
+- OPEN → DONE (via `/complete`)
+- OPEN → CANCELED (via `/cancel`)
+- No other transitions are allowed
+
 **Query parameters for entries list endpoint:**
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
@@ -221,6 +252,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250508120003` | Create one_on_one_series table |
 | `V20250508120004` | Create one_on_one_entries table |
 | `V20250508120005` | Create agenda_items table |
+| `V20250510120000` | Create action_items table |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

@@ -7,6 +7,13 @@ import {
   CreateOneOnOneEntryRequest,
   UpdateOneOnOneEntryRequest,
 } from '@/types/one-on-one';
+import {
+  ActionItem,
+  ActionItemStatus,
+  CreateActionItemRequest,
+  UpdateActionItemRequest,
+  PaginatedActionItemResponse,
+} from '@/types/action-item';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -184,6 +191,83 @@ export async function listOneOnOneEntries(token: string, personId: string, page?
 
   const queryString = searchParams.toString();
   const url = `${API_BASE_URL}/persons/${personId}/one-on-one-entries${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+// --- Action Items ---
+
+export async function createActionItem(token: string, personId: string, data: CreateActionItemRequest): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/action-items`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function getActionItem(token: string, personId: string, actionItemId: string): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/action-items/${actionItemId}`, {}, token);
+  return response.json();
+}
+
+export async function updateActionItem(token: string, personId: string, actionItemId: string, data: UpdateActionItemRequest): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/action-items/${actionItemId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function completeActionItem(token: string, personId: string, actionItemId: string): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/action-items/${actionItemId}/complete`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function cancelActionItem(token: string, personId: string, actionItemId: string): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/action-items/${actionItemId}/cancel`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function deleteActionItem(token: string, personId: string, actionItemId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/action-items/${actionItemId}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function listActionItemsByPerson(token: string, personId: string, params?: {
+  status?: ActionItemStatus;
+  page?: number;
+  size?: number;
+}): Promise<PaginatedActionItemResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/persons/${personId}/action-items${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function listAllActionItems(token: string, params?: {
+  status?: ActionItemStatus;
+  overdueOnly?: boolean;
+  page?: number;
+  size?: number;
+}): Promise<PaginatedActionItemResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.overdueOnly) searchParams.set('overdueOnly', 'true');
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/action-items${queryString ? `?${queryString}` : ''}`;
   const response = await fetchWithAuth(url, {}, token);
   return response.json();
 }
