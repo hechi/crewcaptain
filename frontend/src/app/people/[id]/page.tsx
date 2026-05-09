@@ -246,7 +246,7 @@ export default function PersonDetailPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 'var(--text-h2)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>{person.name}</h1>
+          <h1 style={{ margin: 0, fontSize: 'var(--text-h2)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>{person.name}</h1>
           {person.roleTitle && (
             <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-neutral-text-muted)' }}>{person.roleTitle}</p>
           )}

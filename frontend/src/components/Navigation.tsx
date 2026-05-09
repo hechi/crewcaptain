@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 
 /**
  * Top navigation bar with CrewCaptain branding.
- * Shows brand name, nav links, and user session controls.
+ * Shows brand name (Plus Jakarta Sans heading font), nav links, and user session controls.
  */
 export default function Navigation() {
   const { data: session, status } = useSession();
@@ -34,6 +34,7 @@ export default function Navigation() {
           data-testid="nav-brand"
           style={{
             fontSize: '18px',
+            fontFamily: 'var(--font-heading)',
             fontWeight: 700,
             color: '#fff',
             textDecoration: 'none',
@@ -51,6 +52,7 @@ export default function Navigation() {
               color: 'rgba(255, 255, 255, 0.85)',
               textDecoration: 'none',
               fontWeight: 500,
+              transition: 'color 100ms ease',
             }}
           >
             People
@@ -79,6 +81,7 @@ export default function Navigation() {
             border: '1px solid rgba(255, 255, 255, 0.25)',
             borderRadius: 'var(--radius-small)',
             cursor: 'pointer',
+            transition: 'background-color var(--transition-fast)',
           }}
         >
           Sign out
