@@ -199,7 +199,7 @@ class AesGcmEncryptionAdapterTest {
     inner class CrossKeyDecryption {
 
         @Test
-        fun `should not decrypt with a different key`() {
+        fun `should return placeholder when decrypting with wrong key`() {
             val key1 = Base64.getEncoder().encodeToString(ByteArray(32) { 1 })
             val key2 = Base64.getEncoder().encodeToString(ByteArray(32) { 2 })
 
@@ -209,15 +209,26 @@ class AesGcmEncryptionAdapterTest {
             val plaintext = "Secret data"
             val ciphertext = adapter1.encrypt(plaintext)
 
-            // Decrypting with wrong key should throw (GCM tag mismatch)
-            // or return the ciphertext as-is if it catches the exception
-            try {
-                val result = adapter2.decrypt(ciphertext)
-                // If it doesn't throw, it should not return the original plaintext
-                result shouldNotBe plaintext
-            } catch (e: Exception) {
-                // Expected: AEADBadTagException or similar
-            }
+            // Decrypting with wrong key should return a safe placeholder, not crash
+            val result = adapter2.decrypt(ciphertext)
+            result shouldBe "[encrypted content - unable to decrypt]"
+        }
+
+        @Test
+        fun `should not crash when key changes and sensitive content exists`() {
+            val key1 = Base64.getEncoder().encodeToString(ByteArray(32) { 1 })
+            val key2 = Base64.getEncoder().encodeToString(ByteArray(32) { 2 })
+
+            val adapter1 = AesGcmEncryptionAdapter(key1)
+            val adapter2 = AesGcmEncryptionAdapter(key2)
+
+            // Encrypt multiple items with key1
+            val encrypted1 = adapter1.encrypt("Sensitive note about health")
+            val encrypted2 = adapter1.encrypt("Another private discussion")
+
+            // Decrypt with key2 — should gracefully return placeholder for both
+            adapter2.decrypt(encrypted1) shouldBe "[encrypted content - unable to decrypt]"
+            adapter2.decrypt(encrypted2) shouldBe "[encrypted content - unable to decrypt]"
         }
     }
 }

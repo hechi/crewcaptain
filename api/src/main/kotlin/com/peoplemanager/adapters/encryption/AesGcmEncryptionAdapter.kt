@@ -94,11 +94,17 @@ class AesGcmEncryptionAdapter(
         val iv = decoded.copyOfRange(1, 1 + GCM_IV_LENGTH)
         val encryptedData = decoded.copyOfRange(1 + GCM_IV_LENGTH, decoded.size)
 
-        val cipher = Cipher.getInstance(ALGORITHM)
-        val gcmSpec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
-        cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec)
+        return try {
+            val cipher = Cipher.getInstance(ALGORITHM)
+            val gcmSpec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
+            cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec)
 
-        val plaintext = cipher.doFinal(encryptedData)
-        return String(plaintext, Charsets.UTF_8)
+            val plaintext = cipher.doFinal(encryptedData)
+            String(plaintext, Charsets.UTF_8)
+        } catch (e: Exception) {
+            // Decryption failed — wrong key, corrupted data, or tampered ciphertext.
+            // Return a safe placeholder instead of crashing the entire request.
+            "[encrypted content - unable to decrypt]"
+        }
     }
 }
