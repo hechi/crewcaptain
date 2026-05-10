@@ -196,6 +196,7 @@ export default function DashboardPage() {
               backgroundColor: 'var(--color-bg-surface)',
               backdropFilter: 'var(--glass-blur)',
               transition: 'border-color 0.2s, box-shadow 0.2s',
+              overflow: 'visible',
             }}
           >
             <h3
@@ -211,7 +212,7 @@ export default function DashboardPage() {
             >
               PDP Goals
             </h3>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
               <ProgressRing
                 percentage={gamification.pdpProgress.completionPercentage}
                 size={100}
@@ -261,7 +262,7 @@ export default function DashboardPage() {
             >
               Activity
             </h3>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
               <ActivityHeatmap days={gamification.activityHeatmap} />
             </div>
           </section>

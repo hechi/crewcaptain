@@ -23,6 +23,7 @@ export default function StreakCounter({
   return (
     <div
       data-testid="streak-counter"
+      style={{ width: '100%' }}
     >
       {/* Main streak display */}
       <div
@@ -64,6 +65,9 @@ export default function StreakCounter({
         style={{
           display: 'flex',
           gap: '16px',
+          marginTop: 'auto',
+          paddingTop: '12px',
+          borderTop: '1px solid var(--color-border)',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>

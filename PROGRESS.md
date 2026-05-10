@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T02:30:00Z — Redesigned dashboard gamification cards with proper stat-card pattern
+2026-05-11T02:45:00Z — Fixed gamification cards to fill available space and prevent glow clipping
 
 ## Current Status
-Dashboard gamification cards (1:1 Streak, PDP Goals, Activity) redesigned using the stat-card UX pattern: consistent glassmorphism card shell with label pinned at top, flex-grow content area with vertical centering. Cards fill their grid cells uniformly while each visualization retains its natural layout. All 795 frontend tests pass, build succeeds.
+Dashboard gamification cards now fill their available space properly: StreakCounter uses full width with a separator line for secondary stats, ActivityHeatmap columns flex to fill the card width with larger cells, and PDP Goals ring glow is no longer clipped (overflow:visible + inner padding). All 795 frontend tests pass, build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -85,7 +85,7 @@ Dashboard gamification cards (1:1 Streak, PDP Goals, Activity) redesigned using 
 - [x] Bulk Import (CSV) Frontend — TypeScript types (BulkImportResponse), API client (importPersonsCsv with FormData), CsvImportModal component with file validation, CSV preview table, import progress, success/error result display. "Import CSV" button on People list page. (2026-05-10)
 - [x] Bulk Import (CSV) Frontend tests — Component tests (CsvImportModal 14 tests), API client tests (8 tests) (2026-05-10)
 
-- [x] Dashboard gamification card consistency — Redesigned using stat-card UX pattern: glassmorphism card shell (backdrop-filter, transition on border/shadow), label pinned at top, flex-grow content area with vertical centering. Cards fill grid cells uniformly. StreakCounter is a pure content component. (2026-05-11)
+- [x] Dashboard gamification card consistency — Redesigned using stat-card UX pattern: glassmorphism card shell, label pinned at top, flex-grow content area. StreakCounter fills width with border-top separator for secondary stats. ActivityHeatmap columns flex to fill card width with 12px cells. PDP ring glow no longer clipped (overflow:visible + inner padding). (2026-05-11)
 
 ## In Progress
 - (none)
