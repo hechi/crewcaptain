@@ -100,19 +100,6 @@ export default function Navigation() {
           >
             Search
           </Link>
-          <Link
-            href="/settings"
-            data-testid="nav-settings"
-            style={{
-              fontSize: '14px',
-              color: 'var(--color-text-secondary)',
-              textDecoration: 'none',
-              fontWeight: 500,
-              transition: 'color 0.2s',
-            }}
-          >
-            Settings
-          </Link>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -129,6 +116,19 @@ export default function Navigation() {
             {session.user.name}
           </span>
         )}
+        <Link
+          href="/settings"
+          data-testid="nav-settings"
+          style={{
+            fontSize: '13px',
+            color: 'var(--color-text-secondary)',
+            textDecoration: 'none',
+            fontWeight: 500,
+            transition: 'color 0.2s',
+          }}
+        >
+          Settings
+        </Link>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: '/' })}
