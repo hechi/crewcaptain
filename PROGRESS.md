@@ -4,7 +4,7 @@
 2026-05-11T10:00:00Z — Implemented Workspaces feature (lightweight organizational containers)
 
 ## Current Status
-Workspaces feature complete. Managers can now create lightweight organizational containers (workspaces) to group their people — e.g., "My Team", "Mentees", "Skip-levels". A workspace belongs to a single manager (private, no sharing). A person belongs to one workspace (optional, nullable FK). Opt-in: if no workspaces exist, everything works exactly as before. Includes workspace CRUD, person-to-workspace assignment (inline dropdown on person detail page with auto-save), workspace filter on People list, and a dedicated management page. All operations scoped by userId. Backend: 1013 tests pass. Frontend: 882 tests pass.
+Workspaces feature complete. Managers can now create lightweight organizational containers (workspaces) to group their people — e.g., "My Team", "Mentees", "Skip-levels". A workspace belongs to a single manager (private, no sharing). A person belongs to one workspace (optional, nullable FK). Opt-in: if no workspaces exist, everything works exactly as before. Includes workspace CRUD, person-to-workspace assignment (inline dropdown on person detail page with auto-save), workspace filter on People list page (dropdown alongside tag/morale filters), and a dedicated management page. All operations scoped by userId. Backend: 1013 tests pass. Frontend: 885 tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -167,7 +167,7 @@ Workspaces feature complete. Managers can now create lightweight organizational 
 ## Test Coverage Summary
 - Backend: All 1013 tests pass — domain (including Workspace 18 tests), application (including WorkspaceService 15 tests), controller slice (including WorkspaceController 15 tests), integration, encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 882 total — component tests (including WorkspaceSelector 5, WorkspaceForm 8, WorkspaceList 6, WorkspaceAssignment 7), page tests (including WorkspacesPage 11 tests), API client tests (including workspace 8 tests), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
+- Frontend: 885 total — component tests (including WorkspaceSelector 5, WorkspaceForm 8, WorkspaceList 6, WorkspaceAssignment 7), page tests (including WorkspacesPage 11 tests, PeopleListPage workspace filter 3 tests), API client tests (including workspace 8 tests), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
