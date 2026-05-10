@@ -14,6 +14,16 @@ import {
   UpdateActionItemRequest,
   PaginatedActionItemResponse,
 } from '@/types/action-item';
+import {
+  PdpGoal,
+  PdpGoalStatus,
+  PdpUpdate,
+  CreatePdpGoalRequest,
+  UpdatePdpGoalRequest,
+  CreatePdpUpdateRequest,
+  PaginatedPdpGoalResponse,
+  PaginatedPdpUpdateResponse,
+} from '@/types/pdp-goal';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -270,4 +280,107 @@ export async function listAllActionItems(token: string, params?: {
   const url = `${API_BASE_URL}/action-items${queryString ? `?${queryString}` : ''}`;
   const response = await fetchWithAuth(url, {}, token);
   return response.json();
+}
+
+// --- PDP Goals ---
+
+export async function createPdpGoal(token: string, personId: string, data: CreatePdpGoalRequest): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function getPdpGoal(token: string, personId: string, goalId: string): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}`, {}, token);
+  return response.json();
+}
+
+export async function updatePdpGoal(token: string, personId: string, goalId: string, data: UpdatePdpGoalRequest): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function achievePdpGoal(token: string, personId: string, goalId: string): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/achieve`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function pausePdpGoal(token: string, personId: string, goalId: string): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/pause`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function dropPdpGoal(token: string, personId: string, goalId: string): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/drop`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function resumePdpGoal(token: string, personId: string, goalId: string): Promise<PdpGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/resume`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function deletePdpGoal(token: string, personId: string, goalId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function listPdpGoalsByPerson(token: string, personId: string, params?: {
+  status?: PdpGoalStatus;
+  page?: number;
+  size?: number;
+}): Promise<PaginatedPdpGoalResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/persons/${personId}/pdp-goals${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+// --- PDP Updates (Progress Notes) ---
+
+export async function addPdpUpdate(token: string, personId: string, goalId: string, data: CreatePdpUpdateRequest): Promise<PdpUpdate> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/updates`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function listPdpUpdates(token: string, personId: string, goalId: string, params?: {
+  page?: number;
+  size?: number;
+}): Promise<PaginatedPdpUpdateResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/updates${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function deletePdpUpdate(token: string, personId: string, goalId: string, updateId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/updates/${updateId}`, {
+    method: 'DELETE',
+  }, token);
 }
