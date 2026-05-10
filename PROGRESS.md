@@ -69,6 +69,7 @@ Sensitive content encryption is now implemented. When `ENCRYPTION_KEY` is config
 | 001 | Backend tests require Java 21 explicitly (system default may differ) | Low | Open |
 | 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Open |
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
+| 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
 1. Notification scheduling (reminders for overdue items and upcoming 1:1s)
