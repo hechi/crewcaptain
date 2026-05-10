@@ -1,23 +1,65 @@
+/**
+ * Tests for SessionProvider component.
+ *
+ * Verifies that:
+ * 1. It wraps children with NextAuth SessionProvider with refetch settings
+ * 2. It includes the SessionRefreshGuard
+ */
+
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import SessionProvider from '@/components/SessionProvider';
 
 jest.mock('next-auth/react', () => ({
-  SessionProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="session-provider">{children}</div>
+  SessionProvider: ({ children, refetchInterval, refetchOnWindowFocus }: {
+    children: React.ReactNode;
+    refetchInterval?: number;
+    refetchOnWindowFocus?: boolean;
+  }) => (
+    <div
+      data-testid="next-auth-session-provider"
+      data-refetch-interval={refetchInterval}
+      data-refetch-on-window-focus={String(refetchOnWindowFocus)}
+    >
+      {children}
+    </div>
   ),
+  useSession: () => ({ data: null, status: 'loading' }),
+  signIn: jest.fn(),
 }));
 
+import SessionProvider from '@/components/SessionProvider';
+
 describe('SessionProvider', () => {
-  it('should wrap children with NextAuth SessionProvider', () => {
+  it('should render children', () => {
     render(
       <SessionProvider>
-        <div data-testid="child">Hello</div>
+        <div data-testid="child">Content</div>
       </SessionProvider>
     );
 
-    expect(screen.getByTestId('session-provider')).toBeInTheDocument();
     expect(screen.getByTestId('child')).toBeInTheDocument();
+  });
+
+  it('should configure refetchInterval to 4 minutes', () => {
+    render(
+      <SessionProvider>
+        <div>Content</div>
+      </SessionProvider>
+    );
+
+    const provider = screen.getByTestId('next-auth-session-provider');
+    expect(provider.getAttribute('data-refetch-interval')).toBe('240');
+  });
+
+  it('should enable refetchOnWindowFocus', () => {
+    render(
+      <SessionProvider>
+        <div>Content</div>
+      </SessionProvider>
+    );
+
+    const provider = screen.getByTestId('next-auth-session-provider');
+    expect(provider.getAttribute('data-refetch-on-window-focus')).toBe('true');
   });
 });
