@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T12:30:00Z — Dashboard feature (overdue items, due-soon items, stale 1:1 reminders, upcoming anniversaries)
+2026-05-10T13:00:00Z — Sensitive content encryption (AES-256-GCM at rest)
 
 ## Current Status
-The Dashboard feature is now complete. Authenticated users land on `/dashboard` which shows four sections: overdue action items, due-soon action items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. All data is scoped by userId. Backend has a dedicated DashboardService and DashboardController with configurable lookahead parameters. Frontend has four dashboard components with cyberpunk-lite styling, empty states, and person links. All 516 frontend tests and all backend tests pass.
+Sensitive content encryption is now implemented. When `ENCRYPTION_KEY` is configured (Base64-encoded 32-byte AES key), all content marked `sensitive=true` is encrypted at rest using AES-256-GCM with random IVs. Affected fields: 1:1 entry notes/outcomes, quick note text, and PDP update text. The system gracefully handles missing keys (plaintext fallback) and legacy unencrypted data. All 516 frontend tests and all backend tests (including 19 new encryption-specific tests) pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -58,6 +58,7 @@ The Dashboard feature is now complete. Authenticated users land on `/dashboard` 
 - [x] Dashboard Frontend — TypeScript types, API client (getDashboard with options), components (OverdueActionItems, DueSoonActionItems, StaleOneOnOnes, UpcomingAnniversaries), dedicated Dashboard page with grid layout, alert summary, empty states, person links (2026-05-10)
 - [x] Dashboard Frontend tests — Component tests (OverdueActionItems 8, DueSoonActionItems 8, StaleOneOnOnes 10, UpcomingAnniversaries 8), API client tests (8), page tests (10) (2026-05-10)
 - [x] Navigation updated — Dashboard link added as first nav item, home page redirects to /dashboard (2026-05-10)
+- [x] Sensitive Content Encryption — AES-256-GCM application-level encryption for sensitive text fields at rest. EncryptionPort interface in application layer, AesGcmEncryptionAdapter in adapters layer. Integrated into persistence adapters (OneOnOneEntry, QuickNote, PdpUpdate). Graceful fallback when no key configured. Legacy unencrypted data support. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -68,21 +69,23 @@ The Dashboard feature is now complete. Authenticated users land on `/dashboard` 
 | 001 | Backend tests require Java 21 explicitly (system default may differ) | Low | Open |
 | 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Open |
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
+| 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
-1. Sensitive content encryption (flag and encrypt private notes)
-2. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-3. Search (full-text across all manager data)
-4. Data export functionality (per-person Markdown)
-5. Gamification elements (progress rings, streak counters, micro-animations)
+1. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+2. Search (full-text across all manager data)
+3. Data export functionality (per-person Markdown)
+4. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- Dashboard is a read-only aggregation endpoint — no new database tables needed
-- Dashboard computes stale 1:1s by comparing last meeting date against cadence interval (WEEKLY=7d, BIWEEKLY=14d, MONTHLY=30d, CUSTOM=N days)
-- If no meeting ever occurred for a series, staleness is computed from series creation date
-- Overdue items limited to 10 (paginated at backend), due-soon items returned as full list
-- Anniversary calculation handles year rollover (if anniversary already passed this year, shows next year's)
-- Dashboard is the new landing page for authenticated users (replaces /people redirect)
+- Encryption implemented at the persistence adapter layer (not domain or application) to maintain hexagonal architecture purity — domain stays framework-free, application layer unaware of encryption
+- AES-256-GCM chosen for authenticated encryption (prevents tampering + provides confidentiality)
+- Random 12-byte IV per encryption operation ensures identical plaintext produces different ciphertext
+- Version byte prefix (currently v1) in ciphertext format allows future algorithm migration without breaking existing data
+- Graceful degradation: if ENCRYPTION_KEY is empty/missing, encryption is disabled and text passes through unchanged
+- Legacy data support: decrypt gracefully handles non-Base64, too-short, or unknown-version data by returning as-is
+- No database migration needed: encrypted text stored as Base64 in existing TEXT columns
+- Encryption only applied when `sensitive=true` — non-sensitive content remains plaintext for searchability
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -94,8 +97,10 @@ The Dashboard feature is now complete. Authenticated users land on `/dashboard` 
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
-- Backend: All tests pass — domain, application (including DashboardService 13 tests), controller slice (including DashboardController 8 tests), property, integration (last run: 2026-05-10)
+- Backend: All tests pass — domain, application (including DashboardService 13 tests), controller slice (including DashboardController 8 tests), encryption adapter (19 tests), encryption integration (10 tests), property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
+  - New: AesGcmEncryptionAdapterTest (19 tests — encrypt/decrypt, null handling, unicode, key validation, cross-key, legacy data)
+  - New: EncryptionIntegrationTest (10 tests — verifies encrypted storage in DB for 1:1 entries, quick notes, PDP updates)
 - Frontend: 516 total — component tests (including 4 dashboard components), page tests (including DashboardPage), API client tests (including dashboard) (last run: 2026-05-10)
   - Includes Dashboard components (OverdueActionItems 8, DueSoonActionItems 8, StaleOneOnOnes 10, UpcomingAnniversaries 8)
   - Includes Dashboard API client tests (8)
