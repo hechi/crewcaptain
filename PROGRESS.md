@@ -4,7 +4,7 @@
 2026-05-10T18:30:00Z — Gamification elements (progress rings, streak counters, achievements, activity heatmap)
 
 ## Current Status
-Gamification and engagement elements are now fully implemented. The dashboard features an animated PDP progress ring, 1:1 streak counter (consecutive weeks), achievement badges for milestones, and a contribution-graph style activity heatmap. A reusable CompletionAnimation component provides micro-animations for task completion. Backend provides a dedicated `/api/v1/gamification/stats` endpoint aggregating streaks, achievements, activity data, and PDP progress. All 758 backend tests and 673 frontend tests pass.
+Gamification and engagement elements are now fully implemented. The dashboard features an animated PDP progress ring, 1:1 streak counter (consecutive weeks), achievement badges for milestones, and a contribution-graph style activity heatmap. A reusable CompletionAnimation component provides micro-animations for task completion. Backend provides a dedicated `/api/v1/gamification/stats` endpoint aggregating streaks, achievements, activity data, and PDP progress. All 758 backend tests and 674 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -64,7 +64,7 @@ Gamification and engagement elements are now fully implemented. The dashboard fe
 - [x] Per-Person Markdown Export — GET /api/v1/persons/{id}/export endpoint. Aggregates all person data (profile, pinned remember items, morale, 1:1 entries, action items, PDP goals with updates, kudos) and formats as structured Markdown. Optional dateFrom/dateTo query parameters for date range filtering. Sensitive content marked but not exposed. Returns text/markdown with Content-Disposition attachment header. Frontend: Export button on person detail page triggers download as {name}.md file. (2026-05-10)
 - [x] Gamification Backend API — GET /api/v1/gamification/stats endpoint. GamificationService computes 1:1 streaks (consecutive weeks with meetings), achievement milestones (13 types across 1:1s, action items, PDP goals, kudos, and streaks), activity heatmap (configurable days window, default 90), and PDP progress summary (active/achieved/paused/dropped with completion percentage). All queries scoped by userId. (2026-05-10)
 - [x] Gamification Backend tests — Domain unit tests (GamificationStats 8 tests), application service tests (GamificationService 18 tests), controller slice tests (GamificationController 8 tests) (2026-05-10)
-- [x] Gamification Frontend — TypeScript types, API client (getGamificationStats), components (ProgressRing with animated SVG arc and glow, StreakCounter with monospace readout, AchievementBadge with type-specific icons and colors, ActivityHeatmap contribution graph, CompletionAnimation with checkmark glow burst). Dashboard integration with gamification stats section above existing grid. (2026-05-10)
+- [x] Gamification Frontend — TypeScript types, API client (getGamificationStats), components (ProgressRing with animated SVG arc and glow, StreakCounter with monospace readout, AchievementBadge with Lucide SVG icons and category colors, ActivityHeatmap contribution graph, CompletionAnimation with checkmark glow burst). Dashboard integration with gamification stats section above existing grid. (2026-05-10)
 - [x] Gamification Frontend tests — Component tests (ProgressRing 10, StreakCounter 8, AchievementBadge 9, ActivityHeatmap 9, CompletionAnimation 6), API client tests (8) (2026-05-10)
 
 ## In Progress
@@ -106,7 +106,7 @@ Gamification and engagement elements are now fully implemented. The dashboard fe
 ## Test Coverage Summary
 - Backend: All 758 tests pass — domain (including GamificationStats 8 tests), application (including GamificationService 18 tests), controller slice (including GamificationController 8 tests), encryption adapter, property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 673 total — component tests (including ProgressRing 10, StreakCounter 8, AchievementBadge 9, ActivityHeatmap 9, CompletionAnimation 6), page tests, API client tests (including gamification 8) (last run: 2026-05-10)
+- Frontend: 674 total — component tests (including ProgressRing 10, StreakCounter 8, AchievementBadge 10, ActivityHeatmap 9, CompletionAnimation 6), page tests, API client tests (including gamification 8) (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
