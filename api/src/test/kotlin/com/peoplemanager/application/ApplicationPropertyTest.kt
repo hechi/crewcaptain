@@ -38,6 +38,7 @@ class ApplicationPropertyTest {
 
     private lateinit var personRepository: PersonRepository
     private lateinit var userRepository: UserRepository
+    private lateinit var auditLogService: AuditLogService
     private lateinit var personService: PersonService
     private lateinit var userProvisioningService: UserProvisioningService
 
@@ -52,7 +53,8 @@ class ApplicationPropertyTest {
     fun setUp() {
         personRepository = mockk()
         userRepository = mockk()
-        personService = PersonService(personRepository)
+        auditLogService = mockk(relaxed = true)
+        personService = PersonService(personRepository, auditLogService)
         userProvisioningService = UserProvisioningService(userRepository)
     }
 

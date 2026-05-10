@@ -15,6 +15,7 @@ import com.peoplemanager.application.queries.ListActionItemsByPersonQuery
 import com.peoplemanager.application.queries.ListAllActionItemsQuery
 import com.peoplemanager.domain.ActionItem
 import com.peoplemanager.domain.ActionItemId
+import com.peoplemanager.domain.AuditLogEntry
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -26,7 +27,8 @@ import java.time.LocalDate
 @Transactional
 class ActionItemService(
     private val personRepository: PersonRepository,
-    private val actionItemRepository: ActionItemRepository
+    private val actionItemRepository: ActionItemRepository,
+    private val auditLogService: AuditLogService
 ) : ActionItemCommandPort, ActionItemQueryPort {
 
     override fun createActionItem(command: CreateActionItemCommand): ActionItem {
@@ -45,7 +47,9 @@ class ActionItemService(
             originatingEntryId = command.originatingEntryId
         )
 
-        return actionItemRepository.save(actionItem)
+        val saved = actionItemRepository.save(actionItem)
+        auditLogService.record(AuditLogEntry.actionItemCreated(command.userId, saved.id, command.personId, saved.title))
+        return saved
     }
 
     override fun updateActionItem(command: UpdateActionItemCommand): ActionItem {
@@ -60,7 +64,9 @@ class ActionItemService(
             dueDate = command.dueDate
         )
 
-        return actionItemRepository.save(updated)
+        val saved = actionItemRepository.save(updated)
+        auditLogService.record(AuditLogEntry.actionItemUpdated(command.userId, saved.id, command.personId, saved.title))
+        return saved
     }
 
     override fun completeActionItem(command: CompleteActionItemCommand): ActionItem {
@@ -82,10 +88,14 @@ class ActionItemService(
     }
 
     override fun deleteActionItem(command: DeleteActionItemCommand) {
+        val existing = actionItemRepository.findByIdAndUserIdAndPersonId(
+            command.actionItemId, command.userId, command.personId
+        ) ?: throw ActionItemNotFoundException(command.actionItemId)
         val deleted = actionItemRepository.deleteByIdAndUserIdAndPersonId(
             command.actionItemId, command.userId, command.personId
         )
         if (!deleted) throw ActionItemNotFoundException(command.actionItemId)
+        auditLogService.record(AuditLogEntry.actionItemDeleted(command.userId, command.actionItemId, command.personId, existing.title))
     }
 
     override fun getActionItem(query: GetActionItemQuery): ActionItem {

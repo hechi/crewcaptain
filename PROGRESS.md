@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T04:00:00Z — Implemented soft-delete + restore for Person entity
+2026-05-11T05:00:00Z — Implemented audit log feature
 
 ## Current Status
-Soft-delete + restore feature complete for Person entity. DELETE /api/v1/persons/{id} now performs a soft-delete (sets deleted_at timestamp) instead of hard delete. New endpoints: POST /api/v1/persons/{id}/restore and GET /api/v1/persons/trash. Frontend trash page with restore functionality. All existing queries automatically exclude soft-deleted records. Data isolation enforced on all trash operations. All backend tests pass (950+ tests), all frontend tests pass (811 tests).
+Audit log feature complete. All key actions (create, update, delete, restore) across persons, 1:1 entries, action items, PDP goals, kudos, quick notes, and user settings are recorded in an audit log table. REST API endpoint GET /api/v1/audit-log with entity type and action filters, pagination. Frontend audit log page with filters and relative timestamps. All entries scoped by userId. All backend tests pass (990+ tests), all frontend tests pass (828 tests).
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -87,6 +87,10 @@ Soft-delete + restore feature complete for Person entity. DELETE /api/v1/persons
 
 - [x] Dashboard gamification card consistency — Redesigned using stat-card UX pattern: glassmorphism card shell, label pinned at top, flex-grow content area. StreakCounter fills width with border-top separator for secondary stats. ActivityHeatmap columns flex to fill card width with 12px cells. PDP ring glow no longer clipped (overflow:visible + inner padding). (2026-05-11)
 - [x] Soft-Delete + Restore — DELETE /api/v1/persons/{id} now soft-deletes (sets deleted_at timestamp). New endpoints: POST /api/v1/persons/{id}/restore (restore from trash), GET /api/v1/persons/trash (list deleted persons, paginated). Domain model updated with softDelete()/restore() methods. All existing queries exclude soft-deleted records via WHERE deleted_at IS NULL. Flyway migration V20250510120010 adds deleted_at column with partial indexes. Frontend: Trash page with restore buttons, "Trash" button on People list page. Full test coverage: domain (4 tests), service (5 tests), controller (7 tests), integration (13 tests), frontend page (8 tests), API client (7 tests). (2026-05-11)
+- [x] Audit Log Backend API — GET /api/v1/audit-log endpoint with entityType and action filters, pagination. AuditLogService records entries on create/update/delete/restore across all entities (Person, 1:1 Entry, Action Item, PDP Goal, Kudos, Quick Note, User Settings). AuditLogEntry domain model with factory methods. Flyway migration V20250511120000 creates audit_log table with indexes. Data isolation enforced (userId scoping). (2026-05-11)
+- [x] Audit Log Backend tests — Domain unit tests (AuditLogEntry 17 tests), application service tests (AuditLogService 8 tests), controller slice tests (AuditLogController 9 tests) (2026-05-11)
+- [x] Audit Log Frontend — TypeScript types, API client (getAuditLog with filters), dedicated /audit-log page with entity type filter, action filter, pagination, relative timestamps, action badges with color coding, entity type badges. Navigation link in user menu. Middleware auth coverage. (2026-05-11)
+- [x] Audit Log Frontend tests — Page tests (10 tests), API client tests (7 tests) (2026-05-11)
 
 ## In Progress
 - (none)
@@ -101,13 +105,20 @@ Soft-delete + restore feature complete for Person entity. DELETE /api/v1/persons
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. Audit log
-2. Permanent delete from trash (with confirmation)
+1. Permanent delete from trash (with confirmation)
+2. Workspaces (lightweight organizational containers)
 
 ## Future Features
 - **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (still private, no sharing). A person belongs to one workspace. Opt-in: if no workspaces exist, everything works as today. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and optional persistent context switch in the UI.
 
 ## Architecture Decisions Made This Session
+- Audit log is a separate table (not event sourcing) — simple append-only log for traceability, not a full event store
+- AuditLogService is injected directly into application services (not via AOP/interceptors) — explicit, testable, and visible in the code
+- Audit log entries use ON DELETE CASCADE for user_id and ON DELETE SET NULL for person_id — audit entries survive person deletion but are cleaned up when a user is removed
+- Factory methods on AuditLogEntry for each entity type — keeps audit log creation consistent and DRY across services
+- Audit log is read-only from the API (GET only, no DELETE/PUT) — audit entries are immutable once created
+- Summary field is capped at 500 chars — prevents unbounded growth while providing useful context
+- RESTORE action type added alongside CREATE/UPDATE/DELETE — captures soft-delete restore operations distinctly
 - Soft-delete at Person level only (not per sub-entity) — when a Person is soft-deleted, their associated data (1:1 entries, action items, PDP goals, kudos) remains in the database but becomes inaccessible since all queries go through the person. This avoids complex cascading soft-delete logic while still providing safety.
 - `deleted_at` column with partial indexes (WHERE deleted_at IS NULL and WHERE deleted_at IS NOT NULL) — efficient filtering for both active and trash queries
 - Soft-delete uses UPDATE (not INSERT into a separate archive table) — simpler implementation, restore is just clearing the timestamp
@@ -145,9 +156,9 @@ Soft-delete + restore feature complete for Person entity. DELETE /api/v1/persons
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 950+ tests pass — domain (including Person soft-delete 4 tests), application (including PersonService restore/trash 5 tests), controller slice (including restore/trash 7 tests), integration (including PersonSoftDeleteIntegrationTest 13 tests), encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
+- Backend: All 990+ tests pass — domain (including AuditLogEntry 17 tests), application (including AuditLogService 8 tests), controller slice (including AuditLogController 9 tests), integration, encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 811 total — component tests, page tests (including TrashPage 8), API client tests (including restore/listDeletedPersons 7), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
+- Frontend: 828 total — component tests, page tests (including AuditLogPage 10), API client tests (including audit-log 7), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review

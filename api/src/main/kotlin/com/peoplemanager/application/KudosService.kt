@@ -11,6 +11,7 @@ import com.peoplemanager.application.queries.ListAllKudosQuery
 import com.peoplemanager.application.queries.ListKudosByPersonQuery
 import com.peoplemanager.domain.Kudos
 import com.peoplemanager.domain.KudosId
+import com.peoplemanager.domain.AuditLogEntry
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -21,12 +22,13 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class KudosService(
     private val personRepository: PersonRepository,
-    private val kudosRepository: KudosRepository
+    private val kudosRepository: KudosRepository,
+    private val auditLogService: AuditLogService
 ) : KudosCommandPort, KudosQueryPort {
 
     override fun createKudos(command: CreateKudosCommand): Kudos {
         // Verify person belongs to user
-        personRepository.findByIdAndUserId(command.personId, command.userId)
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
             ?: throw PersonNotFoundException(command.personId)
 
         val kudos = Kudos(
@@ -38,14 +40,19 @@ class KudosService(
             tags = command.tags
         )
 
-        return kudosRepository.save(kudos)
+        val saved = kudosRepository.save(kudos)
+        auditLogService.record(AuditLogEntry.kudosCreated(command.userId, saved.id, command.personId, person.name))
+        return saved
     }
 
     override fun deleteKudos(command: DeleteKudosCommand) {
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
         val deleted = kudosRepository.deleteByIdAndUserIdAndPersonId(
             command.kudosId, command.userId, command.personId
         )
         if (!deleted) throw KudosNotFoundException(command.kudosId)
+        auditLogService.record(AuditLogEntry.kudosDeleted(command.userId, command.kudosId, command.personId, person.name))
     }
 
     override fun getKudos(query: GetKudosQuery): Kudos {

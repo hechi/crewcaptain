@@ -13,13 +13,14 @@ import java.util.UUID
 class UserSettingsServiceTest {
 
     private val userSettingsRepository: UserSettingsRepository = mockk()
+    private val auditLogService: AuditLogService = mockk(relaxed = true)
     private lateinit var service: UserSettingsService
 
     private val userId = UserId(UUID.randomUUID())
 
     @BeforeEach
     fun setUp() {
-        service = UserSettingsService(userSettingsRepository)
+        service = UserSettingsService(userSettingsRepository, auditLogService)
     }
 
     @Test

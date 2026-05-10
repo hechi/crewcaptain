@@ -35,11 +35,12 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Review Packet Generator** — Generate structured review/performance summary documents for a person over a configurable date range. Includes executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), morale status, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded. Download as Markdown via "Review Packet" button on person detail page.
 - **Bulk Import (CSV)** — Import multiple people at once from a CSV file. Supports columns: name (required), preferred_name, role_title, timezone, start_date (YYYY-MM-DD), email, tags (pipe-separated). Preview before import, per-row error reporting, max 500 rows per import. Accessible via "Import CSV" button on the People list page.
 - **Soft-Delete + Restore** — Deleting a person moves them to trash (soft-delete) instead of permanently removing them. Trash page shows all deleted people with restore capability. All queries automatically exclude soft-deleted records. Data isolation enforced on trash operations.
+- **Audit Log** — Records key actions (create, update, delete, restore) across all entities for the manager's own traceability. Paginated audit log page with entity type and action filters. All entries scoped by userId. Accessible via user menu in navigation.
 
 ### Planned
 
 - Optional "workspace" concept (still manager-private by default)
-- Audit log
+- Permanent delete from trash (with confirmation)
 
 ---
 

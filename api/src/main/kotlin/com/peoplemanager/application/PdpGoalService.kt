@@ -14,6 +14,7 @@ import com.peoplemanager.domain.PdpGoal
 import com.peoplemanager.domain.PdpGoalId
 import com.peoplemanager.domain.PdpUpdate
 import com.peoplemanager.domain.PdpUpdateId
+import com.peoplemanager.domain.AuditLogEntry
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -25,7 +26,8 @@ import org.springframework.transaction.annotation.Transactional
 class PdpGoalService(
     private val personRepository: PersonRepository,
     private val pdpGoalRepository: PdpGoalRepository,
-    private val pdpUpdateRepository: PdpUpdateRepository
+    private val pdpUpdateRepository: PdpUpdateRepository,
+    private val auditLogService: AuditLogService
 ) : PdpGoalCommandPort, PdpGoalQueryPort {
 
     override fun createPdpGoal(command: CreatePdpGoalCommand): PdpGoal {
@@ -41,7 +43,9 @@ class PdpGoalService(
             targetDate = command.targetDate
         )
 
-        return pdpGoalRepository.save(goal)
+        val saved = pdpGoalRepository.save(goal)
+        auditLogService.record(AuditLogEntry.pdpGoalCreated(command.userId, saved.id, command.personId, saved.title))
+        return saved
     }
 
     override fun updatePdpGoal(command: UpdatePdpGoalCommand): PdpGoal {
@@ -55,7 +59,9 @@ class PdpGoalService(
             targetDate = command.targetDate
         )
 
-        return pdpGoalRepository.save(updated)
+        val saved = pdpGoalRepository.save(updated)
+        auditLogService.record(AuditLogEntry.pdpGoalUpdated(command.userId, saved.id, command.personId, saved.title))
+        return saved
     }
 
     override fun achievePdpGoal(command: AchievePdpGoalCommand): PdpGoal {
@@ -95,10 +101,14 @@ class PdpGoalService(
     }
 
     override fun deletePdpGoal(command: DeletePdpGoalCommand) {
+        val existing = pdpGoalRepository.findByIdAndUserIdAndPersonId(
+            command.goalId, command.userId, command.personId
+        ) ?: throw PdpGoalNotFoundException(command.goalId)
         val deleted = pdpGoalRepository.deleteByIdAndUserIdAndPersonId(
             command.goalId, command.userId, command.personId
         )
         if (!deleted) throw PdpGoalNotFoundException(command.goalId)
+        auditLogService.record(AuditLogEntry.pdpGoalDeleted(command.userId, command.goalId, command.personId, existing.title))
     }
 
     override fun addPdpUpdate(command: AddPdpUpdateCommand): PdpUpdate {

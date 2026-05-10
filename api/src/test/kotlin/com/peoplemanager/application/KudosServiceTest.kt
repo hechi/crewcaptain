@@ -23,8 +23,9 @@ class KudosServiceTest {
 
     private val personRepository = mockk<PersonRepository>()
     private val kudosRepository = mockk<KudosRepository>()
+    private val auditLogService = mockk<AuditLogService>(relaxed = true)
 
-    private val service = KudosService(personRepository, kudosRepository)
+    private val service = KudosService(personRepository, kudosRepository, auditLogService)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()
@@ -107,6 +108,7 @@ class KudosServiceTest {
 
         @Test
         fun `should delete kudos successfully`() {
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { kudosRepository.deleteByIdAndUserIdAndPersonId(kudosId, userId, personId) } returns true
 
             service.deleteKudos(DeleteKudosCommand(userId, personId, kudosId))
@@ -116,6 +118,7 @@ class KudosServiceTest {
 
         @Test
         fun `should throw KudosNotFoundException when not found`() {
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { kudosRepository.deleteByIdAndUserIdAndPersonId(kudosId, userId, personId) } returns false
 
             shouldThrow<KudosNotFoundException> {

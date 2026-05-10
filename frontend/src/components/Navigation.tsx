@@ -219,6 +219,23 @@ export default function Navigation() {
               >
                 Settings
               </Link>
+              <Link
+                href="/audit-log"
+                data-testid="nav-audit-log"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  color: 'var(--color-text-primary)',
+                  textDecoration: 'none',
+                  borderRadius: 'var(--radius-small)',
+                  transition: 'background-color 0.15s',
+                }}
+              >
+                Audit Log
+              </Link>
               <div
                 style={{
                   height: '1px',

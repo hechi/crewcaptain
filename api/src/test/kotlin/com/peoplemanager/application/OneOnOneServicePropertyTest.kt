@@ -30,8 +30,9 @@ class OneOnOneServicePropertyTest {
     private val personRepository = mockk<PersonRepository>()
     private val seriesRepository = mockk<OneOnOneSeriesRepository>()
     private val entryRepository = mockk<OneOnOneEntryRepository>()
+    private val auditLogService = mockk<AuditLogService>(relaxed = true)
 
-    private val service = OneOnOneService(personRepository, seriesRepository, entryRepository)
+    private val service = OneOnOneService(personRepository, seriesRepository, entryRepository, auditLogService)
 
     @BeforeEach
     fun setup() {

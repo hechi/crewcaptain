@@ -15,6 +15,7 @@ import com.peoplemanager.application.queries.GetOneOnOneSeriesQuery
 import com.peoplemanager.application.queries.ListOneOnOneEntriesQuery
 import com.peoplemanager.domain.AgendaItem
 import com.peoplemanager.domain.AgendaItemId
+import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.domain.OneOnOneEntry
 import com.peoplemanager.domain.OneOnOneEntryId
 import com.peoplemanager.domain.OneOnOneSeries
@@ -31,7 +32,8 @@ import java.time.Instant
 class OneOnOneService(
     private val personRepository: PersonRepository,
     private val seriesRepository: OneOnOneSeriesRepository,
-    private val entryRepository: OneOnOneEntryRepository
+    private val entryRepository: OneOnOneEntryRepository,
+    private val auditLogService: AuditLogService
 ) : OneOnOneCommandPort, OneOnOneQueryPort {
 
     override fun upsertSeries(command: UpsertOneOnOneSeriesCommand): OneOnOneSeries {
@@ -64,7 +66,7 @@ class OneOnOneService(
 
     override fun createEntry(command: CreateOneOnOneEntryCommand): OneOnOneEntry {
         // Verify person belongs to user
-        personRepository.findByIdAndUserId(command.personId, command.userId)
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
             ?: throw PersonNotFoundException(command.personId)
 
         // Apply template if notes not provided
@@ -95,13 +97,18 @@ class OneOnOneService(
             sensitive = command.sensitive
         )
 
-        return entryRepository.save(entry)
+        val saved = entryRepository.save(entry)
+        auditLogService.record(AuditLogEntry.oneOnOneEntryCreated(command.userId, saved.id, command.personId, person.name))
+        return saved
     }
 
     override fun updateEntry(command: UpdateOneOnOneEntryCommand): OneOnOneEntry {
         val existing = entryRepository.findByIdAndUserIdAndPersonId(
             command.entryId, command.userId, command.personId
         ) ?: throw OneOnOneEntryNotFoundException(command.entryId)
+
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
 
         val updatedAgendaItems = command.agendaItems?.mapIndexed { index, input ->
             AgendaItem(
@@ -121,14 +128,19 @@ class OneOnOneService(
             updatedAt = Instant.now()
         )
 
-        return entryRepository.save(updated)
+        val saved = entryRepository.save(updated)
+        auditLogService.record(AuditLogEntry.oneOnOneEntryUpdated(command.userId, saved.id, command.personId, person.name))
+        return saved
     }
 
     override fun deleteEntry(command: DeleteOneOnOneEntryCommand) {
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
         val deleted = entryRepository.deleteByIdAndUserIdAndPersonId(
             command.entryId, command.userId, command.personId
         )
         if (!deleted) throw OneOnOneEntryNotFoundException(command.entryId)
+        auditLogService.record(AuditLogEntry.oneOnOneEntryDeleted(command.userId, command.entryId, command.personId, person.name))
     }
 
     override fun getSeries(query: GetOneOnOneSeriesQuery): OneOnOneSeries? {

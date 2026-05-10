@@ -24,8 +24,9 @@ class QuickNoteServiceTest {
     private val personRepository = mockk<PersonRepository>()
     private val oneOnOneEntryRepository = mockk<OneOnOneEntryRepository>()
     private val actionItemRepository = mockk<ActionItemRepository>()
+    private val auditLogService = mockk<AuditLogService>(relaxed = true)
 
-    private val service = QuickNoteService(quickNoteRepository, personRepository, oneOnOneEntryRepository, actionItemRepository)
+    private val service = QuickNoteService(quickNoteRepository, personRepository, oneOnOneEntryRepository, actionItemRepository, auditLogService)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()

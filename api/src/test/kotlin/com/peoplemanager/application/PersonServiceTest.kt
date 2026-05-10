@@ -38,6 +38,7 @@ import java.time.LocalDate
 class PersonServiceTest {
 
     private lateinit var personRepository: PersonRepository
+    private lateinit var auditLogService: AuditLogService
     private lateinit var personService: PersonService
 
     private val userId = UserId.generate()
@@ -46,7 +47,8 @@ class PersonServiceTest {
     @BeforeEach
     fun setUp() {
         personRepository = mockk()
-        personService = PersonService(personRepository)
+        auditLogService = mockk(relaxed = true)
+        personService = PersonService(personRepository, auditLogService)
     }
 
     private fun createTestPerson(
@@ -168,7 +170,9 @@ class PersonServiceTest {
         @Test
         fun `should call softDeleteByIdAndUserId and succeed`() {
             val command = DeletePersonCommand(userId = userId, personId = personId)
+            val person = createTestPerson()
 
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { personRepository.softDeleteByIdAndUserId(personId, userId) } returns true
 
             personService.deletePerson(command)
@@ -180,7 +184,7 @@ class PersonServiceTest {
         fun `should throw PersonNotFoundException when person not found`() {
             val command = DeletePersonCommand(userId = userId, personId = personId)
 
-            every { personRepository.softDeleteByIdAndUserId(personId, userId) } returns false
+            every { personRepository.findByIdAndUserId(personId, userId) } returns null
 
             val exception = shouldThrow<PersonNotFoundException> {
                 personService.deletePerson(command)
