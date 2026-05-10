@@ -23,6 +23,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components.
 - **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
 - **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
+- **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox) or assigned to a person. Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Full frontend with dedicated Quick Notes page, status filter, and inline create form.
 
 ### Planned
 
@@ -214,6 +215,37 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
 
+### Quick Notes (Inbox)
+
+| Method | Endpoint                                                | Description                          |
+|--------|---------------------------------------------------------|--------------------------------------|
+| POST   | `/api/v1/quick-notes`                                   | Create a quick note                  |
+| GET    | `/api/v1/quick-notes`                                   | List quick notes (paginated)         |
+| GET    | `/api/v1/quick-notes/{quickNoteId}`                     | Get a quick note                     |
+| PUT    | `/api/v1/quick-notes/{quickNoteId}`                     | Update a quick note                  |
+| DELETE | `/api/v1/quick-notes/{quickNoteId}`                     | Delete a quick note                  |
+| POST   | `/api/v1/quick-notes/{quickNoteId}/assign`              | Assign to a person                   |
+| POST   | `/api/v1/quick-notes/{quickNoteId}/attach`              | Attach to a 1:1 entry              |
+| POST   | `/api/v1/quick-notes/{quickNoteId}/convert`             | Mark as converted (to action item)   |
+| POST   | `/api/v1/quick-notes/{quickNoteId}/archive`             | Archive the quick note               |
+
+**Quick Note fields:**
+- `text` — Required (Markdown text)
+- `personId` — Optional UUID to assign to a person
+- `sensitive` — Optional boolean (default: false)
+
+**Quick Note status transitions:**
+- INBOX → ATTACHED (via `/attach` with `entryId` — links to a specific 1:1 entry)
+- INBOX → CONVERTED (via `/convert`)
+- INBOX → ARCHIVED (via `/archive`)
+- No other transitions are allowed
+
+**Query parameters for quick notes list endpoint:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `status` — Filter by status (INBOX, ATTACHED, CONVERTED, ARCHIVED)
+- `personId` — Filter by assigned person
+
 **Query parameters for entries list endpoint:**
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
@@ -313,6 +345,8 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120001` | Create pdp_goals table |
 | `V20250510120002` | Create pdp_updates table |
 | `V20250510120003` | Create kudos table |
+| `V20250510120004` | Create quick_notes table |
+| `V20250510120005` | Add attached_entry_id to quick_notes |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

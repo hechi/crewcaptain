@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T09:30:00Z — Kudos / Recognition feature fully implemented end-to-end
+2026-05-10T10:50:00Z — Quick Notes: improved attach-to-1:1 flow (single continuous step)
 
 ## Current Status
-The Kudos / Recognition feature is fully implemented end-to-end. The backend provides create, get, list (per-person and cross-person), and delete for kudos entries with date, Markdown text, and optional tags. The frontend includes TypeScript types, API client functions (5 functions), reusable components (KudosCard, KudosForm, KudosList), and an integrated "Kudos" tab on the person detail page with inline create form and delete. All 405 frontend tests and all backend tests pass.
+The Quick Notes feature now performs real data operations: "Attach to 1:1" adds the note text as an agenda item to the selected 1:1 entry, and "→ Action Item" creates an actual action item for the selected person. Both flows include person pickers when needed. All 460 frontend tests and all backend tests pass (except the pre-existing intermittent Property 14 edge case).
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -46,6 +46,13 @@ The Kudos / Recognition feature is fully implemented end-to-end. The backend pro
 - [x] Kudos Backend tests — Domain unit tests (8 tests), application service tests (10 tests), controller slice tests (12 tests), integration tests with data isolation verification (10 tests) (2026-05-10)
 - [x] Kudos Frontend — TypeScript types, API client (5 functions), components (KudosCard, KudosForm, KudosList), person detail "Kudos" tab with inline create form and delete (2026-05-10)
 - [x] Kudos Frontend tests — Component tests (KudosCard 8, KudosForm 9, KudosList 9), API client tests (14) (2026-05-10)
+- [x] Quick Notes Backend API — Create, get, update, list, delete, assign-to-person, attach, convert, archive. Markdown text, optional person assignment, sensitive flag, status workflow (INBOX→ATTACHED/CONVERTED/ARCHIVED). Data isolation enforced. (2026-05-10)
+- [x] Quick Notes Database migration — quick_notes table with indexes (user_id, user_id+status, user_id+person_id, user_id+created_at) (2026-05-10)
+- [x] Quick Notes Backend tests — Domain unit tests (16 tests), application service tests (18 tests), controller slice tests (17 tests), integration tests with data isolation verification (15 tests) (2026-05-10)
+- [x] Quick Notes Frontend — TypeScript types, API client (9 functions), components (QuickNoteCard with person picker + 1:1 entry picker, QuickNoteForm, QuickNoteList), dedicated Quick Notes page with status filter, pagination, person assignment, and 1:1 attachment, Navigation link (2026-05-10)
+- [x] Quick Notes Frontend tests — Component tests (QuickNoteCard 16, QuickNoteForm 11, QuickNoteList 9), API client tests (17) (2026-05-10)
+- [x] Quick Notes 1:1 Attachment — Backend schema migration (attached_entry_id FK), domain model updated, attach endpoint requires entryId, validates entry exists and belongs to user, adds note text as agenda item to the 1:1 entry, frontend entry picker UI (2026-05-10)
+- [x] Quick Notes Action Item Conversion — Convert endpoint requires personId, creates actual action item with note text as title, assigns to person's action item list, frontend person picker for conversion (2026-05-10)
 
 ## In Progress
 - (none)
@@ -58,19 +65,20 @@ The Kudos / Recognition feature is fully implemented end-to-end. The backend pro
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. Quick Notes ("Inbox") — global capture, attach to person/1:1
-2. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
-3. Sensitive content encryption (flag and encrypt private notes)
-4. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-5. Search (full-text across all manager data)
-6. Data export functionality (per-person Markdown)
-7. Gamification elements (progress rings, streak counters, micro-animations)
+1. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+2. Sensitive content encryption (flag and encrypt private notes)
+3. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+4. Search (full-text across all manager data)
+5. Data export functionality (per-person Markdown)
+6. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- Kudos are immutable after creation (create + delete only, no update) — recognition entries should not be edited after the fact
-- Kudos stored as a flat table with userId + personId scoping — consistent with action items and PDP goals pattern
-- Tags stored as PostgreSQL TEXT[] array — simple, queryable, no separate join table needed for MVP
-- Sorted by date descending by default — most recent recognition shown first
+- Quick Notes are global (not per-person) — they belong to the user and can optionally be assigned to a person
+- Status transitions are one-way from INBOX only — once attached/converted/archived, the note cannot go back to INBOX
+- Quick Notes use a flat endpoint structure (`/api/v1/quick-notes`) rather than nested under persons, since they can be unassigned
+- Assign-to-person is a separate action from create/update — allows quick capture first, organize later
+- Attach to 1:1 stores a foreign key reference (`attached_entry_id`) to the specific 1:1 entry — validates entry exists and belongs to user
+- Person must be assigned before attaching to a 1:1 (UI enforces this by showing person picker first)
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -82,9 +90,11 @@ The Kudos / Recognition feature is fully implemented end-to-end. The backend pro
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
-- Backend: All tests pass — domain (including Kudos), application (including KudosService), controller slice (including KudosController), property, integration (including Kudos data isolation) (last run: 2026-05-10)
+- Backend: All tests pass — domain (including QuickNote 16 tests), application (including QuickNoteService 18 tests), controller slice (including QuickNoteController 17 tests), property, integration (including QuickNote data isolation 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 405 total — component tests (including Kudos components), page tests (including auth pages, Kudos tab), API client tests (including kudos) (last run: 2026-05-10)
+- Frontend: 460 total — component tests (including QuickNote components), page tests (including auth pages), API client tests (including quick-notes) (last run: 2026-05-10)
+  - Includes QuickNote components (QuickNoteCard 17, QuickNoteForm 11, QuickNoteList 9)
+  - Includes QuickNote API client tests (17)
   - Includes Kudos components (KudosCard 8, KudosForm 9, KudosList 9)
   - Includes Kudos API client tests (14)
   - Includes PDP goal components (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4)

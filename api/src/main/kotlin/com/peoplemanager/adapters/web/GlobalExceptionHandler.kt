@@ -7,6 +7,7 @@ import com.peoplemanager.application.OneOnOneEntryNotFoundException
 import com.peoplemanager.application.PdpGoalNotFoundException
 import com.peoplemanager.application.PdpUpdateNotFoundException
 import com.peoplemanager.application.PersonNotFoundException
+import com.peoplemanager.application.QuickNoteNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -105,6 +106,17 @@ class GlobalExceptionHandler {
             status = HttpStatus.NOT_FOUND.value(),
             error = HttpStatus.NOT_FOUND.reasonPhrase,
             message = "PDP update not found",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(QuickNoteNotFoundException::class)
+    fun handleQuickNoteNotFoundException(ex: QuickNoteNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = "Quick note not found",
             timestamp = Instant.now()
         )
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
