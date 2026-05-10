@@ -85,6 +85,13 @@ enum class PdpGoalStatus {
     ACTIVE, ACHIEVED, PAUSED, DROPPED
 }
 
+@JvmInline
+value class KudosId(val value: UUID) {
+    companion object {
+        fun generate(): KudosId = KudosId(UUID.randomUUID())
+    }
+}
+
 data class OidcIdentity(
     val subject: String,
     val issuer: String
