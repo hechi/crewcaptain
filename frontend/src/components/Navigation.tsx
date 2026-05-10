@@ -236,6 +236,23 @@ export default function Navigation() {
               >
                 Audit Log
               </Link>
+              <Link
+                href="/workspaces"
+                data-testid="nav-workspaces"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  color: 'var(--color-text-primary)',
+                  textDecoration: 'none',
+                  borderRadius: 'var(--radius-small)',
+                  transition: 'background-color 0.15s',
+                }}
+              >
+                Workspaces
+              </Link>
               <div
                 style={{
                   height: '1px',

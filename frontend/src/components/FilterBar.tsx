@@ -36,7 +36,7 @@ export default function FilterBar({ onFilterChange, initialTag = '', initialMora
   };
 
   return (
-    <div data-testid="filter-bar" style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+    <div data-testid="filter-bar" style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
       <input
         type="text"
         placeholder="Filter by tag..."

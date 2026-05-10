@@ -32,6 +32,7 @@ import com.peoplemanager.application.queries.ListPersonsQuery
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.RememberItemId
+import com.peoplemanager.domain.WorkspaceId
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -151,7 +152,8 @@ class PersonController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
         @RequestParam(required = false) tag: String?,
-        @RequestParam(required = false) morale: MoraleStatus?
+        @RequestParam(required = false) morale: MoraleStatus?,
+        @RequestParam(required = false) workspace: UUID?
     ): ResponseEntity<PaginatedPersonResponse> {
         val userId = AuthenticatedUser.getUserId()
         val query = ListPersonsQuery(
@@ -159,7 +161,8 @@ class PersonController(
             page = page,
             size = size,
             tagFilter = tag,
-            moraleFilter = morale
+            moraleFilter = morale,
+            workspaceFilter = workspace?.let { WorkspaceId(it) }
         )
         val result = personQueryPort.listPersons(query)
         return ResponseEntity.ok(PaginatedPersonResponse.from(result))

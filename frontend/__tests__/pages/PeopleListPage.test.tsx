@@ -16,6 +16,7 @@ jest.mock('next-auth/react', () => ({
 
 jest.mock('@/lib/api-client', () => ({
   listPersons: jest.fn(),
+  listWorkspaces: jest.fn(),
 }));
 
 jest.mock('next/link', () => {
@@ -27,10 +28,11 @@ jest.mock('next/link', () => {
 });
 
 import { useSession } from 'next-auth/react';
-import { listPersons } from '@/lib/api-client';
+import { listPersons, listWorkspaces } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 const mockListPersons = listPersons as jest.MockedFunction<typeof listPersons>;
+const mockListWorkspaces = listWorkspaces as jest.MockedFunction<typeof listWorkspaces>;
 
 const mockPerson: Person = {
   id: '123e4567-e89b-12d3-a456-426614174000',
@@ -44,9 +46,11 @@ const mockPerson: Person = {
   moraleStatus: 'GREEN',
   moraleNote: null,
   pinnedRememberItems: [],
+  workspaceId: null,
   atAGlance: { last1on1Date: null, openActionItemsCount: null, activePdpGoalsSummary: null },
   createdAt: '2025-05-08T12:00:00Z',
   updatedAt: '2025-05-08T12:00:00Z',
+  deletedAt: null,
 };
 
 const mockPaginatedResponse: PaginatedResponse<Person> = {
@@ -60,6 +64,7 @@ const mockPaginatedResponse: PaginatedResponse<Person> = {
 describe('PeopleListPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockListWorkspaces.mockResolvedValue([]);
   });
 
   it('should show loading state while session is loading', () => {
@@ -94,6 +99,7 @@ describe('PeopleListPage', () => {
       size: 20,
       tag: undefined,
       morale: undefined,
+      workspace: undefined,
     });
   });
 
@@ -207,5 +213,74 @@ describe('PeopleListPage', () => {
 
     fireEvent.click(screen.getByTestId('trash-button'));
     expect(mockPush).toHaveBeenCalledWith('/people/trash');
+  });
+
+  it('should show workspace filter when workspaces exist', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: {}, expires: '' },
+      status: 'authenticated',
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
+    mockListPersons.mockResolvedValue(mockPaginatedResponse);
+    mockListWorkspaces.mockResolvedValue([
+      { id: 'ws-1', name: 'My Team', description: null, displayOrder: 0, createdAt: '', updatedAt: '' },
+      { id: 'ws-2', name: 'Mentees', description: null, displayOrder: 1, createdAt: '', updatedAt: '' },
+    ]);
+
+    render(<PeopleListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Filter by workspace')).toBeInTheDocument();
+    });
+    expect(screen.getByText('All workspaces')).toBeInTheDocument();
+    expect(screen.getByText('My Team')).toBeInTheDocument();
+    expect(screen.getByText('Mentees')).toBeInTheDocument();
+  });
+
+  it('should filter people by workspace when workspace selected', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: {}, expires: '' },
+      status: 'authenticated',
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
+    mockListPersons.mockResolvedValue(mockPaginatedResponse);
+    mockListWorkspaces.mockResolvedValue([
+      { id: 'ws-1', name: 'My Team', description: null, displayOrder: 0, createdAt: '', updatedAt: '' },
+    ]);
+
+    render(<PeopleListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Filter by workspace')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText('Filter by workspace'), { target: { value: 'ws-1' } });
+
+    await waitFor(() => {
+      expect(mockListPersons).toHaveBeenCalledWith('test-token', {
+        page: 0,
+        size: 20,
+        tag: undefined,
+        morale: undefined,
+        workspace: 'ws-1',
+      });
+    });
+  });
+
+  it('should not show workspace filter when no workspaces exist', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: {}, expires: '' },
+      status: 'authenticated',
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
+    mockListPersons.mockResolvedValue(mockPaginatedResponse);
+    mockListWorkspaces.mockResolvedValue([]);
+
+    render(<PeopleListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    });
+    expect(screen.queryByLabelText('Filter by workspace')).not.toBeInTheDocument();
   });
 });

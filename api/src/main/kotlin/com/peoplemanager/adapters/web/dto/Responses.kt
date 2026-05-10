@@ -20,6 +20,7 @@ data class PersonResponse(
     val moraleStatus: MoraleStatus,
     val moraleNote: String?,
     val pinnedRememberItems: List<RememberItemResponse>,
+    val workspaceId: UUID?,
     val atAGlance: AtAGlanceResponse,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -38,6 +39,7 @@ data class PersonResponse(
             moraleStatus = person.moraleStatus,
             moraleNote = person.moraleNote,
             pinnedRememberItems = person.pinnedRememberItems.map { RememberItemResponse.from(it) },
+            workspaceId = person.workspaceId?.value,
             atAGlance = AtAGlanceResponse(
                 last1on1Date = last1on1Date,
                 openActionItemsCount = openActionItemsCount,

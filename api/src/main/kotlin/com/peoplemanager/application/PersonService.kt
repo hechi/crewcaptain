@@ -138,7 +138,7 @@ class PersonService(
 
     override fun listPersons(query: ListPersonsQuery): Page<Person> {
         val pageable = PageRequest.of(query.page, query.size, Sort.by(Sort.Direction.ASC, "name"))
-        return personRepository.findAllByUserId(query.userId, pageable, query.tagFilter, query.moraleFilter)
+        return personRepository.findAllByUserId(query.userId, pageable, query.tagFilter, query.moraleFilter, query.workspaceFilter)
     }
 
     override fun listDeletedPersons(query: ListDeletedPersonsQuery): Page<Person> {

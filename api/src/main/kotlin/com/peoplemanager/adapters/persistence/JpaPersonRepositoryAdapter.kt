@@ -27,9 +27,26 @@ class JpaPersonRepositoryAdapter(
         userId: UserId,
         pageable: Pageable,
         tagFilter: String?,
-        moraleFilter: MoraleStatus?
+        moraleFilter: MoraleStatus?,
+        workspaceFilter: WorkspaceId?
     ): Page<Person> {
         val page = when {
+            workspaceFilter != null && tagFilter != null && moraleFilter != null ->
+                springDataPersonRepository.findAllByUserIdAndWorkspaceAndTagAndMoraleStatus(
+                    userId.value, workspaceFilter.value, tagFilter, moraleFilter.name, pageable
+                )
+            workspaceFilter != null && tagFilter != null ->
+                springDataPersonRepository.findAllByUserIdAndWorkspaceAndTag(
+                    userId.value, workspaceFilter.value, tagFilter, pageable
+                )
+            workspaceFilter != null && moraleFilter != null ->
+                springDataPersonRepository.findAllByUserIdAndWorkspaceAndMoraleStatus(
+                    userId.value, workspaceFilter.value, moraleFilter.name, pageable
+                )
+            workspaceFilter != null ->
+                springDataPersonRepository.findAllByUserIdAndWorkspace(
+                    userId.value, workspaceFilter.value, pageable
+                )
             tagFilter != null && moraleFilter != null ->
                 springDataPersonRepository.findAllByUserIdAndTagAndMoraleStatus(
                     userId.value, tagFilter, moraleFilter.name, pageable
@@ -86,6 +103,7 @@ class JpaPersonRepositoryAdapter(
         moraleStatus = MoraleStatus.valueOf(this.moraleStatus),
         moraleNote = this.moraleNote,
         pinnedRememberItems = this.pinnedRememberItems.map { it.toDomain() },
+        workspaceId = this.workspaceId?.let { WorkspaceId(it) },
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         deletedAt = this.deletedAt
@@ -111,6 +129,7 @@ class JpaPersonRepositoryAdapter(
             tags = this.tags.toTypedArray(),
             moraleStatus = this.moraleStatus.name,
             moraleNote = this.moraleNote,
+            workspaceId = this.workspaceId?.value,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
             deletedAt = this.deletedAt

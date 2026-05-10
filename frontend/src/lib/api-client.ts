@@ -46,6 +46,7 @@ import {
   MarkAllReadResponse,
 } from '@/types/notification';
 import { SearchResponse, SearchResultType } from '@/types/search';
+import { Workspace, CreateWorkspaceRequest, UpdateWorkspaceRequest, AssignPersonToWorkspaceRequest } from '@/types/workspace';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -152,12 +153,14 @@ export async function listPersons(token: string, params?: {
   size?: number;
   tag?: string;
   morale?: MoraleStatus;
+  workspace?: string;
 }): Promise<PaginatedResponse<Person>> {
   const searchParams = new URLSearchParams();
   if (params?.page !== undefined) searchParams.set('page', params.page.toString());
   if (params?.size !== undefined) searchParams.set('size', params.size.toString());
   if (params?.tag) searchParams.set('tag', params.tag);
   if (params?.morale) searchParams.set('morale', params.morale);
+  if (params?.workspace) searchParams.set('workspace', params.workspace);
 
   const queryString = searchParams.toString();
   const url = `${API_BASE_URL}/persons${queryString ? `?${queryString}` : ''}`;
@@ -769,5 +772,47 @@ export async function getAuditLog(
   const queryString = searchParams.toString();
   const url = `${API_BASE_URL}/audit-log${queryString ? `?${queryString}` : ''}`;
   const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+// ===== Workspaces =====
+
+export async function listWorkspaces(token: string): Promise<Workspace[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/workspaces`, {}, token);
+  return response.json();
+}
+
+export async function getWorkspace(token: string, id: string): Promise<Workspace> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/workspaces/${id}`, {}, token);
+  return response.json();
+}
+
+export async function createWorkspace(token: string, data: CreateWorkspaceRequest): Promise<Workspace> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/workspaces`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function updateWorkspace(token: string, id: string, data: UpdateWorkspaceRequest): Promise<Workspace> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/workspaces/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function deleteWorkspace(token: string, id: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/workspaces/${id}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function assignPersonToWorkspace(token: string, personId: string, data: AssignPersonToWorkspaceRequest): Promise<Person> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/workspaces/persons/${personId}/workspace`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
   return response.json();
 }

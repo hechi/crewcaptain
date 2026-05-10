@@ -4,9 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Person, PaginatedResponse, MoraleStatus } from '@/types/person';
-import { listPersons } from '@/lib/api-client';
+import { Workspace } from '@/types/workspace';
+import { listPersons, listWorkspaces } from '@/lib/api-client';
 import PersonCard from '@/components/PersonCard';
 import FilterBar from '@/components/FilterBar';
+import WorkspaceSelector from '@/components/workspace/WorkspaceSelector';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import CsvImportModal from '@/components/CsvImportModal';
@@ -20,7 +22,23 @@ export default function PeopleListPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<{ tag: string; morale: MoraleStatus | '' }>({ tag: '', morale: '' });
+  const [workspaceFilter, setWorkspaceFilter] = useState<string | null>(null);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
+
+  const fetchWorkspaces = useCallback(async () => {
+    if (status !== 'authenticated' || !session?.accessToken) return;
+    try {
+      const result = await listWorkspaces(session.accessToken as string);
+      setWorkspaces(result);
+    } catch {
+      // Silently fail — workspace feature is opt-in
+    }
+  }, [session, status]);
+
+  useEffect(() => {
+    fetchWorkspaces();
+  }, [fetchWorkspaces]);
 
   const fetchPeople = useCallback(async () => {
     if (status !== 'authenticated' || !session?.accessToken) return;
@@ -33,6 +51,7 @@ export default function PeopleListPage() {
         size: 20,
         tag: filters.tag || undefined,
         morale: (filters.morale || undefined) as MoraleStatus | undefined,
+        workspace: workspaceFilter || undefined,
       });
       setPeople(result);
     } catch (err) {
@@ -40,7 +59,7 @@ export default function PeopleListPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, status, page, filters]);
+  }, [session, status, page, filters, workspaceFilter]);
 
   useEffect(() => {
     fetchPeople();
@@ -129,14 +148,24 @@ export default function PeopleListPage() {
         </div>
       </div>
 
-      <FilterBar
-        onFilterChange={(newFilters) => {
-          setFilters(newFilters);
-          setPage(0);
-        }}
-        initialTag={filters.tag}
-        initialMorale={filters.morale}
-      />
+      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap' }}>
+        <FilterBar
+          onFilterChange={(newFilters) => {
+            setFilters(newFilters);
+            setPage(0);
+          }}
+          initialTag={filters.tag}
+          initialMorale={filters.morale}
+        />
+        <WorkspaceSelector
+          workspaces={workspaces}
+          selectedWorkspaceId={workspaceFilter}
+          onWorkspaceChange={(wsId) => {
+            setWorkspaceFilter(wsId);
+            setPage(0);
+          }}
+        />
+      </div>
 
       {loading && <div data-testid="loading" style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>}
 
