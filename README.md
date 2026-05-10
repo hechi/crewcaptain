@@ -27,10 +27,10 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
 - **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
 - **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
+- **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
 
 ### Planned
 
-- **Search** — Full-text search across all manager data
 - **Data Export** — Full data export capabilities
 
 ---
@@ -250,6 +250,30 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | POST   | `/api/v1/notifications/{notificationId}/read` | Mark a notification as read        |
 | POST   | `/api/v1/notifications/read-all`            | Mark all notifications as read       |
 
+### Search
+
+| Method | Endpoint          | Description                                    |
+|--------|-------------------|------------------------------------------------|
+| GET    | `/api/v1/search`  | Full-text search across all manager data       |
+
+**Query parameters:**
+- `q` — Search query (required)
+- `type` — Filter by result type (repeatable): PERSON, ONE_ON_ONE_ENTRY, QUICK_NOTE, ACTION_ITEM, PDP_GOAL, PDP_UPDATE, KUDOS
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20, max: 100)
+
+**Response fields:**
+- `results` — Array of search results with id, type, title, snippet, personId, personName, sensitive, createdAt, relevanceScore
+- `query` — The original search query
+- `totalCount` — Total number of matching results
+- `page` / `size` / `totalPages` — Pagination metadata
+
+**Notes:**
+- All results are scoped by the authenticated user (security invariant)
+- Sensitive content snippets are hidden in search results (only title shown)
+- Uses PostgreSQL full-text search with prefix matching and relevance ranking
+- Encrypted sensitive fields are not searchable (trade-off for encryption at rest)
+
 **Query parameters for notifications list:**
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
@@ -383,6 +407,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120004` | Create quick_notes table |
 | `V20250510120005` | Add attached_entry_id to quick_notes |
 | `V20250510120006` | Create notifications table |
+| `V20250510120007` | Add full-text search support (placeholder — no schema changes needed) |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

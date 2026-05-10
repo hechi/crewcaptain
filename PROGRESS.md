@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T14:30:00Z — In-app notification scheduling (reminders for overdue items, due-soon items, stale 1:1s, upcoming anniversaries)
+2026-05-10T15:30:00Z — Full-text search across all manager data
 
 ## Current Status
-In-app notification scheduling is now implemented. A Spring `@Scheduled` task runs hourly (configurable via cron) and generates notifications for all users based on overdue action items, due-soon items, stale 1:1 reminders, and upcoming work anniversaries. Notifications are deduplicated within a 24-hour window. The frontend includes a notification bell with unread badge in the navigation, a dropdown panel, and a dedicated notifications page with pagination and unread filter. All 566 frontend tests and all backend tests pass.
+Full-text search is now implemented. A single GET /api/v1/search endpoint searches across all manager data (people, 1:1 notes, quick notes, action items, PDP goals + updates, kudos) using PostgreSQL full-text search with relevance ranking. Results are scoped by userId (security invariant), support type filtering and pagination, and respect the sensitive content flag (snippets hidden for sensitive results). The frontend includes a dedicated /search page with search input, type filter chips, result cards with deep links, and pagination. Navigation updated with Search link. All 678 backend tests and 607 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -60,6 +60,7 @@ In-app notification scheduling is now implemented. A Spring `@Scheduled` task ru
 - [x] Navigation updated — Dashboard link added as first nav item, home page redirects to /dashboard (2026-05-10)
 - [x] Sensitive Content Encryption — AES-256-GCM application-level encryption for sensitive text fields at rest. EncryptionPort interface in application layer, AesGcmEncryptionAdapter in adapters layer. Integrated into persistence adapters (OneOnOneEntry, QuickNote, PdpUpdate). Graceful fallback when no key configured. Legacy unencrypted data support. (2026-05-10)
 - [x] In-App Notification Scheduling — Hourly scheduled task generates notifications for all users. Notification types: ACTION_ITEM_OVERDUE, ACTION_ITEM_DUE_SOON, STALE_ONE_ON_ONE, UPCOMING_ANNIVERSARY. 24-hour deduplication window prevents duplicate notifications. REST API: list (paginated), unread count, mark as read, mark all as read. Frontend: NotificationBell with unread badge in navigation, NotificationPanel dropdown, NotificationItem with type-specific icons and deep links, dedicated /notifications page with pagination and unread filter. (2026-05-10)
+- [x] Full-Text Search — GET /api/v1/search endpoint with PostgreSQL full-text search (to_tsvector/to_tsquery with prefix matching). Searches across persons, 1:1 entries, quick notes, action items, PDP goals, PDP updates, and kudos. Type filtering, pagination, relevance ranking. Sensitive content excluded from search (encrypted fields not searchable, sensitive snippets hidden in results). Frontend: dedicated /search page with search input, type filter chips, SearchResultCard component with type badges and deep links, pagination, URL state sync. Navigation link added. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -73,12 +74,20 @@ In-app notification scheduling is now implemented. A Spring `@Scheduled` task ru
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
-1. Search (full-text across all manager data)
-2. Data export functionality (per-person Markdown)
-3. Gamification elements (progress rings, streak counters, micro-animations)
-4. Settings page (reminder thresholds, export, encryption key status)
+1. Data export functionality (per-person Markdown)
+2. Gamification elements (progress rings, streak counters, micro-animations)
+3. Settings page (reminder thresholds, export, encryption key status)
+4. GIN indexes for full-text search (performance optimization for large datasets)
 
 ## Architecture Decisions Made This Session
+- Full-text search implemented using PostgreSQL's built-in to_tsvector/to_tsquery with prefix matching (word:*)
+- Search queries are sanitized to prevent tsquery injection — special characters stripped, words connected with AND
+- GIN indexes deferred for MVP — query-time FTS is efficient because all queries are pre-filtered by user_id (B-tree indexed)
+- Sensitive content excluded from search results: 1:1 entries and quick notes with sensitive=true are filtered out in SQL, PDP updates with sensitive=true also excluded
+- Encrypted sensitive fields are inherently not searchable (ciphertext won't match plaintext queries) — this is an acceptable trade-off
+- Search results include a relevance score from ts_rank for ordering
+- SearchResultResponse DTO hides snippet for sensitive results (defense in depth)
+- Added MissingServletRequestParameterException handler to GlobalExceptionHandler (returns 400 instead of 500)
 - Notification generation implemented as a Spring `@Scheduled` task in the scheduler adapter layer
 - NotificationGenerationService lives in the application layer (testable without scheduler infrastructure)
 - 24-hour deduplication window prevents notification spam — same type + referenceId won't re-notify within 24h
@@ -99,14 +108,13 @@ In-app notification scheduling is now implemented. A Spring `@Scheduled` task ru
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All tests pass — domain (including Notification 14 tests), application (including NotificationService 8 tests, NotificationGenerationService 15 tests), controller slice (including NotificationController 12 tests), encryption adapter (19 tests), encryption integration (10 tests), property, integration (last run: 2026-05-10)
+- Backend: All 678 tests pass — domain (including SearchResult 6 tests), application (including SearchService 15 tests), controller slice (including SearchController 12 tests), encryption adapter (19 tests), encryption integration (10 tests), property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 566 total — component tests (including NotificationBell 10, NotificationItem 14, NotificationPanel 10), page tests, API client tests (including notification 14) (last run: 2026-05-10)
+- Frontend: 607 total — component tests (including SearchResultCard 16), page tests (including search page 13), API client tests (including search 10) (last run: 2026-05-10)
   - Includes all previously listed test suites
-  - New: NotificationBell component tests (10)
-  - New: NotificationItem component tests (14)
-  - New: NotificationPanel component tests (10)
-  - New: Notification API client tests (14)
+  - New: SearchResultCard component tests (16)
+  - New: Search page tests (13)
+  - New: Search API client tests (10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review

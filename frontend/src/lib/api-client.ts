@@ -45,6 +45,7 @@ import {
   Notification as NotificationItem,
   MarkAllReadResponse,
 } from '@/types/notification';
+import { SearchResponse, SearchResultType } from '@/types/search';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -586,5 +587,26 @@ export async function markAllNotificationsAsRead(token: string): Promise<MarkAll
   const response = await fetchWithAuth(`${API_BASE_URL}/notifications/read-all`, {
     method: 'POST',
   }, token);
+  return response.json();
+}
+
+
+// ===== Search =====
+
+export async function search(
+  token: string,
+  params: { q: string; type?: SearchResultType[]; page?: number; size?: number }
+): Promise<SearchResponse> {
+  const searchParams = new URLSearchParams();
+  searchParams.set('q', params.q);
+  if (params.type && params.type.length > 0) {
+    params.type.forEach((t) => searchParams.append('type', t));
+  }
+  if (params.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/search?${queryString}`;
+  const response = await fetchWithAuth(url, {}, token);
   return response.json();
 }
