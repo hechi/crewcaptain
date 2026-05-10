@@ -327,6 +327,7 @@ class QuickNoteControllerTest {
 
     @Test
     fun `POST attach - marks quick note as attached`() {
+        val entryId = UUID.randomUUID()
         val attached = sampleQuickNote(status = QuickNoteStatus.ATTACHED)
 
         every { quickNoteCommandPort.attachQuickNote(any()) } returns attached
@@ -334,6 +335,8 @@ class QuickNoteControllerTest {
         mockMvc.perform(
             post("/api/v1/quick-notes/${quickNoteId.value}/attach")
                 .with(authentication(authenticatedJwt(userId)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"entryId": "$entryId"}""")
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.status").value("ATTACHED"))
@@ -375,6 +378,8 @@ class QuickNoteControllerTest {
         mockMvc.perform(
             post("/api/v1/quick-notes/${quickNoteId.value}/attach")
                 .with(authentication(authenticatedJwt(userId)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"entryId": "${UUID.randomUUID()}"}""")
         )
             .andExpect(status().isBadRequest)
     }

@@ -303,7 +303,18 @@ class QuickNoteIntegrationTest {
     inner class StatusTransitions {
 
         @Test
-        fun `should attach a quick note`() {
+        fun `should attach a quick note to a 1-1 entry`() {
+            // First create a 1:1 entry for the person
+            val entryResult = mockMvc.perform(
+                post("/api/v1/persons/$personAId/one-on-one-entries")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"meetingDate": "2026-05-10T10:00:00Z", "notesMarkdown": "Test meeting"}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val entryId = objectMapper.readTree(entryResult.response.contentAsString).get("id").asText()
+
+            // Create a quick note
             val createResult = mockMvc.perform(
                 post("/api/v1/quick-notes")
                     .with(authentication(authenticatedJwt(userA.id)))
@@ -313,12 +324,16 @@ class QuickNoteIntegrationTest {
 
             val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
 
+            // Attach the note to the entry
             mockMvc.perform(
                 post("/api/v1/quick-notes/$noteId/attach")
                     .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"entryId": "$entryId"}""")
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.status").value("ATTACHED"))
+                .andExpect(jsonPath("$.attachedEntryId").value(entryId))
         }
 
         @Test
@@ -361,6 +376,16 @@ class QuickNoteIntegrationTest {
 
         @Test
         fun `should reject attach on already attached note`() {
+            // Create a 1:1 entry
+            val entryResult = mockMvc.perform(
+                post("/api/v1/persons/$personAId/one-on-one-entries")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"meetingDate": "2026-05-10T11:00:00Z", "notesMarkdown": "Meeting"}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val entryId = objectMapper.readTree(entryResult.response.contentAsString).get("id").asText()
+
             val createResult = mockMvc.perform(
                 post("/api/v1/quick-notes")
                     .with(authentication(authenticatedJwt(userA.id)))
@@ -374,12 +399,16 @@ class QuickNoteIntegrationTest {
             mockMvc.perform(
                 post("/api/v1/quick-notes/$noteId/attach")
                     .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"entryId": "$entryId"}""")
             ).andExpect(status().isOk)
 
             // Try to attach again
             mockMvc.perform(
                 post("/api/v1/quick-notes/$noteId/attach")
                     .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"entryId": "$entryId"}""")
             ).andExpect(status().isBadRequest)
         }
     }

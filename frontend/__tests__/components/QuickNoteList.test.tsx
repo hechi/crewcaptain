@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuickNoteList from '@/components/quick-notes/QuickNoteList';
 import { QuickNote } from '@/types/quick-note';
+import { Person } from '@/types/person';
 
 describe('QuickNoteList', () => {
   const mockNotes: QuickNote[] = [
@@ -12,6 +13,7 @@ describe('QuickNoteList', () => {
       text: 'First note',
       sensitive: false,
       status: 'INBOX',
+      attachedEntryId: null,
       createdAt: '2026-05-10T10:00:00Z',
       updatedAt: '2026-05-10T10:00:00Z',
     },
@@ -21,15 +23,21 @@ describe('QuickNoteList', () => {
       text: 'Second note',
       sensitive: true,
       status: 'INBOX',
+      attachedEntryId: null,
       createdAt: '2026-05-10T11:00:00Z',
       updatedAt: '2026-05-10T11:00:00Z',
     },
+  ];
+
+  const mockPersons: Person[] = [
+    { id: 'person-1', name: 'Alice Smith', roleTitle: 'Engineer', moraleStatus: 'GREEN', moraleNote: null, tags: [], pinnedRememberItems: [], atAGlance: { last1on1Date: null, openActionItemsCount: 0, activePdpGoalsSummary: '' } } as Person,
   ];
 
   const mockOnCreateNote = jest.fn();
   const mockOnArchive = jest.fn();
   const mockOnConvert = jest.fn();
   const mockOnAttach = jest.fn();
+  const mockOnAssignPerson = jest.fn();
   const mockOnDelete = jest.fn();
   const mockOnStatusFilterChange = jest.fn();
 
@@ -41,10 +49,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={mockNotes}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter={null}
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -57,10 +67,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={mockNotes}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter={null}
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -73,10 +85,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={mockNotes}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter={null}
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -94,10 +108,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={mockNotes}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter={null}
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -111,10 +127,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={[]}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter={null}
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -127,10 +145,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={mockNotes}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter={null}
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -144,10 +164,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={mockNotes}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         statusFilter="INBOX"
         onStatusFilterChange={mockOnStatusFilterChange}
@@ -161,10 +183,12 @@ describe('QuickNoteList', () => {
     render(
       <QuickNoteList
         quickNotes={[]}
+        persons={mockPersons}
         onCreateNote={mockOnCreateNote}
         onArchive={mockOnArchive}
         onConvert={mockOnConvert}
         onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
         isSubmitting={true}
         statusFilter={null}

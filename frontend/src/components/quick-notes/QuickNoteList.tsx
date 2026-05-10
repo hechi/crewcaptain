@@ -1,17 +1,22 @@
 'use client';
 
 import { QuickNote, QuickNoteStatus, CreateQuickNoteRequest } from '@/types/quick-note';
+import { Person } from '@/types/person';
+import { OneOnOneEntry } from '@/types/one-on-one';
 import QuickNoteCard from './QuickNoteCard';
 import QuickNoteForm from './QuickNoteForm';
 import EmptyState from '@/components/EmptyState';
 
 interface QuickNoteListProps {
   quickNotes: QuickNote[];
+  persons: Person[];
   onCreateNote: (data: CreateQuickNoteRequest) => void;
   onArchive: (id: string) => void;
   onConvert: (id: string) => void;
-  onAttach: (id: string) => void;
+  onAttach: (id: string, entryId: string) => void;
+  onAssignPerson: (id: string, personId: string) => void;
   onDelete: (id: string) => void;
+  onFetchEntries?: (personId: string) => Promise<OneOnOneEntry[]>;
   isSubmitting?: boolean;
   statusFilter: QuickNoteStatus | null;
   onStatusFilterChange: (status: QuickNoteStatus | null) => void;
@@ -22,11 +27,14 @@ interface QuickNoteListProps {
  */
 export default function QuickNoteList({
   quickNotes,
+  persons,
   onCreateNote,
   onArchive,
   onConvert,
   onAttach,
+  onAssignPerson,
   onDelete,
+  onFetchEntries,
   isSubmitting = false,
   statusFilter,
   onStatusFilterChange,
@@ -86,10 +94,13 @@ export default function QuickNoteList({
             <QuickNoteCard
               key={note.id}
               quickNote={note}
+              persons={persons}
               onArchive={onArchive}
               onConvert={onConvert}
               onAttach={onAttach}
+              onAssignPerson={onAssignPerson}
               onDelete={onDelete}
+              onFetchEntries={onFetchEntries}
             />
           ))}
         </div>

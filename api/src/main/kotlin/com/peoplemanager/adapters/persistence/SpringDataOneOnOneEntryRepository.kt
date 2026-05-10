@@ -9,6 +9,7 @@ import java.time.Instant
 import java.util.UUID
 
 interface SpringDataOneOnOneEntryRepository : JpaRepository<OneOnOneEntryEntity, UUID> {
+    fun findByIdAndUserId(id: UUID, userId: UUID): OneOnOneEntryEntity?
     fun findByIdAndUserIdAndPersonId(id: UUID, userId: UUID, personId: UUID): OneOnOneEntryEntity?
     fun findAllByUserIdAndPersonId(userId: UUID, personId: UUID, pageable: Pageable): Page<OneOnOneEntryEntity>
     fun deleteByIdAndUserIdAndPersonId(id: UUID, userId: UUID, personId: UUID): Long

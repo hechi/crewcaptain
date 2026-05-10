@@ -21,6 +21,7 @@ const mockQuickNote = {
   text: 'Remember to follow up',
   sensitive: false,
   status: 'INBOX',
+  attachedEntryId: null,
   createdAt: '2026-05-10T10:00:00Z',
   updatedAt: '2026-05-10T10:00:00Z',
 };
@@ -275,16 +276,18 @@ describe('assignQuickNoteToPerson', () => {
 });
 
 describe('attachQuickNote', () => {
-  it('should send POST request to attach endpoint', async () => {
+  it('should send POST request to attach endpoint with entryId', async () => {
+    const entryId = '880e8400-e29b-41d4-a716-446655440002';
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ ...mockQuickNote, status: 'ATTACHED' }),
+      json: () => Promise.resolve({ ...mockQuickNote, status: 'ATTACHED', attachedEntryId: entryId }),
     });
 
-    await attachQuickNote(mockToken, quickNoteId);
+    await attachQuickNote(mockToken, quickNoteId, { entryId });
 
     expect(mockFetch).toHaveBeenCalledWith(`/api/v1/quick-notes/${quickNoteId}/attach`, {
       method: 'POST',
+      body: JSON.stringify({ entryId }),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${mockToken}`,

@@ -9,6 +9,7 @@ data class QuickNote(
     val text: String,
     val sensitive: Boolean = false,
     val status: QuickNoteStatus = QuickNoteStatus.INBOX,
+    val attachedEntryId: OneOnOneEntryId? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -20,11 +21,11 @@ data class QuickNote(
         return copy(personId = personId, updatedAt = Instant.now())
     }
 
-    fun markAttached(): QuickNote {
+    fun markAttached(entryId: OneOnOneEntryId): QuickNote {
         require(status == QuickNoteStatus.INBOX) {
             "Can only attach a quick note with status INBOX, current status is $status"
         }
-        return copy(status = QuickNoteStatus.ATTACHED, updatedAt = Instant.now())
+        return copy(status = QuickNoteStatus.ATTACHED, attachedEntryId = entryId, updatedAt = Instant.now())
     }
 
     fun markConverted(): QuickNote {

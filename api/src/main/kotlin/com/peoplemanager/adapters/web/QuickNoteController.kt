@@ -101,10 +101,15 @@ class QuickNoteController(
 
     @PostMapping("/quick-notes/{quickNoteId}/attach")
     fun attachQuickNote(
-        @PathVariable quickNoteId: UUID
+        @PathVariable quickNoteId: UUID,
+        @Valid @RequestBody request: AttachQuickNoteToEntryRequest
     ): ResponseEntity<QuickNoteResponse> {
         val userId = AuthenticatedUser.getUserId()
-        val command = AttachQuickNoteCommand(userId = userId, quickNoteId = QuickNoteId(quickNoteId))
+        val command = AttachQuickNoteCommand(
+            userId = userId,
+            quickNoteId = QuickNoteId(quickNoteId),
+            entryId = com.peoplemanager.domain.OneOnOneEntryId(request.entryId)
+        )
         val quickNote = quickNoteCommandPort.attachQuickNote(command)
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
     }

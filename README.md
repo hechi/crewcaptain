@@ -225,7 +225,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | PUT    | `/api/v1/quick-notes/{quickNoteId}`                     | Update a quick note                  |
 | DELETE | `/api/v1/quick-notes/{quickNoteId}`                     | Delete a quick note                  |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/assign`              | Assign to a person                   |
-| POST   | `/api/v1/quick-notes/{quickNoteId}/attach`              | Mark as attached (to 1:1)            |
+| POST   | `/api/v1/quick-notes/{quickNoteId}/attach`              | Attach to a 1:1 entry              |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/convert`             | Mark as converted (to action item)   |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/archive`             | Archive the quick note               |
 
@@ -235,7 +235,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `sensitive` — Optional boolean (default: false)
 
 **Quick Note status transitions:**
-- INBOX → ATTACHED (via `/attach`)
+- INBOX → ATTACHED (via `/attach` with `entryId` — links to a specific 1:1 entry)
 - INBOX → CONVERTED (via `/convert`)
 - INBOX → ARCHIVED (via `/archive`)
 - No other transitions are allowed
@@ -346,6 +346,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120002` | Create pdp_updates table |
 | `V20250510120003` | Create kudos table |
 | `V20250510120004` | Create quick_notes table |
+| `V20250510120005` | Add attached_entry_id to quick_notes |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

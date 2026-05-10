@@ -26,6 +26,9 @@ class QuickNoteEntity(
     @Column(name = "status", nullable = false)
     val status: String = "INBOX",
 
+    @Column(name = "attached_entry_id")
+    val attachedEntryId: UUID? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

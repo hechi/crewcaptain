@@ -10,6 +10,7 @@ import java.time.Instant
 
 interface OneOnOneEntryRepository {
     fun save(entry: OneOnOneEntry): OneOnOneEntry
+    fun findByIdAndUserId(entryId: OneOnOneEntryId, userId: UserId): OneOnOneEntry?
     fun findByIdAndUserIdAndPersonId(entryId: OneOnOneEntryId, userId: UserId, personId: PersonId): OneOnOneEntry?
     fun findAllByUserIdAndPersonId(userId: UserId, personId: PersonId, pageable: Pageable): Page<OneOnOneEntry>
     fun deleteByIdAndUserIdAndPersonId(entryId: OneOnOneEntryId, userId: UserId, personId: PersonId): Boolean

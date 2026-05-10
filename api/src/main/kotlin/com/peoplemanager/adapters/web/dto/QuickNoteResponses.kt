@@ -12,6 +12,7 @@ data class QuickNoteResponse(
     val text: String,
     val sensitive: Boolean,
     val status: QuickNoteStatus,
+    val attachedEntryId: UUID?,
     val createdAt: Instant,
     val updatedAt: Instant
 ) {
@@ -22,6 +23,7 @@ data class QuickNoteResponse(
             text = quickNote.text,
             sensitive = quickNote.sensitive,
             status = quickNote.status,
+            attachedEntryId = quickNote.attachedEntryId?.value,
             createdAt = quickNote.createdAt,
             updatedAt = quickNote.updatedAt
         )

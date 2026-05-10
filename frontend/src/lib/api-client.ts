@@ -35,6 +35,7 @@ import {
   CreateQuickNoteRequest,
   UpdateQuickNoteRequest,
   AssignQuickNoteToPersonRequest,
+  AttachQuickNoteToEntryRequest,
   PaginatedQuickNoteResponse,
 } from '@/types/quick-note';
 
@@ -502,9 +503,10 @@ export async function assignQuickNoteToPerson(token: string, quickNoteId: string
   return response.json();
 }
 
-export async function attachQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+export async function attachQuickNote(token: string, quickNoteId: string, data: AttachQuickNoteToEntryRequest): Promise<QuickNote> {
   const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/attach`, {
     method: 'POST',
+    body: JSON.stringify(data),
   }, token);
   return response.json();
 }

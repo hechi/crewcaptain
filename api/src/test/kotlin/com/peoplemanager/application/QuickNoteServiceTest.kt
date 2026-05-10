@@ -1,6 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
+import com.peoplemanager.application.ports.OneOnOneEntryRepository
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.ports.QuickNoteRepository
 import com.peoplemanager.application.queries.GetQuickNoteQuery
@@ -20,8 +21,9 @@ class QuickNoteServiceTest {
 
     private val quickNoteRepository = mockk<QuickNoteRepository>()
     private val personRepository = mockk<PersonRepository>()
+    private val oneOnOneEntryRepository = mockk<OneOnOneEntryRepository>()
 
-    private val service = QuickNoteService(quickNoteRepository, personRepository)
+    private val service = QuickNoteService(quickNoteRepository, personRepository, oneOnOneEntryRepository)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()
@@ -213,6 +215,7 @@ class QuickNoteServiceTest {
     inner class StatusTransitionTests {
 
         private val quickNoteId = QuickNoteId.generate()
+        private val entryId = OneOnOneEntryId.generate()
         private val inboxNote = QuickNote(
             id = quickNoteId,
             userId = userId,
@@ -220,14 +223,29 @@ class QuickNoteServiceTest {
         )
 
         @Test
-        fun `should attach quick note`() {
+        fun `should attach quick note to entry`() {
+            val mockEntry = mockk<OneOnOneEntry>()
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
+            every { oneOnOneEntryRepository.findByIdAndUserId(entryId, userId) } returns mockEntry
             every { quickNoteRepository.save(any()) } answers { firstArg() }
 
-            val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId)
+            val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, entryId = entryId)
             val result = service.attachQuickNote(command)
 
             result.status shouldBe QuickNoteStatus.ATTACHED
+            result.attachedEntryId shouldBe entryId
+        }
+
+        @Test
+        fun `should throw when entry not found on attach`() {
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
+            every { oneOnOneEntryRepository.findByIdAndUserId(entryId, userId) } returns null
+
+            val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, entryId = entryId)
+
+            shouldThrow<OneOnOneEntryNotFoundException> {
+                service.attachQuickNote(command)
+            }
         }
 
         @Test
@@ -256,8 +274,9 @@ class QuickNoteServiceTest {
         fun `should throw when attaching non-INBOX note`() {
             val attachedNote = inboxNote.copy(status = QuickNoteStatus.ATTACHED)
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns attachedNote
+            every { oneOnOneEntryRepository.findByIdAndUserId(entryId, userId) } returns mockk()
 
-            val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId)
+            val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, entryId = entryId)
 
             shouldThrow<IllegalArgumentException> {
                 service.attachQuickNote(command)

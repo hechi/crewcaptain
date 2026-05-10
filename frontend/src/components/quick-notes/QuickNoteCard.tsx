@@ -1,19 +1,40 @@
 'use client';
 
+import { useState } from 'react';
 import { QuickNote } from '@/types/quick-note';
+import { Person } from '@/types/person';
+import { OneOnOneEntry } from '@/types/one-on-one';
 
 interface QuickNoteCardProps {
   quickNote: QuickNote;
+  persons: Person[];
   onArchive: (id: string) => void;
   onConvert: (id: string) => void;
-  onAttach: (id: string) => void;
+  onAttach: (id: string, entryId: string) => void;
+  onAssignPerson: (id: string, personId: string) => void;
   onDelete: (id: string) => void;
+  onFetchEntries?: (personId: string) => Promise<OneOnOneEntry[]>;
 }
 
 /**
  * Displays a single quick note with status, text, and action buttons.
+ * Includes person picker for assignment and 1:1 entry picker for attaching.
  */
-export default function QuickNoteCard({ quickNote, onArchive, onConvert, onAttach, onDelete }: QuickNoteCardProps) {
+export default function QuickNoteCard({
+  quickNote,
+  persons,
+  onArchive,
+  onConvert,
+  onAttach,
+  onAssignPerson,
+  onDelete,
+  onFetchEntries,
+}: QuickNoteCardProps) {
+  const [showPersonPicker, setShowPersonPicker] = useState(false);
+  const [showEntryPicker, setShowEntryPicker] = useState(false);
+  const [entries, setEntries] = useState<OneOnOneEntry[]>([]);
+  const [entriesLoading, setEntriesLoading] = useState(false);
+
   const formattedDate = new Date(quickNote.createdAt).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -23,6 +44,36 @@ export default function QuickNoteCard({ quickNote, onArchive, onConvert, onAttac
   });
 
   const isInbox = quickNote.status === 'INBOX';
+
+  const assignedPerson = persons.find((p) => p.id === quickNote.personId);
+
+  const handleAssignPerson = (personId: string) => {
+    onAssignPerson(quickNote.id, personId);
+    setShowPersonPicker(false);
+  };
+
+  const handleShowEntryPicker = async () => {
+    if (!quickNote.personId) {
+      // Need to assign a person first
+      setShowPersonPicker(true);
+      return;
+    }
+    setShowEntryPicker(true);
+    if (onFetchEntries) {
+      setEntriesLoading(true);
+      try {
+        const result = await onFetchEntries(quickNote.personId);
+        setEntries(result);
+      } finally {
+        setEntriesLoading(false);
+      }
+    }
+  };
+
+  const handleAttachToEntry = (entryId: string) => {
+    onAttach(quickNote.id, entryId);
+    setShowEntryPicker(false);
+  };
 
   return (
     <div
@@ -68,6 +119,22 @@ export default function QuickNoteCard({ quickNote, onArchive, onConvert, onAttac
               Sensitive
             </span>
           )}
+          {assignedPerson && (
+            <span
+              data-testid="quick-note-person-badge"
+              style={{
+                padding: '2px 8px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-secondary)',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-secondary-muted, rgba(168, 85, 247, 0.15))',
+                color: 'var(--color-secondary)',
+              }}
+            >
+              {assignedPerson.name}
+            </span>
+          )}
         </div>
         <span
           data-testid="quick-note-status"
@@ -100,12 +167,91 @@ export default function QuickNoteCard({ quickNote, onArchive, onConvert, onAttac
         {quickNote.text}
       </p>
 
+      {/* Person Picker */}
+      {showPersonPicker && (
+        <div data-testid="person-picker" style={{ marginBottom: '12px', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-elevated)' }}>
+          <label style={{ display: 'block', fontSize: 'var(--text-caption)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>
+            Assign to person:
+          </label>
+          <select
+            data-testid="person-picker-select"
+            onChange={(e) => { if (e.target.value) handleAssignPerson(e.target.value); }}
+            defaultValue=""
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              fontSize: 'var(--text-body)',
+            }}
+          >
+            <option value="" disabled>Select a person...</option>
+            {persons.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}{p.roleTitle ? ` — ${p.roleTitle}` : ''}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setShowPersonPicker(false)}
+            style={{ marginTop: '6px', padding: '4px 8px', fontSize: 'var(--text-caption)', border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Entry Picker */}
+      {showEntryPicker && (
+        <div data-testid="entry-picker" style={{ marginBottom: '12px', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-elevated)' }}>
+          <label style={{ display: 'block', fontSize: 'var(--text-caption)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>
+            Attach to 1:1 entry:
+          </label>
+          {entriesLoading ? (
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)' }}>Loading entries...</span>
+          ) : entries.length === 0 ? (
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)' }}>No 1:1 entries found for this person.</span>
+          ) : (
+            <select
+              data-testid="entry-picker-select"
+              onChange={(e) => { if (e.target.value) handleAttachToEntry(e.target.value); }}
+              defaultValue=""
+              style={{
+                width: '100%',
+                padding: '6px 10px',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'var(--color-bg-elevated)',
+                color: 'var(--color-text-primary)',
+                fontSize: 'var(--text-body)',
+              }}
+            >
+              <option value="" disabled>Select a 1:1 entry...</option>
+              {entries.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {new Date(entry.meetingDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  {entry.notesMarkdown ? ` — ${entry.notesMarkdown.substring(0, 40)}...` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowEntryPicker(false)}
+            style={{ marginTop: '6px', padding: '4px 8px', fontSize: 'var(--text-caption)', border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       {/* Actions — only show for INBOX notes */}
       {isInbox && (
         <div data-testid="quick-note-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             type="button"
-            onClick={() => onAttach(quickNote.id)}
+            onClick={handleShowEntryPicker}
             data-testid="quick-note-attach-btn"
             aria-label="Attach to 1:1"
             style={{
@@ -139,6 +285,26 @@ export default function QuickNoteCard({ quickNote, onArchive, onConvert, onAttac
           >
             → Action Item
           </button>
+          {!quickNote.personId && (
+            <button
+              type="button"
+              onClick={() => setShowPersonPicker(true)}
+              data-testid="quick-note-assign-btn"
+              aria-label="Assign to person"
+              style={{
+                padding: '4px 10px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-success-muted, rgba(57, 255, 133, 0.15))',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-success)',
+                cursor: 'pointer',
+              }}
+            >
+              Assign Person
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onArchive(quickNote.id)}

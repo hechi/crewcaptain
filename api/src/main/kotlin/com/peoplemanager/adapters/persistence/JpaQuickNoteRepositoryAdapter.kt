@@ -57,6 +57,7 @@ class JpaQuickNoteRepositoryAdapter(
         text = this.text,
         sensitive = this.sensitive,
         status = QuickNoteStatus.valueOf(this.status),
+        attachedEntryId = this.attachedEntryId?.let { OneOnOneEntryId(it) },
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -68,6 +69,7 @@ class JpaQuickNoteRepositoryAdapter(
         text = this.text,
         sensitive = this.sensitive,
         status = this.status.name,
+        attachedEntryId = this.attachedEntryId?.value,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

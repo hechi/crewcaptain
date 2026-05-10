@@ -1,5 +1,6 @@
 package com.peoplemanager.application.commands
 
+import com.peoplemanager.domain.OneOnOneEntryId
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.QuickNoteId
 import com.peoplemanager.domain.UserId
@@ -27,7 +28,8 @@ data class AssignQuickNoteToPersonCommand(
 
 data class AttachQuickNoteCommand(
     val userId: UserId,
-    val quickNoteId: QuickNoteId
+    val quickNoteId: QuickNoteId,
+    val entryId: OneOnOneEntryId
 )
 
 data class ConvertQuickNoteCommand(

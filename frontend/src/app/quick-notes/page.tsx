@@ -2,14 +2,19 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { QuickNote, QuickNoteStatus, CreateQuickNoteRequest, PaginatedQuickNoteResponse } from '@/types/quick-note';
+import { QuickNoteStatus, CreateQuickNoteRequest, PaginatedQuickNoteResponse } from '@/types/quick-note';
+import { Person, PaginatedResponse } from '@/types/person';
+import { OneOnOneEntry } from '@/types/one-on-one';
 import {
   listQuickNotes,
   createQuickNote,
   archiveQuickNote,
   convertQuickNote,
   attachQuickNote,
+  assignQuickNoteToPerson,
   deleteQuickNote,
+  listPersons,
+  listOneOnOneEntries,
 } from '@/lib/api-client';
 import QuickNoteList from '@/components/quick-notes/QuickNoteList';
 import Pagination from '@/components/Pagination';
@@ -18,6 +23,7 @@ export default function QuickNotesPage() {
   const { data: session, status } = useSession();
 
   const [notes, setNotes] = useState<PaginatedQuickNoteResponse | null>(null);
+  const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -45,9 +51,23 @@ export default function QuickNotesPage() {
     }
   }, [token, status, statusFilter, page]);
 
+  const fetchPersons = useCallback(async () => {
+    if (status !== 'authenticated' || !token) return;
+    try {
+      const result = await listPersons(token, { size: 100 });
+      setPersons(result.content);
+    } catch {
+      // Non-critical — persons list is for the picker
+    }
+  }, [token, status]);
+
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
+
+  useEffect(() => {
+    fetchPersons();
+  }, [fetchPersons]);
 
   const handleCreate = async (data: CreateQuickNoteRequest) => {
     setSubmitting(true);
@@ -79,12 +99,21 @@ export default function QuickNotesPage() {
     }
   };
 
-  const handleAttach = async (id: string) => {
+  const handleAttach = async (id: string, entryId: string) => {
     try {
-      await attachQuickNote(token, id);
+      await attachQuickNote(token, id, { entryId });
       fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attach quick note');
+    }
+  };
+
+  const handleAssignPerson = async (id: string, personId: string) => {
+    try {
+      await assignQuickNoteToPerson(token, id, { personId });
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to assign quick note to person');
     }
   };
 
@@ -94,6 +123,15 @@ export default function QuickNotesPage() {
       fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete quick note');
+    }
+  };
+
+  const handleFetchEntries = async (personId: string): Promise<OneOnOneEntry[]> => {
+    try {
+      const result = await listOneOnOneEntries(token, personId, 0, 20);
+      return result.content;
+    } catch {
+      return [];
     }
   };
 
@@ -139,11 +177,14 @@ export default function QuickNotesPage() {
         <>
           <QuickNoteList
             quickNotes={notes?.content || []}
+            persons={persons}
             onCreateNote={handleCreate}
             onArchive={handleArchive}
             onConvert={handleConvert}
             onAttach={handleAttach}
+            onAssignPerson={handleAssignPerson}
             onDelete={handleDelete}
+            onFetchEntries={handleFetchEntries}
             isSubmitting={submitting}
             statusFilter={statusFilter}
             onStatusFilterChange={handleStatusFilterChange}

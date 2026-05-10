@@ -24,6 +24,13 @@ class JpaOneOnOneEntryRepositoryAdapter(
         return springDataRepository.save(entity).toDomain()
     }
 
+    override fun findByIdAndUserId(
+        entryId: OneOnOneEntryId,
+        userId: UserId
+    ): OneOnOneEntry? {
+        return springDataRepository.findByIdAndUserId(entryId.value, userId.value)?.toDomain()
+    }
+
     override fun findByIdAndUserIdAndPersonId(
         entryId: OneOnOneEntryId,
         userId: UserId,

@@ -97,12 +97,15 @@ class QuickNoteTest {
     @Nested
     inner class StatusTransitionTests {
 
+        private val entryId = OneOnOneEntryId.generate()
+
         @Test
         fun `should mark as attached from INBOX`() {
             val note = createQuickNote()
-            val attached = note.markAttached()
+            val attached = note.markAttached(entryId)
 
             attached.status shouldBe QuickNoteStatus.ATTACHED
+            attached.attachedEntryId shouldBe entryId
             attached.updatedAt shouldNotBe note.updatedAt
         }
 
@@ -111,7 +114,7 @@ class QuickNoteTest {
             val note = createQuickNote(status = QuickNoteStatus.ARCHIVED)
 
             shouldThrow<IllegalArgumentException> {
-                note.markAttached()
+                note.markAttached(entryId)
             }.message shouldBe "Can only attach a quick note with status INBOX, current status is ARCHIVED"
         }
 

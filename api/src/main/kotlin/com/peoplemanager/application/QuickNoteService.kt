@@ -5,6 +5,7 @@ import com.peoplemanager.application.ports.QuickNoteCommandPort
 import com.peoplemanager.application.ports.QuickNoteQueryPort
 import com.peoplemanager.application.ports.QuickNoteRepository
 import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.ports.OneOnOneEntryRepository
 import com.peoplemanager.application.queries.GetQuickNoteQuery
 import com.peoplemanager.application.queries.ListQuickNotesQuery
 import com.peoplemanager.domain.QuickNote
@@ -19,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class QuickNoteService(
     private val quickNoteRepository: QuickNoteRepository,
-    private val personRepository: PersonRepository
+    private val personRepository: PersonRepository,
+    private val oneOnOneEntryRepository: OneOnOneEntryRepository
 ) : QuickNoteCommandPort, QuickNoteQueryPort {
 
     override fun createQuickNote(command: CreateQuickNoteCommand): QuickNote {
@@ -80,7 +82,11 @@ class QuickNoteService(
         val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
             ?: throw QuickNoteNotFoundException(command.quickNoteId)
 
-        val updated = existing.markAttached()
+        // Validate the 1:1 entry exists and belongs to the user
+        oneOnOneEntryRepository.findByIdAndUserId(command.entryId, command.userId)
+            ?: throw OneOnOneEntryNotFoundException(command.entryId)
+
+        val updated = existing.markAttached(command.entryId)
         return quickNoteRepository.save(updated)
     }
 

@@ -9,6 +9,7 @@ export interface QuickNote {
   text: string;
   sensitive: boolean;
   status: QuickNoteStatus;
+  attachedEntryId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,10 @@ export interface UpdateQuickNoteRequest {
 
 export interface AssignQuickNoteToPersonRequest {
   personId: string;
+}
+
+export interface AttachQuickNoteToEntryRequest {
+  entryId: string;
 }
 
 export interface PaginatedQuickNoteResponse {

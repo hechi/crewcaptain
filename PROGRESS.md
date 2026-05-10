@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T10:00:00Z — Quick Notes ("Inbox") feature fully implemented end-to-end
+2026-05-10T10:30:00Z — Quick Notes enhanced with person picker, 1:1 entry attachment, and full UI wiring
 
 ## Current Status
-The Quick Notes ("Inbox") feature is fully implemented end-to-end. The backend provides create, get, update, list, delete, assign-to-person, and status transitions (attach, convert, archive) for quick notes with Markdown text, optional person assignment, and sensitive flag. The frontend includes TypeScript types, API client functions (9 functions), reusable components (QuickNoteCard, QuickNoteForm, QuickNoteList), a dedicated Quick Notes page with status filter and pagination, and a navigation link. All 454 frontend tests and all backend tests pass.
+The Quick Notes ("Inbox") feature is fully implemented with interactive person assignment and 1:1 entry attachment. The "Attach to 1:1" action now opens a 1:1 entry picker (after selecting a person) and stores the linked entry ID. The "Assign Person" action shows a person dropdown picker. The backend stores `attached_entry_id` as a foreign key to the 1:1 entries table. All 459 frontend tests and all backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -49,8 +49,9 @@ The Quick Notes ("Inbox") feature is fully implemented end-to-end. The backend p
 - [x] Quick Notes Backend API — Create, get, update, list, delete, assign-to-person, attach, convert, archive. Markdown text, optional person assignment, sensitive flag, status workflow (INBOX→ATTACHED/CONVERTED/ARCHIVED). Data isolation enforced. (2026-05-10)
 - [x] Quick Notes Database migration — quick_notes table with indexes (user_id, user_id+status, user_id+person_id, user_id+created_at) (2026-05-10)
 - [x] Quick Notes Backend tests — Domain unit tests (16 tests), application service tests (18 tests), controller slice tests (17 tests), integration tests with data isolation verification (15 tests) (2026-05-10)
-- [x] Quick Notes Frontend — TypeScript types, API client (9 functions), components (QuickNoteCard, QuickNoteForm, QuickNoteList), dedicated Quick Notes page with status filter and pagination, Navigation link (2026-05-10)
-- [x] Quick Notes Frontend tests — Component tests (QuickNoteCard 12, QuickNoteForm 11, QuickNoteList 9), API client tests (17) (2026-05-10)
+- [x] Quick Notes Frontend — TypeScript types, API client (9 functions), components (QuickNoteCard with person picker + 1:1 entry picker, QuickNoteForm, QuickNoteList), dedicated Quick Notes page with status filter, pagination, person assignment, and 1:1 attachment, Navigation link (2026-05-10)
+- [x] Quick Notes Frontend tests — Component tests (QuickNoteCard 16, QuickNoteForm 11, QuickNoteList 9), API client tests (17) (2026-05-10)
+- [x] Quick Notes 1:1 Attachment — Backend schema migration (attached_entry_id FK), domain model updated, attach endpoint requires entryId, validates entry exists and belongs to user, frontend entry picker UI (2026-05-10)
 
 ## In Progress
 - (none)
@@ -75,6 +76,8 @@ The Quick Notes ("Inbox") feature is fully implemented end-to-end. The backend p
 - Status transitions are one-way from INBOX only — once attached/converted/archived, the note cannot go back to INBOX
 - Quick Notes use a flat endpoint structure (`/api/v1/quick-notes`) rather than nested under persons, since they can be unassigned
 - Assign-to-person is a separate action from create/update — allows quick capture first, organize later
+- Attach to 1:1 stores a foreign key reference (`attached_entry_id`) to the specific 1:1 entry — validates entry exists and belongs to user
+- Person must be assigned before attaching to a 1:1 (UI enforces this by showing person picker first)
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -88,8 +91,8 @@ The Quick Notes ("Inbox") feature is fully implemented end-to-end. The backend p
 ## Test Coverage Summary
 - Backend: All tests pass — domain (including QuickNote 16 tests), application (including QuickNoteService 18 tests), controller slice (including QuickNoteController 17 tests), property, integration (including QuickNote data isolation 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 454 total — component tests (including QuickNote components), page tests (including auth pages), API client tests (including quick-notes) (last run: 2026-05-10)
-  - Includes QuickNote components (QuickNoteCard 12, QuickNoteForm 11, QuickNoteList 9)
+- Frontend: 459 total — component tests (including QuickNote components), page tests (including auth pages), API client tests (including quick-notes) (last run: 2026-05-10)
+  - Includes QuickNote components (QuickNoteCard 16, QuickNoteForm 11, QuickNoteList 9)
   - Includes QuickNote API client tests (17)
   - Includes Kudos components (KudosCard 8, KudosForm 9, KudosList 9)
   - Includes Kudos API client tests (14)
@@ -106,4 +109,4 @@ The Quick Notes ("Inbox") feature is fully implemented end-to-end. The backend p
 ## Open Questions / Flags for Human Review
 - Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values
 - Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference?
-- Quick Notes "convert to action item" and "attach to 1:1" currently only change the status — the actual conversion/attachment logic (creating an action item from the note text, linking to a 1:1 entry) could be implemented as a follow-up enhancement
+- Quick Notes "convert to action item" currently only changes the status — the actual conversion logic (creating an action item from the note text) could be implemented as a follow-up enhancement
