@@ -152,6 +152,10 @@ export default function DashboardPage() {
           <section
             data-testid="dashboard-section-streak"
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
               padding: 'var(--space-4)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
@@ -182,6 +186,10 @@ export default function DashboardPage() {
           <section
             data-testid="dashboard-section-pdp-progress"
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
               padding: 'var(--space-4)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
@@ -228,6 +236,10 @@ export default function DashboardPage() {
           <section
             data-testid="dashboard-section-activity"
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
               padding: 'var(--space-4)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',

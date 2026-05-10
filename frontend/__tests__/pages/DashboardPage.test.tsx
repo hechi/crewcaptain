@@ -369,6 +369,10 @@ describe('DashboardPage', () => {
 
     // All three sections should have the same card styling
     const expectedCardStyle = {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
       padding: 'var(--space-4)',
       borderRadius: 'var(--radius-medium)',
       border: '1px solid var(--color-border)',

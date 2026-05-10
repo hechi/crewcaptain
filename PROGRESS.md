@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T02:00:00Z — Unified dashboard gamification card styling (1:1 Streak, PDP Goals, Activity)
+2026-05-11T02:15:00Z — Dashboard gamification cards now fully uniform (flex fill + centered content)
 
 ## Current Status
-Dashboard gamification cards (1:1 Streak, PDP Goals, Activity) now share consistent card styling — same padding, border, border-radius, and background. Previously the Streak section lacked a card wrapper while PDP Goals used centered flex layout on the section. All 795 frontend tests pass, build succeeds.
+Dashboard gamification cards (1:1 Streak, PDP Goals, Activity) are now visually identical — all use flex column layout with centered content and vertical centering to fill the grid cell. All 795 frontend tests pass, build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -85,7 +85,7 @@ Dashboard gamification cards (1:1 Streak, PDP Goals, Activity) now share consist
 - [x] Bulk Import (CSV) Frontend — TypeScript types (BulkImportResponse), API client (importPersonsCsv with FormData), CsvImportModal component with file validation, CSV preview table, import progress, success/error result display. "Import CSV" button on People list page. (2026-05-10)
 - [x] Bulk Import (CSV) Frontend tests — Component tests (CsvImportModal 14 tests), API client tests (8 tests) (2026-05-10)
 
-- [x] Dashboard gamification card consistency — Unified styling for 1:1 Streak, PDP Goals, and Activity cards (same card wrapper: padding, border, border-radius, background). Removed duplicate card styling from StreakCounter component. (2026-05-11)
+- [x] Dashboard gamification card consistency — Unified styling for 1:1 Streak, PDP Goals, and Activity cards (same card wrapper with flex column layout, centered content, vertical centering to fill grid cells). Removed duplicate card styling from StreakCounter component. (2026-05-11)
 
 ## In Progress
 - (none)
