@@ -151,9 +151,28 @@ export default function CsvImportModal({ isOpen, onClose, onImportComplete, toke
           Import People from CSV
         </h2>
 
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-small)' }}>
+        <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-small)' }}>
           Upload a CSV file with columns: <code>name</code> (required), <code>preferred_name</code>, <code>role_title</code>, <code>timezone</code>, <code>start_date</code> (YYYY-MM-DD), <code>email</code>, <code>tags</code> (pipe-separated).
         </p>
+
+        <pre
+          data-testid="csv-example"
+          style={{
+            backgroundColor: 'var(--color-bg-elevated)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-small)',
+            padding: 'var(--space-3)',
+            marginBottom: 'var(--space-4)',
+            fontSize: 'var(--text-small)',
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--color-text-secondary)',
+            overflowX: 'auto',
+            whiteSpace: 'pre',
+            margin: '0 0 var(--space-4) 0',
+          }}
+        >{`name,preferred_name,role_title,timezone,start_date,email,tags
+Alice Smith,Ali,Senior Engineer,America/New_York,2023-01-15,alice@example.com,engineering|senior
+Bob Jones,,Designer,Europe/London,2022-06-01,bob@example.com,design`}</pre>
 
         {!result && (
           <>

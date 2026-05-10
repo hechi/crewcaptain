@@ -254,10 +254,13 @@ describe('CsvImportModal', () => {
     });
   });
 
-  it('should display format instructions', () => {
+  it('should display format instructions and CSV example', () => {
     render(<CsvImportModal {...defaultProps} />);
     expect(screen.getByText(/Upload a CSV file/)).toBeInTheDocument();
     expect(screen.getByText(/required/)).toBeInTheDocument();
+    expect(screen.getByTestId('csv-example')).toBeInTheDocument();
+    expect(screen.getByTestId('csv-example')).toHaveTextContent('Alice Smith');
+    expect(screen.getByTestId('csv-example')).toHaveTextContent('name,preferred_name,role_title');
   });
 
   it('should show singular person text for single import', async () => {
