@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T00:15:00Z — Added style branch type and no-exceptions golden rule to AGENTS.md
+2026-05-11T01:00:00Z — Expanded middleware auth matcher to cover all authenticated routes (eliminates loading flicker)
 
 ## Current Status
-Bulk CSV import feature is complete. Managers can now import multiple people at once from a CSV file via the People list page. The backend parses CSV with validation, creates persons, and returns per-row error details. The frontend provides a modal with file selection, preview table, and import results. All 923 backend tests and 785 frontend tests pass (1 pre-existing intermittent Property 14 failure).
+Middleware auth matcher expanded to protect all authenticated routes (dashboard, quick-notes, search, settings, notifications) — eliminates the brief loading flash on those pages. Pre-existing build errors fixed (duplicate fontFamily in page.tsx, lucide-react type mismatch in AchievementBadge, search page prerender issue). All 794 frontend tests pass, build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -73,6 +73,8 @@ Bulk CSV import feature is complete. Managers can now import multiple people at 
 - [x] Light Theme — Full CSS light theme via [data-theme="light"] selector. Clean surfaces (#F8FAFB base), teal/purple accents, proper WCAG contrast, subtle shadows instead of glows, light scrollbar styling. Toggled via Settings page. (2026-05-10)
 - [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load and passes dueSoonDays/anniversaryLookaheadDays as query params to the dashboard API. (2026-05-10)
 - [x] Automatic Token Refresh — Auth.js jwt callback captures refresh_token and expires_at on login, proactively refreshes access token 60s before expiry using OIDC token endpoint discovery. SessionProvider polls session every 4 minutes and on window focus. SessionRefreshGuard component detects unrecoverable refresh failures and triggers re-authentication. offline_access scope added to OIDC authorization request. (2026-05-10)
+- [x] Middleware Auth Coverage — Expanded middleware matcher to protect all authenticated routes (/dashboard, /quick-notes, /search, /settings, /notifications) in addition to /people. Eliminates client-side loading flash for authenticated users. (2026-05-11)
+- [x] Build Fixes — Fixed duplicate fontFamily in page.tsx, lucide-react LucideIcon type in AchievementBadge, search page prerender with Suspense layout. (2026-05-11)
 - [x] GIN Indexes for Full-Text Search — Per-table immutable wrapper functions (persons_search_vector, one_on_one_entries_search_vector, quick_notes_search_vector, action_items_search_vector, pdp_goals_search_vector, pdp_updates_search_vector, kudos_search_vector) with expression-based GIN indexes. Search queries use the same functions enabling index utilization. Flyway migration V20250510120009. (2026-05-10)
 - [x] Review Packet Generator Backend API — GET /api/v1/persons/{id}/review-packet endpoint with required dateFrom/dateTo parameters. ReviewPacketService aggregates all person data within date range, computes summary statistics (1:1 count, action item completion rate, PDP goal progress, kudos tag summary), and formats as structured Markdown via ReviewPacketFormatter domain service. Sensitive content excluded. All queries scoped by userId. (2026-05-10)
 - [x] Review Packet Generator Backend tests — Domain unit tests (ReviewPacketSummary 10 tests, ReviewPacketFormatter 20 tests), application service tests (ReviewPacketService 10 tests), query validation tests (GenerateReviewPacketQuery 3 tests), controller slice tests (ReviewPacketController 10 tests) (2026-05-10)
@@ -134,7 +136,7 @@ Bulk CSV import feature is complete. Managers can now import multiple people at 
 ## Test Coverage Summary
 - Backend: All 923 tests pass — domain (including CsvParser 15 tests), application (including PersonBulkImportService 12 tests), controller slice (including PersonBulkImportController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 785 total — component tests (including CsvImportModal 14), page tests (including DashboardPage 13), API client tests (including bulk-import 8), auth token refresh tests, Navigation test (last run: 2026-05-10)
+- Frontend: 794 total — component tests (including CsvImportModal 14), page tests (including DashboardPage 13), API client tests (including bulk-import 8), auth token refresh tests, middleware tests (9), Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
