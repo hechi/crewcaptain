@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T23:30:00Z — Dashboard wired to user settings thresholds
+2026-05-10T23:45:00Z — Bulk import (CSV people list) feature implemented
 
 ## Current Status
-Dashboard now respects user settings for dueSoonDays and anniversaryLookaheadDays query parameters. Previously the dashboard always used API defaults (3 days / 30 days); now it fetches user settings first and passes the user's configured thresholds to the dashboard API call. All 880 backend tests and 760 frontend tests pass.
+Bulk CSV import feature is complete. Managers can now import multiple people at once from a CSV file via the People list page. The backend parses CSV with validation, creates persons, and returns per-row error details. The frontend provides a modal with file selection, preview table, and import results. All 923 backend tests and 785 frontend tests pass (1 pre-existing intermittent Property 14 failure).
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -78,6 +78,10 @@ Dashboard now respects user settings for dueSoonDays and anniversaryLookaheadDay
 - [x] Review Packet Generator Backend tests — Domain unit tests (ReviewPacketSummary 10 tests, ReviewPacketFormatter 20 tests), application service tests (ReviewPacketService 10 tests), query validation tests (GenerateReviewPacketQuery 3 tests), controller slice tests (ReviewPacketController 10 tests) (2026-05-10)
 - [x] Review Packet Generator Frontend — API client function (generateReviewPacket), ReviewPacketModal component with date range picker, validation, and generating state. Integrated into person detail page with "Review Packet" button next to Export button. Downloads as {name}-review-packet.md. (2026-05-10)
 - [x] Review Packet Generator Frontend tests — Component tests (ReviewPacketModal 12 tests), API client tests (6 tests) (2026-05-10)
+- [x] Bulk Import (CSV) Backend — POST /api/v1/persons/import endpoint accepting multipart CSV. CsvParser domain service with quoted field support, CsvPersonRow validation, PersonBulkImportService with max 500 rows, per-row error reporting, partial success support. Data isolation enforced (userId scoping). (2026-05-10)
+- [x] Bulk Import (CSV) Backend tests — Domain unit tests (CsvParser 15 tests), application service tests (PersonBulkImportService 12 tests), controller slice tests (PersonBulkImportController 10 tests) (2026-05-10)
+- [x] Bulk Import (CSV) Frontend — TypeScript types (BulkImportResponse), API client (importPersonsCsv with FormData), CsvImportModal component with file validation, CSV preview table, import progress, success/error result display. "Import CSV" button on People list page. (2026-05-10)
+- [x] Bulk Import (CSV) Frontend tests — Component tests (CsvImportModal 14 tests), API client tests (8 tests) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -92,8 +96,9 @@ Dashboard now respects user settings for dueSoonDays and anniversaryLookaheadDay
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. Bulk import (CSV people list)
-2. Soft-delete + restore (safety)
+1. Soft-delete + restore (safety)
+2. Optional "workspace" concept (still manager-private by default)
+3. Audit log
 
 ## Architecture Decisions Made This Session
 - UserSettings is a separate domain aggregate (not embedded in User) — keeps the User aggregate focused on identity
@@ -109,6 +114,12 @@ Dashboard now respects user settings for dueSoonDays and anniversaryLookaheadDay
 - ReviewPacketSummary.compute() is a companion factory method — keeps statistics computation logic in the domain layer, testable without framework dependencies
 - ReviewPacketFormatter is a domain service (object) — pure function, no state, no framework dependencies, same pattern as MarkdownExportFormatter
 - Date range is required for review packets (unlike export where it's optional) — a review packet without a date range is meaningless
+- CSV bulk import uses a domain service (CsvParser object) for parsing — pure function, no framework dependencies, testable in isolation
+- CsvPersonRow.parse() returns a sealed class (CsvParseResult) — explicit success/failure handling without exceptions for expected validation errors
+- Bulk import uses partial success model — valid rows are imported even when some rows fail, with per-row error reporting
+- Max 500 rows per import — prevents accidental large imports from overwhelming the system
+- Tags in CSV use pipe separator (|) instead of comma — avoids ambiguity with CSV field delimiters
+- Import endpoint uses multipart/form-data (not JSON) — standard approach for file uploads, no base64 encoding overhead
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -121,9 +132,9 @@ Dashboard now respects user settings for dueSoonDays and anniversaryLookaheadDay
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 880 tests pass — domain (including ReviewPacketSummary 10 tests, ReviewPacketFormatter 20 tests), application (including ReviewPacketService 10 tests, GenerateReviewPacketQuery 3 tests), controller slice (including ReviewPacketController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
+- Backend: All 923 tests pass — domain (including CsvParser 15 tests), application (including PersonBulkImportService 12 tests), controller slice (including PersonBulkImportController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 760 total — component tests (including ReviewPacketModal 12), page tests (including DashboardPage 13), API client tests (including review-packet 6), auth token refresh tests, Navigation test (last run: 2026-05-10)
+- Frontend: 785 total — component tests (including CsvImportModal 14), page tests (including DashboardPage 13), API client tests (including bulk-import 8), auth token refresh tests, Navigation test (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review

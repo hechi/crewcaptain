@@ -33,10 +33,11 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **User Settings** — Per-user persistent settings page with: theme selection (dark/light), dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), notification type toggles (overdue, due-soon, stale 1:1, anniversary), and achievement visibility toggle. Settings are stored in the database and respected by the notification scheduler and dashboard.
 - **Light Theme** — Full light theme alternative to the default cyberpunk dark theme. Clean surfaces, teal/purple accents, proper contrast ratios, and subtle shadows instead of glows. Toggled via Settings page.
 - **Review Packet Generator** — Generate structured review/performance summary documents for a person over a configurable date range. Includes executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), morale status, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded. Download as Markdown via "Review Packet" button on person detail page.
+- **Bulk Import (CSV)** — Import multiple people at once from a CSV file. Supports columns: name (required), preferred_name, role_title, timezone, start_date (YYYY-MM-DD), email, tags (pipe-separated). Preview before import, per-row error reporting, max 500 rows per import. Accessible via "Import CSV" button on the People list page.
 
 ### Planned
 
-- Bulk import (CSV people list)
+- Soft-delete + restore (safety)
 
 ---
 
@@ -123,6 +124,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | PUT    | `/api/v1/persons/{id}/remember-items/reorder` | Reorder remember items  |
 | GET    | `/api/v1/persons/{id}/export`           | Export person data as Markdown |
 | GET    | `/api/v1/persons/{id}/review-packet`    | Generate review packet as Markdown |
+| POST   | `/api/v1/persons/import`                | Bulk import persons from CSV   |
 
 **Export query parameters:**
 - `dateFrom` — Optional start date filter (ISO 8601 date, e.g., 2024-01-01)
@@ -141,6 +143,14 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - Content-Type: `text/markdown; charset=UTF-8`
 - Content-Disposition: `attachment; filename="review-packet.md"`
 - Body: Structured Markdown with executive summary (statistics), morale, 1:1 meetings, action items (grouped by status with completion rate), PDP goals with progress, and kudos with tag summary. Sensitive content is excluded.
+
+**Bulk import (POST `/api/v1/persons/import`):**
+- Content-Type: `multipart/form-data`
+- Form field: `file` — CSV file with header row
+- Supported CSV columns: `name` (required), `preferred_name`, `role_title`, `timezone`, `start_date` (YYYY-MM-DD), `email`, `tags` (pipe-separated, e.g., "engineering|senior")
+- Maximum 500 rows per import
+- Response: `{ "successCount": 2, "errorCount": 1, "errors": ["Row 3: Name must not be blank"] }`
+- Partial success: valid rows are imported even if some rows have errors
 
 ### 1:1 Entry Management
 
