@@ -4,7 +4,7 @@
 2026-05-10T08:30:00Z — PDP Goal tracking full-stack implementation complete (backend API + frontend UI)
 
 ## Current Status
-The PDP Goal tracking feature is fully implemented end-to-end. The backend provides full CRUD for goals with status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), progress updates with sensitive flag, and data isolation. The frontend includes TypeScript types, API client functions (12 functions), reusable components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), and an integrated "PDP Goals" tab on the person detail page with inline create/edit forms, status filtering, and status transition actions. All 355 frontend tests and all backend tests pass.
+The PDP Goal tracking feature is fully implemented end-to-end. The backend provides full CRUD for goals with status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), progress updates with sensitive flag, and data isolation. The frontend includes TypeScript types, API client functions (12 functions), reusable components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), and an integrated "PDP Goals" tab on the person detail page with inline create/edit forms, status filtering, and status transition actions. All 365 frontend tests and all backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -40,7 +40,7 @@ The PDP Goal tracking feature is fully implemented end-to-end. The backend provi
 - [x] PDP Goal Database migrations — pdp_goals and pdp_updates tables with indexes (2026-05-10)
 - [x] PDP Goal Backend tests — Domain unit tests (PdpGoal 22 tests, PdpUpdate 4 tests), application service tests (18 tests), controller slice tests (17 tests), integration tests with data isolation verification (17 tests) (2026-05-10)
 - [x] PDP Goal Frontend — TypeScript types, API client (12 functions), components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), person detail "PDP Goals" tab with inline create/edit, status filter, achieve/pause/drop/resume actions (2026-05-10)
-- [x] PDP Goal Frontend tests — Component tests (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4), API client tests (19) (2026-05-10)
+- [x] PDP Goal Frontend tests — Component tests (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4), API client tests (19), page integration tests (10) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -81,9 +81,10 @@ The PDP Goal tracking feature is fully implemented end-to-end. The backend provi
 ## Test Coverage Summary
 - Backend: All tests pass — domain (including PdpGoal + PdpUpdate), application (including PdpGoalService), controller slice (including PdpGoalController), property, integration (including PDP data isolation) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 355 total — component tests (including PDP Goal components), page tests (including auth pages), API client tests (including PDP goals) (last run: 2026-05-10)
+- Frontend: 365 total — component tests (including PDP Goal components), page tests (including auth pages, PDP Goals tab), API client tests (including PDP goals) (last run: 2026-05-10)
   - Includes PDP goal components (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4)
   - Includes PDP goal API client tests (19)
+  - Includes PDP Goals tab integration tests (10)
   - Includes action item components (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3)
   - Includes action item API client tests (15)
   - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)

@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Person, MoraleStatus, PaginatedResponse } from '@/types/person';
 import { OneOnOneEntry, OneOnOneSeries } from '@/types/one-on-one';
 import { ActionItem, ActionItemStatus, PaginatedActionItemResponse, CreateActionItemRequest, UpdateActionItemRequest } from '@/types/action-item';
+import { PdpGoal, PdpGoalStatus, PaginatedPdpGoalResponse, CreatePdpGoalRequest, UpdatePdpGoalRequest } from '@/types/pdp-goal';
 import {
   getPerson,
   updatePerson,
@@ -23,6 +24,14 @@ import {
   cancelActionItem,
   deleteActionItem,
   updateActionItem,
+  listPdpGoalsByPerson,
+  createPdpGoal,
+  updatePdpGoal,
+  achievePdpGoal,
+  pausePdpGoal,
+  dropPdpGoal,
+  resumePdpGoal,
+  deletePdpGoal,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
 import PersonForm from '@/components/PersonForm';
@@ -32,8 +41,9 @@ import OneOnOneTimeline from '@/components/one-on-one/OneOnOneTimeline';
 import SeriesConfigPanel from '@/components/one-on-one/SeriesConfigPanel';
 import ActionItemList from '@/components/action-items/ActionItemList';
 import ActionItemForm from '@/components/action-items/ActionItemForm';
+import PdpGoalList from '@/components/pdp-goals/PdpGoalList';
 
-type Tab = 'details' | 'one-on-ones' | 'action-items';
+type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals';
 
 export default function PersonDetailPage() {
   const { data: session, status } = useSession();
@@ -68,6 +78,11 @@ export default function PersonDetailPage() {
   const [showActionItemForm, setShowActionItemForm] = useState(false);
   const [editingActionItem, setEditingActionItem] = useState<ActionItem | null>(null);
   const [actionItemSubmitting, setActionItemSubmitting] = useState(false);
+
+  // PDP Goals state
+  const [pdpGoals, setPdpGoals] = useState<PaginatedPdpGoalResponse | null>(null);
+  const [pdpGoalsLoading, setPdpGoalsLoading] = useState(false);
+  const [pdpGoalsStatusFilter, setPdpGoalsStatusFilter] = useState<PdpGoalStatus | null>(null);
 
   const token = session?.accessToken as string;
 
@@ -131,6 +146,22 @@ export default function PersonDetailPage() {
     }
   }, [token, status, personId]);
 
+  const fetchPdpGoals = useCallback(async (statusFilter: PdpGoalStatus | null = null) => {
+    if (status !== 'authenticated' || !token) return;
+
+    setPdpGoalsLoading(true);
+    try {
+      const result = await listPdpGoalsByPerson(token, personId, {
+        status: statusFilter || undefined,
+      });
+      setPdpGoals(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load PDP goals');
+    } finally {
+      setPdpGoalsLoading(false);
+    }
+  }, [token, status, personId]);
+
   useEffect(() => {
     fetchPerson();
   }, [fetchPerson]);
@@ -147,6 +178,12 @@ export default function PersonDetailPage() {
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
     }
   }, [activeTab, actionItemsPage, actionItemsStatusFilter, fetchActionItems]);
+
+  useEffect(() => {
+    if (activeTab === 'pdp-goals') {
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    }
+  }, [activeTab, pdpGoalsStatusFilter, fetchPdpGoals]);
 
   const handleUpdate = async (data: {
     name: string;
@@ -294,6 +331,70 @@ export default function PersonDetailPage() {
     if (item) {
       setEditingActionItem(item);
       setShowActionItemForm(false);
+    }
+  };
+
+  // PDP Goal handlers
+  const handleCreatePdpGoal = async (data: CreatePdpGoalRequest) => {
+    try {
+      await createPdpGoal(token, personId, data);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create PDP goal');
+    }
+  };
+
+  const handleUpdatePdpGoal = async (goalId: string, data: UpdatePdpGoalRequest) => {
+    try {
+      await updatePdpGoal(token, personId, goalId, data);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update PDP goal');
+    }
+  };
+
+  const handleAchievePdpGoal = async (goalId: string) => {
+    try {
+      await achievePdpGoal(token, personId, goalId);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to achieve PDP goal');
+    }
+  };
+
+  const handlePausePdpGoal = async (goalId: string) => {
+    try {
+      await pausePdpGoal(token, personId, goalId);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to pause PDP goal');
+    }
+  };
+
+  const handleDropPdpGoal = async (goalId: string) => {
+    try {
+      await dropPdpGoal(token, personId, goalId);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to drop PDP goal');
+    }
+  };
+
+  const handleResumePdpGoal = async (goalId: string) => {
+    try {
+      await resumePdpGoal(token, personId, goalId);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resume PDP goal');
+    }
+  };
+
+  const handleDeletePdpGoal = async (goalId: string) => {
+    try {
+      await deletePdpGoal(token, personId, goalId);
+      fetchPdpGoals(pdpGoalsStatusFilter);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete PDP goal');
     }
   };
 
@@ -447,6 +548,29 @@ export default function PersonDetailPage() {
           }}
         >
           Action Items
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'pdp-goals'}
+          aria-controls="tab-panel-pdp-goals"
+          onClick={() => setActiveTab('pdp-goals')}
+          data-testid="tab-pdp-goals"
+          style={{
+            padding: '10px 20px',
+            border: 'none',
+            borderBottom: activeTab === 'pdp-goals' ? '2px solid var(--color-primary)' : '2px solid transparent',
+            background: 'none',
+            fontSize: 'var(--text-body)',
+            fontWeight: activeTab === 'pdp-goals' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+            color: activeTab === 'pdp-goals' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            cursor: 'pointer',
+            marginBottom: '-1px',
+            fontFamily: 'var(--font-mono)',
+            transition: 'color 0.2s',
+          }}
+        >
+          PDP Goals
         </button>
       </div>
 
@@ -833,6 +957,30 @@ export default function PersonDetailPage() {
               emptyMessage="No action items yet — click '+ New Action Item' to create one"
             />
           ) : null}
+        </div>
+      )}
+
+      {/* PDP Goals Tab Panel */}
+      {activeTab === 'pdp-goals' && (
+        <div id="tab-panel-pdp-goals" role="tabpanel" aria-labelledby="tab-pdp-goals">
+          {pdpGoalsLoading && !pdpGoals ? (
+            <div data-testid="pdp-goals-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
+              Loading PDP goals...
+            </div>
+          ) : (
+            <PdpGoalList
+              goals={pdpGoals?.content || []}
+              onCreateGoal={handleCreatePdpGoal}
+              onUpdateGoal={handleUpdatePdpGoal}
+              onAchieveGoal={handleAchievePdpGoal}
+              onPauseGoal={handlePausePdpGoal}
+              onDropGoal={handleDropPdpGoal}
+              onResumeGoal={handleResumePdpGoal}
+              onDeleteGoal={handleDeletePdpGoal}
+              statusFilter={pdpGoalsStatusFilter}
+              onStatusFilterChange={setPdpGoalsStatusFilter}
+            />
+          )}
         </div>
       )}
     </div>
