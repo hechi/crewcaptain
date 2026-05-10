@@ -781,4 +781,56 @@ class PersonControllerTest {
         )
             .andExpect(status().isUnauthorized)
     }
+
+    @Test
+    fun `DELETE persons permanent - permanently deletes a soft-deleted person and returns 204`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+
+        every { personCommandPort.permanentDeletePerson(any()) } returns Unit
+
+        mockMvc.perform(
+            delete("/api/v1/persons/${personId.value}/permanent")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `DELETE persons permanent - returns 404 when person not in trash`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+
+        every { personCommandPort.permanentDeletePerson(any()) } throws PersonNotFoundException(personId)
+
+        mockMvc.perform(
+            delete("/api/v1/persons/${personId.value}/permanent")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `DELETE persons permanent - requires authentication`() {
+        val personId = PersonId(UUID.randomUUID())
+
+        mockMvc.perform(
+            delete("/api/v1/persons/${personId.value}/permanent")
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `DELETE persons permanent - scoped by userId`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+
+        every { personCommandPort.permanentDeletePerson(any()) } throws PersonNotFoundException(personId)
+
+        mockMvc.perform(
+            delete("/api/v1/persons/${personId.value}/permanent")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isNotFound)
+    }
 }

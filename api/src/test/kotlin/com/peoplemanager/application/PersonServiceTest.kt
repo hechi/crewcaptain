@@ -3,6 +3,7 @@ package com.peoplemanager.application
 import com.peoplemanager.application.commands.AddRememberItemCommand
 import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
+import com.peoplemanager.application.commands.PermanentDeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
@@ -221,6 +222,64 @@ class PersonServiceTest {
                 personService.restorePerson(command)
             }
             exception.personId shouldBe personId
+        }
+    }
+
+    @Nested
+    inner class PermanentDeletePerson {
+
+        @Test
+        fun `should permanently delete a soft-deleted person`() {
+            val command = PermanentDeletePersonCommand(userId = userId, personId = personId)
+            val deletedPerson = createTestPerson().copy(deletedAt = Instant.now())
+
+            every { personRepository.findDeletedByIdAndUserId(personId, userId) } returns deletedPerson
+            every { personRepository.deleteByIdAndUserId(personId, userId) } returns true
+
+            personService.permanentDeletePerson(command)
+
+            verify(exactly = 1) { personRepository.findDeletedByIdAndUserId(personId, userId) }
+            verify(exactly = 1) { personRepository.deleteByIdAndUserId(personId, userId) }
+            verify(exactly = 1) { auditLogService.record(any()) }
+        }
+
+        @Test
+        fun `should throw PersonNotFoundException when person not in trash`() {
+            val command = PermanentDeletePersonCommand(userId = userId, personId = personId)
+
+            every { personRepository.findDeletedByIdAndUserId(personId, userId) } returns null
+
+            val exception = shouldThrow<PersonNotFoundException> {
+                personService.permanentDeletePerson(command)
+            }
+            exception.personId shouldBe personId
+        }
+
+        @Test
+        fun `should throw PersonNotFoundException when hard delete fails`() {
+            val command = PermanentDeletePersonCommand(userId = userId, personId = personId)
+            val deletedPerson = createTestPerson().copy(deletedAt = Instant.now())
+
+            every { personRepository.findDeletedByIdAndUserId(personId, userId) } returns deletedPerson
+            every { personRepository.deleteByIdAndUserId(personId, userId) } returns false
+
+            val exception = shouldThrow<PersonNotFoundException> {
+                personService.permanentDeletePerson(command)
+            }
+            exception.personId shouldBe personId
+        }
+
+        @Test
+        fun `should not allow permanent delete of non-deleted person`() {
+            val command = PermanentDeletePersonCommand(userId = userId, personId = personId)
+
+            every { personRepository.findDeletedByIdAndUserId(personId, userId) } returns null
+
+            shouldThrow<PersonNotFoundException> {
+                personService.permanentDeletePerson(command)
+            }
+
+            verify(exactly = 0) { personRepository.deleteByIdAndUserId(any(), any()) }
         }
     }
 

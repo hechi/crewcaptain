@@ -57,6 +57,14 @@ class PersonSoftDeleteIntegrationTest {
 
     @BeforeEach
     fun setUp() {
+        jdbcTemplate.execute("DELETE FROM quick_notes")
+        jdbcTemplate.execute("DELETE FROM kudos")
+        jdbcTemplate.execute("DELETE FROM pdp_updates")
+        jdbcTemplate.execute("DELETE FROM pdp_goals")
+        jdbcTemplate.execute("DELETE FROM action_items")
+        jdbcTemplate.execute("DELETE FROM agenda_items")
+        jdbcTemplate.execute("DELETE FROM one_on_one_entries")
+        jdbcTemplate.execute("DELETE FROM one_on_one_series")
         jdbcTemplate.execute("DELETE FROM pinned_remember_items")
         jdbcTemplate.execute("DELETE FROM persons")
         jdbcTemplate.execute("DELETE FROM users")
@@ -256,5 +264,97 @@ class PersonSoftDeleteIntegrationTest {
 
         // Second soft-delete should return false (already deleted)
         personRepository.softDeleteByIdAndUserId(person.id, userA.id) shouldBe false
+    }
+
+    @Test
+    fun `hard deleteByIdAndUserId removes a soft-deleted person from the database`() {
+        val person = personRepository.save(createPerson(userA.id, "Alice"))
+        personRepository.softDeleteByIdAndUserId(person.id, userA.id)
+
+        // Verify it's in trash
+        personRepository.findDeletedByIdAndUserId(person.id, userA.id).shouldNotBeNull()
+
+        // Hard delete it
+        val result = personRepository.deleteByIdAndUserId(person.id, userA.id)
+        result shouldBe true
+
+        // Verify it's gone from both active and trash
+        personRepository.findByIdAndUserId(person.id, userA.id).shouldBeNull()
+        personRepository.findDeletedByIdAndUserId(person.id, userA.id).shouldBeNull()
+
+        // Verify row truly removed from DB
+        val count = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM persons WHERE id = ?",
+            Int::class.java,
+            person.id.value
+        )
+        count shouldBe 0
+    }
+
+    @Test
+    fun `hard deleteByIdAndUserId returns false for wrong userId`() {
+        val person = personRepository.save(createPerson(userA.id, "Alice"))
+        personRepository.softDeleteByIdAndUserId(person.id, userA.id)
+
+        // User B should not be able to hard-delete User A's soft-deleted person
+        val result = personRepository.deleteByIdAndUserId(person.id, userB.id)
+        result shouldBe false
+
+        // Person should still be in User A's trash
+        personRepository.findDeletedByIdAndUserId(person.id, userA.id).shouldNotBeNull()
+    }
+
+    @Test
+    fun `hard delete cascades to child tables (remember_items, action_items, pdp_goals, kudos, quick_notes)`() {
+        val person = personRepository.save(createPerson(userA.id, "Alice"))
+
+        // Insert child rows in each related table
+        jdbcTemplate.update(
+            "INSERT INTO pinned_remember_items (id, person_id, text, display_order) VALUES (?, ?, ?, ?)",
+            java.util.UUID.randomUUID(), person.id.value, "Prefers async", 0
+        )
+        jdbcTemplate.update(
+            "INSERT INTO action_items (id, user_id, person_id, title, owner_type, status) VALUES (?, ?, ?, ?, ?, ?)",
+            java.util.UUID.randomUUID(), userA.id.value, person.id.value, "Task", "MANAGER", "OPEN"
+        )
+        jdbcTemplate.update(
+            "INSERT INTO pdp_goals (id, user_id, person_id, title, status) VALUES (?, ?, ?, ?, ?)",
+            java.util.UUID.randomUUID(), userA.id.value, person.id.value, "Goal", "ACTIVE"
+        )
+        jdbcTemplate.update(
+            "INSERT INTO kudos (id, user_id, person_id, date, text) VALUES (?, ?, ?, ?, ?)",
+            java.util.UUID.randomUUID(), userA.id.value, person.id.value, java.sql.Date.valueOf("2026-05-01"), "Great job"
+        )
+        jdbcTemplate.update(
+            "INSERT INTO quick_notes (id, user_id, person_id, text, status) VALUES (?, ?, ?, ?, ?)",
+            java.util.UUID.randomUUID(), userA.id.value, person.id.value, "Note text", "INBOX"
+        )
+
+        // Soft-delete then hard-delete
+        personRepository.softDeleteByIdAndUserId(person.id, userA.id)
+        val deleted = personRepository.deleteByIdAndUserId(person.id, userA.id)
+        deleted shouldBe true
+
+        // Verify all child rows are gone (cascade delete)
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM pinned_remember_items WHERE person_id = ?",
+            Int::class.java, person.id.value
+        ) shouldBe 0
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM action_items WHERE person_id = ?",
+            Int::class.java, person.id.value
+        ) shouldBe 0
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM pdp_goals WHERE person_id = ?",
+            Int::class.java, person.id.value
+        ) shouldBe 0
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM kudos WHERE person_id = ?",
+            Int::class.java, person.id.value
+        ) shouldBe 0
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM quick_notes WHERE person_id = ?",
+            Int::class.java, person.id.value
+        ) shouldBe 0
     }
 }

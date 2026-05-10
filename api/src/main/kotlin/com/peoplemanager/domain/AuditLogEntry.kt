@@ -91,6 +91,16 @@ data class AuditLogEntry(
                 summary = "Restored person \"$personName\""
             )
 
+        fun personPermanentlyDeleted(userId: UserId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.DELETE,
+                entityType = AuditEntityType.PERSON,
+                entityId = personId.value.toString(),
+                personId = null,
+                summary = "Permanently deleted person \"$personName\""
+            )
+
         fun oneOnOneEntryCreated(userId: UserId, entryId: OneOnOneEntryId, personId: PersonId, personName: String): AuditLogEntry =
             AuditLogEntry(
                 userId = userId,

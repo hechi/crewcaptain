@@ -3,6 +3,7 @@ package com.peoplemanager.application
 import com.peoplemanager.application.commands.AddRememberItemCommand
 import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
+import com.peoplemanager.application.commands.PermanentDeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
@@ -85,6 +86,14 @@ class PersonService(
             ?: throw PersonNotFoundException(command.personId)
         auditLogService.record(AuditLogEntry.personRestored(command.userId, person.id, person.name))
         return person
+    }
+
+    override fun permanentDeletePerson(command: PermanentDeletePersonCommand) {
+        val person = personRepository.findDeletedByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
+        val deleted = personRepository.deleteByIdAndUserId(command.personId, command.userId)
+        if (!deleted) throw PersonNotFoundException(command.personId)
+        auditLogService.record(AuditLogEntry.personPermanentlyDeleted(command.userId, command.personId, person.name))
     }
 
     override fun setMorale(command: SetMoraleCommand): Person {

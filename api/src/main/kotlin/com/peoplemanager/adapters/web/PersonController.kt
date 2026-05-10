@@ -12,6 +12,7 @@ import com.peoplemanager.adapters.web.dto.UpdatePersonRequest
 import com.peoplemanager.application.commands.AddRememberItemCommand
 import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
+import com.peoplemanager.application.commands.PermanentDeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
@@ -124,6 +125,14 @@ class PersonController(
         val command = RestorePersonCommand(userId = userId, personId = PersonId(id))
         val person = personCommandPort.restorePerson(command)
         return ResponseEntity.ok(PersonResponse.from(person))
+    }
+
+    @DeleteMapping("/{id}/permanent")
+    fun permanentDeletePerson(@PathVariable id: UUID): ResponseEntity<Void> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = PermanentDeletePersonCommand(userId = userId, personId = PersonId(id))
+        personCommandPort.permanentDeletePerson(command)
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/trash")

@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T05:00:00Z — Implemented audit log feature
+2026-05-11T07:00:00Z — Implemented permanent delete from trash
 
 ## Current Status
-Audit log feature complete. All key actions (create, update, delete, restore) across persons, 1:1 entries, action items, PDP goals, kudos, quick notes, and user settings are recorded in an audit log table. REST API endpoint GET /api/v1/audit-log with entity type and action filters, pagination. Frontend audit log page with filters and relative timestamps. All entries scoped by userId. All backend tests pass (990+ tests), all frontend tests pass (828 tests).
+Permanent delete from trash feature complete. Users can now permanently delete soft-deleted persons from the trash page via a "Delete Forever" button with an inline confirmation UI. The feature cascades to all child tables (1:1 entries, action items, PDP goals, kudos, quick notes, remember items) — a Flyway migration (V20250511120001) adds ON DELETE CASCADE to FK constraints that were previously unconstrained. All operations scoped by userId. Audit log records permanent deletions. Backend: 995 tests pass. Frontend: 836 tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -91,6 +91,7 @@ Audit log feature complete. All key actions (create, update, delete, restore) ac
 - [x] Audit Log Backend tests — Domain unit tests (AuditLogEntry 17 tests), application service tests (AuditLogService 8 tests), controller slice tests (AuditLogController 9 tests) (2026-05-11)
 - [x] Audit Log Frontend — TypeScript types, API client (getAuditLog with filters), dedicated /audit-log page with entity type filter, action filter, pagination, relative timestamps, action badges with color coding, entity type badges. Navigation link in user menu. Middleware auth coverage. (2026-05-11)
 - [x] Audit Log Frontend tests — Page tests (10 tests), API client tests (7 tests) (2026-05-11)
+- [x] Permanent Delete from Trash — DELETE /api/v1/persons/{id}/permanent endpoint removes a soft-deleted person permanently, cascading to all child tables. Migration V20250511120001 adds ON DELETE CASCADE to FK constraints on action_items, pdp_goals, kudos, and quick_notes (previously unconstrained). Audit log entry recorded. Frontend: "Delete Forever" button on Trash page with inline confirmation UI (Yes, Delete / Cancel). userId scoping enforced. Full test coverage: domain (AuditLogEntry 1 new test), service (PersonService 4 new tests), controller (PersonController 4 new tests), integration (PersonSoftDelete 3 new tests including cascade verification), frontend page (TrashPage 7 new tests), API client (2 new tests). (2026-05-11)
 
 ## In Progress
 - (none)
@@ -105,13 +106,19 @@ Audit log feature complete. All key actions (create, update, delete, restore) ac
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. Permanent delete from trash (with confirmation)
-2. Workspaces (lightweight organizational containers)
+1. Workspaces (lightweight organizational containers)
 
 ## Future Features
 - **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (still private, no sharing). A person belongs to one workspace. Opt-in: if no workspaces exist, everything works as today. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and optional persistent context switch in the UI.
 
 ## Architecture Decisions Made This Session
+- Permanent delete requires the person to be in trash first — `findDeletedByIdAndUserId` is used to verify before hard-delete. This prevents accidentally hard-deleting an active person via the permanent endpoint.
+- FK constraints on action_items/pdp_goals/kudos/quick_notes referencing persons(id) were originally created without ON DELETE behavior (defaulting to NO ACTION). Migration V20250511120001 drops and recreates them with ON DELETE CASCADE so permanent delete of a person purges all associated data.
+- quick_notes.person_id (nullable FK) uses ON DELETE CASCADE (not SET NULL) — a quick note tied to a person is person-scoped data and should go when the person goes. Notes with NULL person_id (inbox notes) are unaffected.
+- Permanent delete endpoint uses DELETE /api/v1/persons/{id}/permanent (not a separate /api/v1/trash/{id} resource) — keeps all person operations under the /persons namespace.
+- Audit log entry for permanent delete sets personId to null (because the person no longer exists) but preserves entityId as the UUID string — maintains traceability after the physical row is gone.
+- Frontend confirmation is inline (not a modal) — keeps the user on the Trash page, minimal chrome. Three buttons: Delete Forever (initial), then Yes Delete / Cancel after confirmation prompt.
+- Confirmation state is per-row (`confirmDeleteId`) — only one row can be in confirmation mode at a time to avoid accidental multi-deletes.
 - Audit log is a separate table (not event sourcing) — simple append-only log for traceability, not a full event store
 - AuditLogService is injected directly into application services (not via AOP/interceptors) — explicit, testable, and visible in the code
 - Audit log entries use ON DELETE CASCADE for user_id and ON DELETE SET NULL for person_id — audit entries survive person deletion but are cleaned up when a user is removed
@@ -156,9 +163,9 @@ Audit log feature complete. All key actions (create, update, delete, restore) ac
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 990+ tests pass — domain (including AuditLogEntry 17 tests), application (including AuditLogService 8 tests), controller slice (including AuditLogController 9 tests), integration, encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
+- Backend: All 995 tests pass — domain (including AuditLogEntry 18 tests with personPermanentlyDeleted), application (including PersonService with PermanentDeletePerson 4 tests), controller slice (including PersonController with permanent delete 4 tests), integration (including PersonSoftDelete with hard-delete cascade 3 tests), encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 828 total — component tests, page tests (including AuditLogPage 10), API client tests (including audit-log 7), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
+- Frontend: 836 total — component tests, page tests (including TrashPage 18 tests with permanent delete confirmation flow), API client tests (including permanentlyDeletePerson 2 tests), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
