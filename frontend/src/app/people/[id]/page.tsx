@@ -50,6 +50,7 @@ import ActionItemForm from '@/components/action-items/ActionItemForm';
 import PdpGoalList from '@/components/pdp-goals/PdpGoalList';
 import KudosList from '@/components/kudos/KudosList';
 import ReviewPacketModal from '@/components/ReviewPacketModal';
+import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
 
 type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
 
@@ -582,6 +583,14 @@ export default function PersonDetailPage() {
           {person.roleTitle && (
             <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>{person.roleTitle}</p>
           )}
+          <div style={{ marginTop: '8px' }}>
+            <WorkspaceAssignment
+              token={token}
+              personId={personId}
+              currentWorkspaceId={person.workspaceId}
+              onAssigned={(wsId) => setPerson(prev => prev ? { ...prev, workspaceId: wsId } : prev)}
+            />
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <button
