@@ -26,10 +26,10 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox) or assigned to a person. Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Full frontend with dedicated Quick Notes page, status filter, and inline create form.
 - **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
 - **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
+- **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
 
 ### Planned
 
-- **Notifications** — Scheduled reminders for overdue items and upcoming 1:1s
 - **Search** — Full-text search across all manager data
 - **Data Export** — Full data export capabilities
 
@@ -241,6 +241,26 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `dueSoonDays` — Number of days to look ahead for due-soon items (default: 3)
 - `anniversaryLookaheadDays` — Number of days to look ahead for anniversaries (default: 30)
 
+### Notifications
+
+| Method | Endpoint                                    | Description                          |
+|--------|---------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/notifications`                     | List notifications (paginated)       |
+| GET    | `/api/v1/notifications/unread-count`        | Get unread notification count        |
+| POST   | `/api/v1/notifications/{notificationId}/read` | Mark a notification as read        |
+| POST   | `/api/v1/notifications/read-all`            | Mark all notifications as read       |
+
+**Query parameters for notifications list:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `unreadOnly` — Only return unread notifications (default: false)
+
+**Notification types:**
+- `ACTION_ITEM_OVERDUE` — Action item past its due date
+- `ACTION_ITEM_DUE_SOON` — Action item due within the configured threshold
+- `STALE_ONE_ON_ONE` — 1:1 meeting overdue based on cadence
+- `UPCOMING_ANNIVERSARY` — Work anniversary approaching
+
 **Quick Note fields:**
 - `text` — Required (Markdown text)
 - `personId` — Optional UUID to assign to a person
@@ -294,6 +314,9 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | `OIDC_ISSUER_URI`  | OIDC issuer URI (authentik provider URL)         | Yes      |
 | `OIDC_JWKS_URI`    | JWKS endpoint URI                                | Yes      |
 | `ENCRYPTION_KEY`   | Base64-encoded 32-byte AES key for sensitive field encryption (generate with: `openssl rand -base64 32`) | No*      |
+| `NOTIFICATION_CRON` | Cron expression for notification scheduler (default: `0 0 * * * *` — every hour) | No |
+| `NOTIFICATION_DUE_SOON_DAYS` | Days before due date to trigger "due soon" notifications (default: 3) | No |
+| `NOTIFICATION_ANNIVERSARY_LOOKAHEAD_DAYS` | Days to look ahead for anniversary notifications (default: 7) | No |
 
 ### Frontend
 
@@ -359,6 +382,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120003` | Create kudos table |
 | `V20250510120004` | Create quick_notes table |
 | `V20250510120005` | Add attached_entry_id to quick_notes |
+| `V20250510120006` | Create notifications table |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 
@@ -424,7 +448,7 @@ psql -h localhost -U crewcaptain -d crewcaptain < backup_20250508.sql
 │   │       ├── web/           ← REST Controllers + DTOs
 │   │       ├── persistence/   ← JPA Repositories + Entities
 │   │       ├── auth/          ← OIDC/JWT verification + user provisioning
-│   │       └── scheduler/     ← Notification generation (planned)
+│   │       └── scheduler/     ← Notification generation (hourly scheduled)
 │   ├── src/main/resources/db/migration/ ← Flyway migrations
 │   ├── src/test/kotlin/       ← Tests (domain, application, web, integration)
 │   ├── build.gradle.kts

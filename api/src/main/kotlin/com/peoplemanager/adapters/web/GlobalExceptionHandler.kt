@@ -3,6 +3,7 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.web.dto.ErrorResponse
 import com.peoplemanager.application.ActionItemNotFoundException
 import com.peoplemanager.application.KudosNotFoundException
+import com.peoplemanager.application.NotificationNotFoundException
 import com.peoplemanager.application.OneOnOneEntryNotFoundException
 import com.peoplemanager.application.PdpGoalNotFoundException
 import com.peoplemanager.application.PdpUpdateNotFoundException
@@ -120,6 +121,17 @@ class GlobalExceptionHandler {
             status = HttpStatus.NOT_FOUND.value(),
             error = HttpStatus.NOT_FOUND.reasonPhrase,
             message = "Quick note not found",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(NotificationNotFoundException::class)
+    fun handleNotificationNotFoundException(ex: NotificationNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = "Notification not found",
             timestamp = Instant.now()
         )
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)

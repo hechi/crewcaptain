@@ -39,6 +39,12 @@ import {
   PaginatedQuickNoteResponse,
 } from '@/types/quick-note';
 import { DashboardResponse } from '@/types/dashboard';
+import {
+  PaginatedNotificationResponse,
+  UnreadCountResponse,
+  Notification as NotificationItem,
+  MarkAllReadResponse,
+} from '@/types/notification';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -543,5 +549,42 @@ export async function getDashboard(
   const queryString = params.toString();
   const url = `${API_BASE_URL}/dashboard${queryString ? `?${queryString}` : ''}`;
   const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+
+// ===== Notifications =====
+
+export async function listNotifications(
+  token: string,
+  params?: { unreadOnly?: boolean; page?: number; size?: number }
+): Promise<PaginatedNotificationResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.unreadOnly) searchParams.set('unreadOnly', 'true');
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/notifications${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function getUnreadNotificationCount(token: string): Promise<UnreadCountResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/notifications/unread-count`, {}, token);
+  return response.json();
+}
+
+export async function markNotificationAsRead(token: string, notificationId: string): Promise<NotificationItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/notifications/${notificationId}/read`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function markAllNotificationsAsRead(token: string): Promise<MarkAllReadResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/notifications/read-all`, {
+    method: 'POST',
+  }, token);
   return response.json();
 }

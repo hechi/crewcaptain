@@ -22,3 +22,7 @@ server:
 app:
   encryption:
     key: ${ENCRYPTION_KEY:}
+  notifications:
+    cron: ${NOTIFICATION_CRON:0 0 * * * *}
+    due-soon-days: ${NOTIFICATION_DUE_SOON_DAYS:3}
+    anniversary-lookahead-days: ${NOTIFICATION_ANNIVERSARY_LOOKAHEAD_DAYS:7}
