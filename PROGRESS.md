@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T19:30:00Z — User Settings page with theme toggle, notification preferences, and dashboard thresholds
+2026-05-10T21:00:00Z — Automatic token refresh to prevent session expiration
 
 ## Current Status
-User Settings feature is fully implemented. Users can configure dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), toggle notification types on/off, switch between dark and light themes, and show/hide achievements on the dashboard. Settings are persisted per-user in the database. The notification scheduler respects user preferences (disabled notification types are skipped). A full light theme has been implemented as an alternative to the cyberpunk dark theme. All 792 backend tests and 708 frontend tests pass.
+Token refresh is now implemented. The frontend Auth.js configuration captures the OIDC refresh token on login, monitors access token expiry, and automatically refreshes it before it expires. If the refresh token itself is expired, the user is seamlessly redirected to re-authenticate. The SessionProvider polls the session every 4 minutes and on window focus to trigger proactive refresh. All 792 backend tests and 740 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -72,6 +72,7 @@ User Settings feature is fully implemented. Users can configure dashboard remind
 - [x] User Settings Frontend tests — ThemeProvider tests (7), Settings page tests (14), API client tests (7), Navigation test for settings link (1) (2026-05-10)
 - [x] Light Theme — Full CSS light theme via [data-theme="light"] selector. Clean surfaces (#F8FAFB base), teal/purple accents, proper WCAG contrast, subtle shadows instead of glows, light scrollbar styling. Toggled via Settings page. (2026-05-10)
 - [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load. (2026-05-10)
+- [x] Automatic Token Refresh — Auth.js jwt callback captures refresh_token and expires_at on login, proactively refreshes access token 60s before expiry using OIDC token endpoint discovery. SessionProvider polls session every 4 minutes and on window focus. SessionRefreshGuard component detects unrecoverable refresh failures and triggers re-authentication. offline_access scope added to OIDC authorization request. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -83,6 +84,7 @@ User Settings feature is fully implemented. Users can configure dashboard remind
 | 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Open |
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
+| 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
 1. GIN indexes for full-text search (performance optimization for large datasets)
@@ -112,7 +114,7 @@ User Settings feature is fully implemented. Users can configure dashboard remind
 ## Test Coverage Summary
 - Backend: All 792 tests pass — domain (including UserSettings 15 tests), application (including UserSettingsService 7 tests), controller slice (including UserSettingsController 11 tests), encryption adapter, property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 708 total — component tests (including ThemeProvider 7), page tests (including Settings 14), API client tests (including settings 7), Navigation test (last run: 2026-05-10)
+- Frontend: 740 total — component tests (including SessionRefreshGuard 6, SessionProvider 3, ThemeProvider 7), page tests (including Settings 14), API client tests (including settings 7), auth token refresh tests (16), Navigation test (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
