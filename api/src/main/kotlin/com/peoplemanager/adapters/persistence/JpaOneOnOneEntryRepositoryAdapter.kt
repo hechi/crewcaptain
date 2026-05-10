@@ -8,6 +8,7 @@ import com.peoplemanager.domain.OneOnOneEntry
 import com.peoplemanager.domain.OneOnOneEntryId
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
@@ -20,6 +21,8 @@ class JpaOneOnOneEntryRepositoryAdapter(
     private val springDataRepository: SpringDataOneOnOneEntryRepository,
     private val encryptionPort: EncryptionPort
 ) : OneOnOneEntryRepository {
+
+    private val logger = LoggerFactory.getLogger(JpaOneOnOneEntryRepositoryAdapter::class.java)
 
     override fun save(entry: OneOnOneEntry): OneOnOneEntry {
         val entity = entry.toEntity()
@@ -68,18 +71,42 @@ class JpaOneOnOneEntryRepositoryAdapter(
         return springDataRepository.findLatestMeetingDate(userId.value, personId.value)
     }
 
-    private fun OneOnOneEntryEntity.toDomain(): OneOnOneEntry = OneOnOneEntry(
-        id = OneOnOneEntryId(this.id),
-        userId = UserId(this.userId),
-        personId = PersonId(this.personId),
-        meetingDate = this.meetingDate,
-        agendaItems = this.agendaItems.map { it.toDomain() },
-        notesMarkdown = if (this.sensitive) encryptionPort.decrypt(this.notesMarkdown) else this.notesMarkdown,
-        outcomesMarkdown = if (this.sensitive) encryptionPort.decrypt(this.outcomesMarkdown) else this.outcomesMarkdown,
-        sensitive = this.sensitive,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
-    )
+    private fun OneOnOneEntryEntity.toDomain(): OneOnOneEntry {
+        val decryptedNotes = if (this.sensitive) {
+            try {
+                encryptionPort.decrypt(this.notesMarkdown)
+            } catch (e: Exception) {
+                logger.error("Failed to decrypt notes for entry ${this.id}: ${e.javaClass.simpleName}: ${e.message}")
+                "[encrypted content - unable to decrypt]"
+            }
+        } else {
+            this.notesMarkdown
+        }
+
+        val decryptedOutcomes = if (this.sensitive) {
+            try {
+                encryptionPort.decrypt(this.outcomesMarkdown)
+            } catch (e: Exception) {
+                logger.error("Failed to decrypt outcomes for entry ${this.id}: ${e.javaClass.simpleName}: ${e.message}")
+                "[encrypted content - unable to decrypt]"
+            }
+        } else {
+            this.outcomesMarkdown
+        }
+
+        return OneOnOneEntry(
+            id = OneOnOneEntryId(this.id),
+            userId = UserId(this.userId),
+            personId = PersonId(this.personId),
+            meetingDate = this.meetingDate,
+            agendaItems = this.agendaItems.map { it.toDomain() },
+            notesMarkdown = decryptedNotes,
+            outcomesMarkdown = decryptedOutcomes,
+            sensitive = this.sensitive,
+            createdAt = this.createdAt,
+            updatedAt = this.updatedAt
+        )
+    }
 
     private fun AgendaItemEntity.toDomain(): AgendaItem = AgendaItem(
         id = AgendaItemId(this.id),

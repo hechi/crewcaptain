@@ -1,6 +1,5 @@
 package com.peoplemanager.adapters.encryption
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotContain
@@ -176,13 +175,13 @@ class AesGcmEncryptionAdapterTest {
     inner class KeyValidation {
 
         @Test
-        fun `should reject key that is not 32 bytes when decoded`() {
+        fun `should treat invalid key size as disabled and pass through plaintext`() {
             val shortKey = Base64.getEncoder().encodeToString(ByteArray(16))
 
             val adapter = AesGcmEncryptionAdapter(shortKey)
-            shouldThrow<IllegalArgumentException> {
-                adapter.encrypt("test")
-            }
+            // Invalid key means encryption is disabled — plaintext passes through
+            adapter.encrypt("test") shouldBe "test"
+            adapter.isEnabled() shouldBe false
         }
 
         @Test

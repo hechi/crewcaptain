@@ -1,6 +1,7 @@
 package com.peoplemanager.adapters.encryption
 
 import com.peoplemanager.application.ports.EncryptionPort
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
@@ -22,33 +23,43 @@ class AesGcmEncryptionAdapter(
     @Value("\${app.encryption.key:}") private val encryptionKeyBase64: String
 ) : EncryptionPort {
 
+    private val logger = LoggerFactory.getLogger(AesGcmEncryptionAdapter::class.java)
+
     companion object {
         private const val ALGORITHM = "AES/GCM/NoPadding"
         private const val KEY_ALGORITHM = "AES"
         private const val GCM_IV_LENGTH = 12
         private const val GCM_TAG_LENGTH = 128
         private const val VERSION: Byte = 1
+        const val DECRYPTION_FAILED_PLACEHOLDER = "[encrypted content - unable to decrypt]"
     }
 
     private val secretKey: SecretKeySpec? by lazy {
         if (encryptionKeyBase64.isBlank()) {
             null
         } else {
-            val keyBytes = Base64.getDecoder().decode(encryptionKeyBase64)
-            require(keyBytes.size == 32) {
-                "ENCRYPTION_KEY must be exactly 32 bytes (256 bits) when Base64-decoded. Got ${keyBytes.size} bytes."
+            try {
+                val keyBytes = Base64.getDecoder().decode(encryptionKeyBase64)
+                if (keyBytes.size != 32) {
+                    logger.error("ENCRYPTION_KEY must be exactly 32 bytes (256 bits) when Base64-decoded. Got ${keyBytes.size} bytes. Encryption will be disabled.")
+                    null
+                } else {
+                    SecretKeySpec(keyBytes, KEY_ALGORITHM)
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to initialize encryption key: ${e.message}. Encryption will be disabled.")
+                null
             }
-            SecretKeySpec(keyBytes, KEY_ALGORITHM)
         }
     }
 
     private val secureRandom = SecureRandom()
 
-    override fun isEnabled(): Boolean = encryptionKeyBase64.isNotBlank()
+    override fun isEnabled(): Boolean = encryptionKeyBase64.isNotBlank() && secretKey != null
 
     override fun encrypt(plaintext: String?): String? {
         if (plaintext == null) return null
-        val key = secretKey ?: return plaintext // If no key configured, return plaintext
+        val key = secretKey ?: return plaintext // If no key configured/valid, return plaintext
 
         val iv = ByteArray(GCM_IV_LENGTH)
         secureRandom.nextBytes(iv)
@@ -70,7 +81,7 @@ class AesGcmEncryptionAdapter(
 
     override fun decrypt(ciphertext: String?): String? {
         if (ciphertext == null) return null
-        val key = secretKey ?: return ciphertext // If no key configured, return as-is
+        val key = secretKey ?: return ciphertext // If no key configured/valid, return as-is
 
         val decoded = try {
             Base64.getDecoder().decode(ciphertext)
@@ -103,8 +114,8 @@ class AesGcmEncryptionAdapter(
             String(plaintext, Charsets.UTF_8)
         } catch (e: Exception) {
             // Decryption failed — wrong key, corrupted data, or tampered ciphertext.
-            // Return a safe placeholder instead of crashing the entire request.
-            "[encrypted content - unable to decrypt]"
+            logger.warn("Failed to decrypt sensitive content: ${e.javaClass.simpleName}. Returning placeholder.")
+            DECRYPTION_FAILED_PLACEHOLDER
         }
     }
 }
