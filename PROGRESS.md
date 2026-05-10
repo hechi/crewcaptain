@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T08:30:00Z — PDP Goal tracking full-stack implementation complete (backend API + frontend UI)
+2026-05-10T09:00:00Z — At-a-Glance section now shows open action items count and active PDP goals
 
 ## Current Status
 The PDP Goal tracking feature is fully implemented end-to-end. The backend provides full CRUD for goals with status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), progress updates with sensitive flag, and data isolation. The frontend includes TypeScript types, API client functions (12 functions), reusable components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), and an integrated "PDP Goals" tab on the person detail page with inline create/edit forms, status filtering, and status transition actions. All 365 frontend tests and all backend tests pass.

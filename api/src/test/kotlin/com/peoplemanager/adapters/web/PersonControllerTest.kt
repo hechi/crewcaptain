@@ -11,7 +11,9 @@ import com.peoplemanager.adapters.web.dto.SetMoraleRequest
 import com.peoplemanager.adapters.web.dto.UpdatePersonRequest
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
+import com.peoplemanager.application.ports.ActionItemQueryPort
 import com.peoplemanager.application.ports.OneOnOneQueryPort
+import com.peoplemanager.application.ports.PdpGoalQueryPort
 import com.peoplemanager.application.ports.PersonCommandPort
 import com.peoplemanager.application.ports.PersonQueryPort
 import com.peoplemanager.domain.MoraleStatus
@@ -82,6 +84,12 @@ class PersonControllerTest {
         fun oneOnOneQueryPort(): OneOnOneQueryPort = mockk(relaxed = true)
 
         @Bean
+        fun actionItemQueryPort(): ActionItemQueryPort = mockk(relaxed = true)
+
+        @Bean
+        fun pdpGoalQueryPort(): PdpGoalQueryPort = mockk(relaxed = true)
+
+        @Bean
         fun userProvisioningService(): UserProvisioningService = mockk()
     }
 
@@ -96,6 +104,12 @@ class PersonControllerTest {
 
     @Autowired
     private lateinit var personQueryPort: PersonQueryPort
+
+    @Autowired
+    private lateinit var actionItemQueryPort: ActionItemQueryPort
+
+    @Autowired
+    private lateinit var pdpGoalQueryPort: PdpGoalQueryPort
 
     // Helper to create a JwtAuthenticationToken with UserId in details
     private fun authenticatedJwt(userId: UserId = UserId(UUID.randomUUID())): JwtAuthenticationToken {
@@ -207,6 +221,44 @@ class PersonControllerTest {
             .andExpect(jsonPath("$.id").value(personId.value.toString()))
             .andExpect(jsonPath("$.name").value("Jane Smith"))
             .andExpect(jsonPath("$.atAGlance").exists())
+    }
+
+    @Test
+    fun `GET persons by id - at-a-glance includes open action items count and active PDP goals`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+        val person = samplePerson(id = personId, userId = userId)
+
+        every { personQueryPort.getPerson(any()) } returns person
+        every { actionItemQueryPort.countOpenActionItems(any()) } returns 5L
+        every { pdpGoalQueryPort.countActivePdpGoals(any()) } returns 3L
+
+        mockMvc.perform(
+            get("/api/v1/persons/${personId.value}")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.atAGlance.openActionItemsCount").value(5))
+            .andExpect(jsonPath("$.atAGlance.activePdpGoalsSummary").value("3 active"))
+    }
+
+    @Test
+    fun `GET persons by id - at-a-glance shows null PDP summary when no active goals`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+        val person = samplePerson(id = personId, userId = userId)
+
+        every { personQueryPort.getPerson(any()) } returns person
+        every { actionItemQueryPort.countOpenActionItems(any()) } returns 0L
+        every { pdpGoalQueryPort.countActivePdpGoals(any()) } returns 0L
+
+        mockMvc.perform(
+            get("/api/v1/persons/${personId.value}")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.atAGlance.openActionItemsCount").value(0))
+            .andExpect(jsonPath("$.atAGlance.activePdpGoalsSummary").isEmpty)
     }
 
     @Test

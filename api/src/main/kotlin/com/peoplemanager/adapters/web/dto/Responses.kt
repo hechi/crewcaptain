@@ -25,7 +25,7 @@ data class PersonResponse(
     val updatedAt: Instant
 ) {
     companion object {
-        fun from(person: Person, last1on1Date: Instant? = null): PersonResponse = PersonResponse(
+        fun from(person: Person, last1on1Date: Instant? = null, openActionItemsCount: Int? = null, activePdpGoalsCount: Int? = null): PersonResponse = PersonResponse(
             id = person.id.value,
             name = person.name,
             preferredName = person.preferredName,
@@ -37,7 +37,15 @@ data class PersonResponse(
             moraleStatus = person.moraleStatus,
             moraleNote = person.moraleNote,
             pinnedRememberItems = person.pinnedRememberItems.map { RememberItemResponse.from(it) },
-            atAGlance = AtAGlanceResponse(last1on1Date = last1on1Date),
+            atAGlance = AtAGlanceResponse(
+                last1on1Date = last1on1Date,
+                openActionItemsCount = openActionItemsCount,
+                activePdpGoalsSummary = if (activePdpGoalsCount != null && activePdpGoalsCount > 0) {
+                    "$activePdpGoalsCount active"
+                } else {
+                    null
+                }
+            ),
             createdAt = person.createdAt,
             updatedAt = person.updatedAt
         )
