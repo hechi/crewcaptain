@@ -1,21 +1,56 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import NotificationBell from './notifications/NotificationBell';
 
 /**
  * Top navigation bar with CrewCaptain branding.
- * Dark theme with subtle bottom glow border and monospace brand name.
+ * Includes a user menu dropdown (click username to open) with Settings and Sign out.
+ * Pattern follows GitHub/Linear-style account menus.
  */
 export default function Navigation() {
   const { data: session, status } = useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
+
+  // Close menu on Escape key
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
 
   if (status !== 'authenticated') {
     return null;
   }
 
   const token = session?.accessToken || '';
+  const userName = session?.user?.name || 'User';
 
   return (
     <nav
@@ -104,49 +139,117 @@ export default function Navigation() {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <NotificationBell token={token} />
-        {session?.user?.name && (
-          <span
-            data-testid="nav-user-name"
+
+        {/* User Menu */}
+        <div ref={menuRef} style={{ position: 'relative' }}>
+          <button
+            type="button"
+            data-testid="nav-user-menu-trigger"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-expanded={menuOpen}
+            aria-haspopup="true"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 10px',
               fontSize: '13px',
-              color: 'var(--color-text-secondary)',
               fontFamily: 'var(--font-mono)',
+              color: 'var(--color-text-secondary)',
+              backgroundColor: 'transparent',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              cursor: 'pointer',
+              transition: 'border-color 0.2s, background-color 0.2s',
             }}
           >
-            {session.user.name}
-          </span>
-        )}
-        <Link
-          href="/settings"
-          data-testid="nav-settings"
-          style={{
-            fontSize: '13px',
-            color: 'var(--color-text-secondary)',
-            textDecoration: 'none',
-            fontWeight: 500,
-            transition: 'color 0.2s',
-          }}
-        >
-          Settings
-        </Link>
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: '/' })}
-          data-testid="nav-signout"
-          style={{
-            padding: '6px 14px',
-            fontSize: '13px',
-            fontWeight: 500,
-            color: 'var(--color-primary)',
-            backgroundColor: 'var(--color-primary-muted)',
-            border: '1px solid var(--color-border-glow)',
-            borderRadius: 'var(--radius-small)',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s, box-shadow 0.2s',
-          }}
-        >
-          Sign out
-        </button>
+            <span data-testid="nav-user-name" style={{ fontFamily: 'var(--font-mono)' }}>{userName}</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+              style={{
+                transform: menuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            >
+              <path
+                d="M3 4.5L6 7.5L9 4.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {menuOpen && (
+            <div
+              data-testid="nav-user-menu"
+              role="menu"
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                minWidth: '180px',
+                padding: '4px',
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-medium)',
+                boxShadow: 'var(--shadow-lg)',
+                zIndex: 50,
+              }}
+            >
+              <Link
+                href="/settings"
+                data-testid="nav-settings"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  color: 'var(--color-text-primary)',
+                  textDecoration: 'none',
+                  borderRadius: 'var(--radius-small)',
+                  transition: 'background-color 0.15s',
+                }}
+              >
+                Settings
+              </Link>
+              <div
+                style={{
+                  height: '1px',
+                  backgroundColor: 'var(--color-border)',
+                  margin: '4px 0',
+                }}
+              />
+              <button
+                type="button"
+                data-testid="nav-signout"
+                role="menuitem"
+                onClick={() => signOut({ callbackUrl: '/' })}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  color: 'var(--color-alert)',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: 'var(--radius-small)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.15s',
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
