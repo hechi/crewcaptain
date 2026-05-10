@@ -103,6 +103,13 @@ enum class QuickNoteStatus {
     INBOX, ATTACHED, CONVERTED, ARCHIVED
 }
 
+@JvmInline
+value class WorkspaceId(val value: UUID) {
+    companion object {
+        fun generate(): WorkspaceId = WorkspaceId(UUID.randomUUID())
+    }
+}
+
 data class OidcIdentity(
     val subject: String,
     val issuer: String

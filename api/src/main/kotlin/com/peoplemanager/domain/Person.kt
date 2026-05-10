@@ -16,6 +16,7 @@ data class Person(
     val moraleStatus: MoraleStatus = MoraleStatus.UNKNOWN,
     val moraleNote: String? = null,
     val pinnedRememberItems: List<PinnedRememberItem> = emptyList(),
+    val workspaceId: WorkspaceId? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
     val deletedAt: Instant? = null
@@ -70,4 +71,7 @@ data class Person(
             updatedAt = Instant.now()
         )
     }
+
+    fun assignToWorkspace(workspaceId: WorkspaceId?): Person =
+        copy(workspaceId = workspaceId, updatedAt = Instant.now())
 }

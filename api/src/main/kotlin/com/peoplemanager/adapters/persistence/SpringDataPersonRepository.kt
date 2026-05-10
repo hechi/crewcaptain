@@ -67,4 +67,39 @@ interface SpringDataPersonRepository : JpaRepository<PersonEntity, UUID> {
     @Modifying
     @Query("UPDATE PersonEntity p SET p.deletedAt = NULL, p.updatedAt = :now WHERE p.id = :id AND p.userId = :userId AND p.deletedAt IS NOT NULL")
     fun restoreByIdAndUserId(@Param("id") id: UUID, @Param("userId") userId: UUID, @Param("now") now: Instant): Int
+
+    // Workspace-filtered queries
+    @Query("SELECT p FROM PersonEntity p WHERE p.userId = :userId AND p.workspaceId = :workspaceId AND p.deletedAt IS NULL")
+    fun findAllByUserIdAndWorkspace(@Param("userId") userId: UUID, @Param("workspaceId") workspaceId: UUID, pageable: Pageable): Page<PersonEntity>
+
+    @Query(
+        value = "SELECT * FROM persons p WHERE p.user_id = :userId AND p.workspace_id = :workspaceId AND :tag = ANY(p.tags) AND p.deleted_at IS NULL",
+        nativeQuery = true
+    )
+    fun findAllByUserIdAndWorkspaceAndTag(
+        @Param("userId") userId: UUID,
+        @Param("workspaceId") workspaceId: UUID,
+        @Param("tag") tag: String,
+        pageable: Pageable
+    ): Page<PersonEntity>
+
+    @Query("SELECT p FROM PersonEntity p WHERE p.userId = :userId AND p.workspaceId = :workspaceId AND p.moraleStatus = :moraleStatus AND p.deletedAt IS NULL")
+    fun findAllByUserIdAndWorkspaceAndMoraleStatus(
+        @Param("userId") userId: UUID,
+        @Param("workspaceId") workspaceId: UUID,
+        @Param("moraleStatus") moraleStatus: String,
+        pageable: Pageable
+    ): Page<PersonEntity>
+
+    @Query(
+        value = "SELECT * FROM persons p WHERE p.user_id = :userId AND p.workspace_id = :workspaceId AND :tag = ANY(p.tags) AND p.morale_status = :moraleStatus AND p.deleted_at IS NULL",
+        nativeQuery = true
+    )
+    fun findAllByUserIdAndWorkspaceAndTagAndMoraleStatus(
+        @Param("userId") userId: UUID,
+        @Param("workspaceId") workspaceId: UUID,
+        @Param("tag") tag: String,
+        @Param("moraleStatus") moraleStatus: String,
+        pageable: Pageable
+    ): Page<PersonEntity>
 }

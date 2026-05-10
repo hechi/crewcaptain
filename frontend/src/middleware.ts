@@ -9,5 +9,6 @@ export const config = {
     '/settings/:path*',
     '/notifications/:path*',
     '/audit-log/:path*',
+    '/workspaces/:path*',
   ],
 };

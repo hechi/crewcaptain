@@ -25,6 +25,7 @@ export interface Person {
   moraleStatus: MoraleStatus;
   moraleNote: string | null;
   pinnedRememberItems: PinnedRememberItem[];
+  workspaceId: string | null;
   atAGlance: AtAGlance;
   createdAt: string;
   updatedAt: string;

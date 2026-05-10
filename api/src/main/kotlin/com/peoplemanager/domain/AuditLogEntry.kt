@@ -26,7 +26,8 @@ enum class AuditEntityType {
     PDP_UPDATE,
     KUDOS,
     QUICK_NOTE,
-    USER_SETTINGS
+    USER_SETTINGS,
+    WORKSPACE
 }
 
 /**
@@ -245,6 +246,33 @@ data class AuditLogEntry(
                 entityType = AuditEntityType.USER_SETTINGS,
                 entityId = userId.value.toString(),
                 summary = "Updated user settings"
+            )
+
+        fun workspaceCreated(userId: UserId, workspaceId: WorkspaceId, name: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.CREATE,
+                entityType = AuditEntityType.WORKSPACE,
+                entityId = workspaceId.value.toString(),
+                summary = "Created workspace \"$name\""
+            )
+
+        fun workspaceUpdated(userId: UserId, workspaceId: WorkspaceId, name: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.WORKSPACE,
+                entityId = workspaceId.value.toString(),
+                summary = "Updated workspace \"$name\""
+            )
+
+        fun workspaceDeleted(userId: UserId, workspaceId: WorkspaceId, name: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.DELETE,
+                entityType = AuditEntityType.WORKSPACE,
+                entityId = workspaceId.value.toString(),
+                summary = "Deleted workspace \"$name\""
             )
     }
 }

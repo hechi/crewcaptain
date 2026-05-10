@@ -45,6 +45,9 @@ class PersonEntity(
     @Column(name = "morale_note")
     var moraleNote: String? = null,
 
+    @Column(name = "workspace_id")
+    var workspaceId: UUID? = null,
+
     @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("displayOrder ASC")
     var pinnedRememberItems: MutableList<PinnedRememberItemEntity> = mutableListOf(),

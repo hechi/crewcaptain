@@ -36,10 +36,11 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Bulk Import (CSV)** — Import multiple people at once from a CSV file. Supports columns: name (required), preferred_name, role_title, timezone, start_date (YYYY-MM-DD), email, tags (pipe-separated). Preview before import, per-row error reporting, max 500 rows per import. Accessible via "Import CSV" button on the People list page.
 - **Soft-Delete + Restore** — Deleting a person moves them to trash (soft-delete) instead of permanently removing them. Trash page shows all deleted people with restore and permanent delete capability. All queries automatically exclude soft-deleted records. Data isolation enforced on trash operations. Permanent delete requires confirmation and cascades to all associated data (1:1 entries, action items, PDP goals, kudos).
 - **Audit Log** — Records key actions (create, update, delete, restore) across all entities for the manager's own traceability. Paginated audit log page with entity type and action filters. All entries scoped by userId. Accessible via user menu in navigation.
+- **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (private, no sharing). A person belongs to one workspace (optional). Opt-in: if no workspaces exist, everything works as before. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and management page accessible via user menu.
 
 ### Planned
 
-- Optional "workspace" concept (still manager-private by default)
+- (none currently)
 
 ---
 
