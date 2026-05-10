@@ -591,7 +591,12 @@ export default function PersonDetailPage() {
             data-testid="export-button"
             aria-label="Export person data as Markdown"
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               padding: '8px 16px',
+              height: '36px',
+              width: '160px',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-medium)',
               cursor: exporting ? 'not-allowed' : 'pointer',
@@ -601,6 +606,7 @@ export default function PersonDetailPage() {
               fontFamily: 'var(--font-mono)',
               opacity: exporting ? 0.6 : 1,
               transition: 'border-color 0.2s',
+              boxSizing: 'border-box',
             }}
           >
             {exporting ? 'Exporting...' : '↓ Export'}
@@ -611,7 +617,12 @@ export default function PersonDetailPage() {
             data-testid="review-packet-button"
             aria-label="Generate review packet"
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               padding: '8px 16px',
+              height: '36px',
+              width: '160px',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-medium)',
               cursor: 'pointer',
@@ -620,9 +631,10 @@ export default function PersonDetailPage() {
               color: 'var(--color-text-secondary)',
               fontFamily: 'var(--font-mono)',
               transition: 'border-color 0.2s',
+              boxSizing: 'border-box',
             }}
           >
-            📋 Review Packet
+            Review Packet
           </button>
           <MoraleIndicator moraleStatus={person.moraleStatus} />
         </div>
