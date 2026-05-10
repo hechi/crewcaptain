@@ -154,12 +154,12 @@ export default function DashboardPage() {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 'var(--space-4)',
+              padding: 'var(--space-5)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-bg-surface)',
+              backdropFilter: 'var(--glass-blur)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
           >
             <h3
@@ -170,16 +170,18 @@ export default function DashboardPage() {
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 8px 0',
+                margin: '0 0 var(--space-4) 0',
               }}
             >
               1:1 Streak
             </h3>
-            <StreakCounter
-              currentStreak={gamification.streaks.currentStreak}
-              longestStreak={gamification.streaks.longestStreak}
-              totalOneOnOnesHeld={gamification.streaks.totalOneOnOnesHeld}
-            />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <StreakCounter
+                currentStreak={gamification.streaks.currentStreak}
+                longestStreak={gamification.streaks.longestStreak}
+                totalOneOnOnesHeld={gamification.streaks.totalOneOnOnesHeld}
+              />
+            </div>
           </section>
 
           {/* PDP Progress Ring */}
@@ -188,12 +190,12 @@ export default function DashboardPage() {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 'var(--space-4)',
+              padding: 'var(--space-5)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-bg-surface)',
+              backdropFilter: 'var(--glass-blur)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
           >
             <h3
@@ -204,12 +206,12 @@ export default function DashboardPage() {
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 8px 0',
+                margin: '0 0 var(--space-4) 0',
               }}
             >
               PDP Goals
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <ProgressRing
                 percentage={gamification.pdpProgress.completionPercentage}
                 size={100}
@@ -238,12 +240,12 @@ export default function DashboardPage() {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 'var(--space-4)',
+              padding: 'var(--space-5)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-bg-surface)',
+              backdropFilter: 'var(--glass-blur)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
           >
             <h3
@@ -254,12 +256,14 @@ export default function DashboardPage() {
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 8px 0',
+                margin: '0 0 var(--space-4) 0',
               }}
             >
               Activity
             </h3>
-            <ActivityHeatmap days={gamification.activityHeatmap} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <ActivityHeatmap days={gamification.activityHeatmap} />
+            </div>
           </section>
         </div>
       )}

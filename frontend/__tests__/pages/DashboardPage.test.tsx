@@ -371,9 +371,7 @@ describe('DashboardPage', () => {
     const expectedCardStyle = {
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 'var(--space-4)',
+      padding: 'var(--space-5)',
       borderRadius: 'var(--radius-medium)',
       border: '1px solid var(--color-border)',
       backgroundColor: 'var(--color-bg-surface)',
