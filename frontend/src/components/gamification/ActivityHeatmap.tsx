@@ -61,6 +61,7 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
+        width: '100%',
       }}
     >
       {/* Heatmap grid */}
@@ -70,6 +71,8 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
           gap: '2px',
           overflowX: 'auto',
           paddingBottom: '4px',
+          width: '100%',
+          justifyContent: 'space-between',
         }}
       >
         {weeks.map((week, weekIdx) => (
@@ -79,6 +82,8 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
               display: 'flex',
               flexDirection: 'column',
               gap: '2px',
+              flex: 1,
+              minWidth: 0,
             }}
           >
             {week.map((day, dayIdx) => (
@@ -88,8 +93,8 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
                 title={day.count >= 0 ? `${day.date}: ${day.count} ${day.count === 1 ? 'activity' : 'activities'}` : undefined}
                 aria-label={day.count >= 0 ? `${day.date}: ${day.count} activities` : undefined}
                 style={{
-                  width: '10px',
-                  height: '10px',
+                  width: '100%',
+                  aspectRatio: '1',
                   borderRadius: '2px',
                   backgroundColor: day.count < 0
                     ? 'transparent'
@@ -109,7 +114,8 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
           display: 'flex',
           alignItems: 'center',
           gap: '4px',
-          marginTop: '4px',
+          marginTop: '8px',
+          justifyContent: 'flex-end',
         }}
       >
         <span

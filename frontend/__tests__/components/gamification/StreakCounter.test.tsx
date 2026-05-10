@@ -19,16 +19,16 @@ describe('StreakCounter', () => {
     expect(screen.getByTestId('streak-total-value')).toHaveTextContent('30');
   });
 
-  it('should show zero streak without glow', () => {
+  it('should show zero streak with muted color', () => {
     render(<StreakCounter currentStreak={0} longestStreak={5} totalOneOnOnesHeld={10} />);
-    const counter = screen.getByTestId('streak-counter');
-    expect(counter).toHaveStyle({ boxShadow: 'none' });
+    const currentValue = screen.getByTestId('streak-current-value');
+    expect(currentValue).toHaveStyle({ color: 'var(--color-text-muted)' });
   });
 
-  it('should show active streak with glow', () => {
+  it('should show active streak with primary color', () => {
     render(<StreakCounter currentStreak={3} longestStreak={5} totalOneOnOnesHeld={10} />);
-    const counter = screen.getByTestId('streak-counter');
-    expect(counter).toHaveStyle({ boxShadow: 'var(--glow-primary)' });
+    const currentValue = screen.getByTestId('streak-current-value');
+    expect(currentValue).toHaveStyle({ color: 'var(--color-primary)' });
   });
 
   it('should display current streak prominently', () => {

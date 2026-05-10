@@ -149,7 +149,19 @@ export default function DashboardPage() {
           }}
         >
           {/* Streak Counter */}
-          <section data-testid="dashboard-section-streak">
+          <section
+            data-testid="dashboard-section-streak"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 'var(--space-5)',
+              borderRadius: 'var(--radius-medium)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-bg-surface)',
+              backdropFilter: 'var(--glass-blur)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+            }}
+          >
             <h3
               style={{
                 fontSize: 'var(--text-caption)',
@@ -158,16 +170,18 @@ export default function DashboardPage() {
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 8px 0',
+                margin: '0 0 var(--space-4) 0',
               }}
             >
               1:1 Streak
             </h3>
-            <StreakCounter
-              currentStreak={gamification.streaks.currentStreak}
-              longestStreak={gamification.streaks.longestStreak}
-              totalOneOnOnesHeld={gamification.streaks.totalOneOnOnesHeld}
-            />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <StreakCounter
+                currentStreak={gamification.streaks.currentStreak}
+                longestStreak={gamification.streaks.longestStreak}
+                totalOneOnOnesHeld={gamification.streaks.totalOneOnOnesHeld}
+              />
+            </div>
           </section>
 
           {/* PDP Progress Ring */}
@@ -176,11 +190,13 @@ export default function DashboardPage() {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              padding: 'var(--space-4)',
+              padding: 'var(--space-5)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-bg-surface)',
+              backdropFilter: 'var(--glass-blur)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+              overflow: 'visible',
             }}
           >
             <h3
@@ -191,29 +207,31 @@ export default function DashboardPage() {
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 12px 0',
+                margin: '0 0 var(--space-4) 0',
               }}
             >
               PDP Goals
             </h3>
-            <ProgressRing
-              percentage={gamification.pdpProgress.completionPercentage}
-              size={100}
-              label="Achieved"
-              color="var(--color-success)"
-            />
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-                marginTop: '12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              <span data-testid="pdp-active-count">{gamification.pdpProgress.totalActive} active</span>
-              <span data-testid="pdp-achieved-count">{gamification.pdpProgress.totalAchieved} achieved</span>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+              <ProgressRing
+                percentage={gamification.pdpProgress.completionPercentage}
+                size={100}
+                label="Achieved"
+                color="var(--color-success)"
+              />
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  marginTop: '12px',
+                  fontSize: 'var(--text-caption)',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                <span data-testid="pdp-active-count">{gamification.pdpProgress.totalActive} active</span>
+                <span data-testid="pdp-achieved-count">{gamification.pdpProgress.totalAchieved} achieved</span>
+              </div>
             </div>
           </section>
 
@@ -221,10 +239,14 @@ export default function DashboardPage() {
           <section
             data-testid="dashboard-section-activity"
             style={{
-              padding: 'var(--space-4)',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 'var(--space-5)',
               borderRadius: 'var(--radius-medium)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-bg-surface)',
+              backdropFilter: 'var(--glass-blur)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
           >
             <h3
@@ -235,12 +257,14 @@ export default function DashboardPage() {
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 8px 0',
+                margin: '0 0 var(--space-4) 0',
               }}
             >
               Activity
             </h3>
-            <ActivityHeatmap days={gamification.activityHeatmap} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
+              <ActivityHeatmap days={gamification.activityHeatmap} />
+            </div>
           </section>
         </div>
       )}

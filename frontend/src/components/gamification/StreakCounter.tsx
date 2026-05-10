@@ -23,14 +23,7 @@ export default function StreakCounter({
   return (
     <div
       data-testid="streak-counter"
-      style={{
-        padding: 'var(--space-4)',
-        borderRadius: 'var(--radius-medium)',
-        border: `1px solid ${isActive ? 'var(--color-primary)' : 'var(--color-border)'}`,
-        backgroundColor: 'var(--color-bg-surface)',
-        boxShadow: isActive ? 'var(--glow-primary)' : 'none',
-        transition: 'border-color 0.2s, box-shadow 0.2s',
-      }}
+      style={{ width: '100%' }}
     >
       {/* Main streak display */}
       <div
@@ -72,6 +65,9 @@ export default function StreakCounter({
         style={{
           display: 'flex',
           gap: '16px',
+          marginTop: 'auto',
+          paddingTop: '12px',
+          borderTop: '1px solid var(--color-border)',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>

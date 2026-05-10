@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T01:00:00Z — Expanded middleware auth matcher to cover all authenticated routes (eliminates loading flicker)
+2026-05-11T03:00:00Z — Heatmap cells now stretch to fill available card width
 
 ## Current Status
-Middleware auth matcher expanded to protect all authenticated routes (dashboard, quick-notes, search, settings, notifications) — eliminates the brief loading flash on those pages. Pre-existing build errors fixed (duplicate fontFamily in page.tsx, lucide-react type mismatch in AchievementBadge, search page prerender issue). All 794 frontend tests pass, build succeeds.
+Dashboard gamification cards fully polished: ActivityHeatmap cells use width:100% + aspect-ratio:1 instead of fixed 12px, so they stretch to fill the card. All 795 frontend tests pass, build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -85,6 +85,8 @@ Middleware auth matcher expanded to protect all authenticated routes (dashboard,
 - [x] Bulk Import (CSV) Frontend — TypeScript types (BulkImportResponse), API client (importPersonsCsv with FormData), CsvImportModal component with file validation, CSV preview table, import progress, success/error result display. "Import CSV" button on People list page. (2026-05-10)
 - [x] Bulk Import (CSV) Frontend tests — Component tests (CsvImportModal 14 tests), API client tests (8 tests) (2026-05-10)
 
+- [x] Dashboard gamification card consistency — Redesigned using stat-card UX pattern: glassmorphism card shell, label pinned at top, flex-grow content area. StreakCounter fills width with border-top separator for secondary stats. ActivityHeatmap columns flex to fill card width with 12px cells. PDP ring glow no longer clipped (overflow:visible + inner padding). (2026-05-11)
+
 ## In Progress
 - (none)
 
@@ -136,7 +138,7 @@ Middleware auth matcher expanded to protect all authenticated routes (dashboard,
 ## Test Coverage Summary
 - Backend: All 923 tests pass — domain (including CsvParser 15 tests), application (including PersonBulkImportService 12 tests), controller slice (including PersonBulkImportController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 794 total — component tests (including CsvImportModal 14), page tests (including DashboardPage 13), API client tests (including bulk-import 8), auth token refresh tests, middleware tests (9), Navigation test (last run: 2026-05-11)
+- Frontend: 795 total — component tests (including CsvImportModal 14), page tests (including DashboardPage 14), API client tests (including bulk-import 8), auth token refresh tests, middleware tests (9), Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
