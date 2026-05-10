@@ -32,10 +32,10 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Gamification & Engagement** — Dashboard gamification elements for engagement: animated progress ring for PDP goal completion percentage, 1:1 streak counter (consecutive weeks with meetings), achievement badges for milestones (first 1:1, 10 action items closed, etc.), and activity heatmap (contribution-graph style). Micro-animation on task completion (checkmark with glow burst). All animations respect `prefers-reduced-motion`.
 - **User Settings** — Per-user persistent settings page with: theme selection (dark/light), dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), notification type toggles (overdue, due-soon, stale 1:1, anniversary), and achievement visibility toggle. Settings are stored in the database and respected by the notification scheduler and dashboard.
 - **Light Theme** — Full light theme alternative to the default cyberpunk dark theme. Clean surfaces, teal/purple accents, proper contrast ratios, and subtle shadows instead of glows. Toggled via Settings page.
+- **Review Packet Generator** — Generate structured review/performance summary documents for a person over a configurable date range. Includes executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), morale status, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded. Download as Markdown via "Review Packet" button on person detail page.
 
 ### Planned
 
-- Review packet generator (date range summaries)
 - Bulk import (CSV people list)
 
 ---
@@ -122,6 +122,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | DELETE | `/api/v1/persons/{id}/remember-items/{itemId}` | Remove a remember item  |
 | PUT    | `/api/v1/persons/{id}/remember-items/reorder` | Reorder remember items  |
 | GET    | `/api/v1/persons/{id}/export`           | Export person data as Markdown |
+| GET    | `/api/v1/persons/{id}/review-packet`    | Generate review packet as Markdown |
 
 **Export query parameters:**
 - `dateFrom` — Optional start date filter (ISO 8601 date, e.g., 2024-01-01)
@@ -131,6 +132,15 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - Content-Type: `text/markdown; charset=UTF-8`
 - Content-Disposition: `attachment; filename="export.md"`
 - Body: Structured Markdown with profile, remember items, morale, 1:1 history, action items, PDP goals, and kudos
+
+**Review packet query parameters (both required):**
+- `dateFrom` — Start date of review period (ISO 8601 date, e.g., 2024-01-01)
+- `dateTo` — End date of review period (ISO 8601 date, e.g., 2024-06-30)
+
+**Review packet response:**
+- Content-Type: `text/markdown; charset=UTF-8`
+- Content-Disposition: `attachment; filename="review-packet.md"`
+- Body: Structured Markdown with executive summary (statistics), morale, 1:1 meetings, action items (grouped by status with completion rate), PDP goals with progress, and kudos with tag summary. Sensitive content is excluded.
 
 ### 1:1 Entry Management
 
