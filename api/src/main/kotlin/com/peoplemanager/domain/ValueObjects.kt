@@ -92,6 +92,17 @@ value class KudosId(val value: UUID) {
     }
 }
 
+@JvmInline
+value class QuickNoteId(val value: UUID) {
+    companion object {
+        fun generate(): QuickNoteId = QuickNoteId(UUID.randomUUID())
+    }
+}
+
+enum class QuickNoteStatus {
+    INBOX, ATTACHED, CONVERTED, ARCHIVED
+}
+
 data class OidcIdentity(
     val subject: String,
     val issuer: String

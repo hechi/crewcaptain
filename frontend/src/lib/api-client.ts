@@ -29,6 +29,14 @@ import {
   CreateKudosRequest,
   PaginatedKudosResponse,
 } from '@/types/kudos';
+import {
+  QuickNote,
+  QuickNoteStatus,
+  CreateQuickNoteRequest,
+  UpdateQuickNoteRequest,
+  AssignQuickNoteToPersonRequest,
+  PaginatedQuickNoteResponse,
+} from '@/types/quick-note';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -436,5 +444,81 @@ export async function listAllKudos(token: string, params?: {
   const queryString = searchParams.toString();
   const url = `${API_BASE_URL}/kudos${queryString ? `?${queryString}` : ''}`;
   const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+// --- Quick Notes ---
+
+export async function createQuickNote(token: string, data: CreateQuickNoteRequest): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function getQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}`, {}, token);
+  return response.json();
+}
+
+export async function updateQuickNote(token: string, quickNoteId: string, data: UpdateQuickNoteRequest): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function deleteQuickNote(token: string, quickNoteId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function listQuickNotes(token: string, params?: {
+  status?: QuickNoteStatus;
+  personId?: string;
+  page?: number;
+  size?: number;
+}): Promise<PaginatedQuickNoteResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.personId) searchParams.set('personId', params.personId);
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/quick-notes${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function assignQuickNoteToPerson(token: string, quickNoteId: string, data: AssignQuickNoteToPersonRequest): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/assign`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function attachQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/attach`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function convertQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/convert`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function archiveQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/archive`, {
+    method: 'POST',
+  }, token);
   return response.json();
 }

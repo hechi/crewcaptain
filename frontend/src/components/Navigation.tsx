@@ -59,6 +59,19 @@ export default function Navigation() {
           >
             People
           </Link>
+          <Link
+            href="/quick-notes"
+            data-testid="nav-quick-notes"
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              transition: 'color 0.2s',
+            }}
+          >
+            Quick Notes
+          </Link>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
