@@ -16,4 +16,9 @@ interface SpringDataOneOnOneEntryRepository : JpaRepository<OneOnOneEntryEntity,
 
     @Query("SELECT MAX(e.meetingDate) FROM OneOnOneEntryEntity e WHERE e.userId = :userId AND e.personId = :personId")
     fun findLatestMeetingDate(@Param("userId") userId: UUID, @Param("personId") personId: UUID): Instant?
+
+    fun countByUserId(userId: UUID): Long
+
+    @Query("SELECT e.meetingDate FROM OneOnOneEntryEntity e WHERE e.userId = :userId ORDER BY e.meetingDate ASC")
+    fun findAllMeetingDatesByUserId(@Param("userId") userId: UUID): List<Instant>
 }

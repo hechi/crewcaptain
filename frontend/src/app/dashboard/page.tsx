@@ -3,15 +3,18 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { DashboardResponse } from '@/types/dashboard';
-import { getDashboard } from '@/lib/api-client';
+import { GamificationStats } from '@/types/gamification';
+import { getDashboard, getGamificationStats } from '@/lib/api-client';
 import OverdueActionItems from '@/components/dashboard/OverdueActionItems';
 import DueSoonActionItems from '@/components/dashboard/DueSoonActionItems';
 import StaleOneOnOnes from '@/components/dashboard/StaleOneOnOnes';
 import UpcomingAnniversaries from '@/components/dashboard/UpcomingAnniversaries';
+import { ProgressRing, StreakCounter, AchievementBadge, ActivityHeatmap } from '@/components/gamification';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [gamification, setGamification] = useState<GamificationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,8 +24,12 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await getDashboard(session.accessToken as string);
-      setDashboard(result);
+      const [dashResult, gamResult] = await Promise.all([
+        getDashboard(session.accessToken as string),
+        getGamificationStats(session.accessToken as string),
+      ]);
+      setDashboard(dashResult);
+      setGamification(gamResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load dashboard');
     } finally {
@@ -119,6 +126,147 @@ export default function DashboardPage() {
           </p>
         )}
       </div>
+
+      {/* Gamification Stats */}
+      {gamification && (
+        <div
+          data-testid="dashboard-gamification"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 'var(--space-4)',
+            marginBottom: 'var(--space-6)',
+          }}
+        >
+          {/* Streak Counter */}
+          <section data-testid="dashboard-section-streak">
+            <h3
+              style={{
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 'var(--weight-medium)',
+                color: 'var(--color-text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                margin: '0 0 8px 0',
+              }}
+            >
+              1:1 Streak
+            </h3>
+            <StreakCounter
+              currentStreak={gamification.streaks.currentStreak}
+              longestStreak={gamification.streaks.longestStreak}
+              totalOneOnOnesHeld={gamification.streaks.totalOneOnOnesHeld}
+            />
+          </section>
+
+          {/* PDP Progress Ring */}
+          <section
+            data-testid="dashboard-section-pdp-progress"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: 'var(--space-4)',
+              borderRadius: 'var(--radius-medium)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-bg-surface)',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 'var(--weight-medium)',
+                color: 'var(--color-text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                margin: '0 0 12px 0',
+              }}
+            >
+              PDP Goals
+            </h3>
+            <ProgressRing
+              percentage={gamification.pdpProgress.completionPercentage}
+              size={100}
+              label="Achieved"
+              color="var(--color-success)"
+            />
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                marginTop: '12px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              <span data-testid="pdp-active-count">{gamification.pdpProgress.totalActive} active</span>
+              <span data-testid="pdp-achieved-count">{gamification.pdpProgress.totalAchieved} achieved</span>
+            </div>
+          </section>
+
+          {/* Activity Heatmap */}
+          <section
+            data-testid="dashboard-section-activity"
+            style={{
+              padding: 'var(--space-4)',
+              borderRadius: 'var(--radius-medium)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-bg-surface)',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 'var(--weight-medium)',
+                color: 'var(--color-text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                margin: '0 0 8px 0',
+              }}
+            >
+              Activity
+            </h3>
+            <ActivityHeatmap days={gamification.activityHeatmap} />
+          </section>
+        </div>
+      )}
+
+      {/* Achievements */}
+      {gamification && gamification.achievements.length > 0 && (
+        <section
+          data-testid="dashboard-section-achievements"
+          style={{ marginBottom: 'var(--space-6)' }}
+        >
+          <h3
+            style={{
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 'var(--weight-medium)',
+              color: 'var(--color-text-secondary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              margin: '0 0 12px 0',
+            }}
+          >
+            Achievements
+          </h3>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
+            {gamification.achievements.map((achievement) => (
+              <AchievementBadge key={achievement.type} achievement={achievement} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Grid layout */}
       <div

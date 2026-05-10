@@ -15,4 +15,6 @@ interface OneOnOneEntryRepository {
     fun findAllByUserIdAndPersonId(userId: UserId, personId: PersonId, pageable: Pageable): Page<OneOnOneEntry>
     fun deleteByIdAndUserIdAndPersonId(entryId: OneOnOneEntryId, userId: UserId, personId: PersonId): Boolean
     fun findLatestMeetingDate(userId: UserId, personId: PersonId): Instant?
+    fun countByUserId(userId: UserId): Long
+    fun findAllMeetingDatesByUserId(userId: UserId): List<Instant>
 }

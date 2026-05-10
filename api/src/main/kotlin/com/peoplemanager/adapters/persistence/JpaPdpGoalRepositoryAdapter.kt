@@ -64,6 +64,10 @@ class JpaPdpGoalRepositoryAdapter(
         return springDataRepository.countActiveByUserIdAndPersonId(userId.value, personId.value)
     }
 
+    override fun countByUserIdAndStatus(userId: UserId, status: PdpGoalStatus): Long {
+        return springDataRepository.countByUserIdAndStatus(userId.value, status.name)
+    }
+
     private fun PdpGoalEntity.toDomain(): PdpGoal = PdpGoal(
         id = PdpGoalId(this.id),
         userId = UserId(this.userId),

@@ -18,4 +18,5 @@ interface ActionItemRepository {
     fun findDueSoonByUserId(userId: UserId, fromDate: LocalDate, toDate: LocalDate): List<ActionItem>
     fun deleteByIdAndUserIdAndPersonId(actionItemId: ActionItemId, userId: UserId, personId: PersonId): Boolean
     fun countOpenByUserIdAndPersonId(userId: UserId, personId: PersonId): Long
+    fun countByUserIdAndStatus(userId: UserId, status: ActionItemStatus): Long
 }

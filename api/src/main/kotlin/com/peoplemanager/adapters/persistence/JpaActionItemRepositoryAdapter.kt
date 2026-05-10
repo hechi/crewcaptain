@@ -101,6 +101,10 @@ class JpaActionItemRepositoryAdapter(
         return springDataRepository.countOpenByUserIdAndPersonId(userId.value, personId.value)
     }
 
+    override fun countByUserIdAndStatus(userId: UserId, status: ActionItemStatus): Long {
+        return springDataRepository.countByUserIdAndStatus(userId.value, status.name)
+    }
+
     private fun ActionItemEntity.toDomain(): ActionItem = ActionItem(
         id = ActionItemId(this.id),
         userId = UserId(this.userId),

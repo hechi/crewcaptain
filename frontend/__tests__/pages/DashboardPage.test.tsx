@@ -9,13 +9,15 @@ jest.mock('next-auth/react', () => ({
 
 jest.mock('@/lib/api-client', () => ({
   getDashboard: jest.fn(),
+  getGamificationStats: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
-import { getDashboard } from '@/lib/api-client';
+import { getDashboard, getGamificationStats } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 const mockGetDashboard = getDashboard as jest.MockedFunction<typeof getDashboard>;
+const mockGetGamificationStats = getGamificationStats as jest.MockedFunction<typeof getGamificationStats>;
 
 const mockDashboardData = {
   overdueActionItems: [
@@ -61,9 +63,22 @@ const mockDashboardData = {
   ],
 };
 
+const mockGamificationData = {
+  streaks: { currentStreak: 3, longestStreak: 5, totalOneOnOnesHeld: 15 },
+  achievements: [
+    { type: 'FIRST_ONE_ON_ONE' as const, unlockedAt: '2026-01-15', label: 'First 1:1', description: 'Held your first 1:1 meeting' },
+  ],
+  activityHeatmap: [
+    { date: '2026-05-09', count: 1 },
+    { date: '2026-05-10', count: 0 },
+  ],
+  pdpProgress: { totalActive: 2, totalAchieved: 1, totalPaused: 0, totalDropped: 0, completionPercentage: 33 },
+};
+
 describe('DashboardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetGamificationStats.mockResolvedValue(mockGamificationData);
   });
 
   it('should show loading state initially', () => {
@@ -73,6 +88,7 @@ describe('DashboardPage', () => {
       update: jest.fn(),
     });
     mockGetDashboard.mockReturnValue(new Promise(() => {})); // Never resolves
+    mockGetGamificationStats.mockReturnValue(new Promise(() => {})); // Never resolves
 
     render(<DashboardPage />);
     expect(screen.getByTestId('dashboard-loading')).toBeInTheDocument();

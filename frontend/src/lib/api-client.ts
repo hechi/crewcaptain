@@ -630,3 +630,23 @@ export async function exportPersonMarkdown(
   const response = await fetchWithAuth(url, {}, token);
   return response.text();
 }
+
+// --- Gamification ---
+
+import { GamificationStats } from '@/types/gamification';
+
+export async function getGamificationStats(
+  token: string,
+  params?: { heatmapDays?: number }
+): Promise<GamificationStats> {
+  const searchParams = new URLSearchParams();
+  if (params?.heatmapDays !== undefined) searchParams.set('heatmapDays', params.heatmapDays.toString());
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${API_BASE_URL}/gamification/stats?${queryString}`
+    : `${API_BASE_URL}/gamification/stats`;
+
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}

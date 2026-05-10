@@ -14,4 +14,6 @@ interface SpringDataKudosRepository : JpaRepository<KudosEntity, UUID> {
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<KudosEntity>
 
     fun deleteByIdAndUserIdAndPersonId(id: UUID, userId: UUID, personId: UUID): Long
+
+    fun countByUserId(userId: UUID): Long
 }

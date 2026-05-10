@@ -14,4 +14,5 @@ interface PdpGoalRepository {
     fun findAllByUserIdAndPersonId(userId: UserId, personId: PersonId, status: PdpGoalStatus?, pageable: Pageable): Page<PdpGoal>
     fun deleteByIdAndUserIdAndPersonId(goalId: PdpGoalId, userId: UserId, personId: PersonId): Boolean
     fun countActiveByUserIdAndPersonId(userId: UserId, personId: PersonId): Long
+    fun countByUserIdAndStatus(userId: UserId, status: PdpGoalStatus): Long
 }
