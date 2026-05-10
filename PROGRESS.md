@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T21:00:00Z — Automatic token refresh to prevent session expiration
+2026-05-10T22:00:00Z — GIN indexes for full-text search performance optimization
 
 ## Current Status
-Token refresh is now implemented. The frontend Auth.js configuration captures the OIDC refresh token on login, monitors access token expiry, and automatically refreshes it before it expires. If the refresh token itself is expired, the user is seamlessly redirected to re-authenticate. The SessionProvider polls the session every 4 minutes and on window focus to trigger proactive refresh. All 792 backend tests and 740 frontend tests pass.
+GIN indexes for full-text search are now implemented. Seven per-table immutable wrapper functions compute tsvector values, and expression-based GIN indexes use these functions for fast full-text search across all searchable tables (persons, one_on_one_entries, quick_notes, action_items, pdp_goals, pdp_updates, kudos). The search repository adapter uses the same functions in queries so PostgreSQL can leverage the indexes. All 807 backend tests and 740 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -73,6 +73,7 @@ Token refresh is now implemented. The frontend Auth.js configuration captures th
 - [x] Light Theme — Full CSS light theme via [data-theme="light"] selector. Clean surfaces (#F8FAFB base), teal/purple accents, proper WCAG contrast, subtle shadows instead of glows, light scrollbar styling. Toggled via Settings page. (2026-05-10)
 - [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load. (2026-05-10)
 - [x] Automatic Token Refresh — Auth.js jwt callback captures refresh_token and expires_at on login, proactively refreshes access token 60s before expiry using OIDC token endpoint discovery. SessionProvider polls session every 4 minutes and on window focus. SessionRefreshGuard component detects unrecoverable refresh failures and triggers re-authentication. offline_access scope added to OIDC authorization request. (2026-05-10)
+- [x] GIN Indexes for Full-Text Search — Per-table immutable wrapper functions (persons_search_vector, one_on_one_entries_search_vector, quick_notes_search_vector, action_items_search_vector, pdp_goals_search_vector, pdp_updates_search_vector, kudos_search_vector) with expression-based GIN indexes. Search queries use the same functions enabling index utilization. Flyway migration V20250510120009. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -87,10 +88,9 @@ Token refresh is now implemented. The frontend Auth.js configuration captures th
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. GIN indexes for full-text search (performance optimization for large datasets)
-2. Review packet generator (date range summaries)
-3. Bulk import (CSV people list)
-4. Dashboard uses user settings for dueSoonDays/anniversaryLookaheadDays query params (currently uses API defaults)
+1. Review packet generator (date range summaries)
+2. Bulk import (CSV people list)
+3. Dashboard uses user settings for dueSoonDays/anniversaryLookaheadDays query params (currently uses API defaults)
 
 ## Architecture Decisions Made This Session
 - UserSettings is a separate domain aggregate (not embedded in User) — keeps the User aggregate focused on identity
@@ -100,6 +100,8 @@ Token refresh is now implemented. The frontend Auth.js configuration captures th
 - Theme is stored as a string enum (DARK/LIGHT) — extensible for future themes
 - Light theme uses CSS custom properties override via [data-theme="light"] attribute on <html> — zero JS overhead for theme switching
 - ThemeProvider uses React context for app-wide theme state — settings page updates propagate immediately
+- GIN indexes use per-table immutable wrapper functions (not generated columns) — PostgreSQL's to_tsvector is STABLE not IMMUTABLE, so we wrap it in IMMUTABLE plpgsql functions that pin the 'english' config
+- Expression-based GIN indexes (not stored tsvector columns) — avoids schema changes to entities, no trigger maintenance, queries must use the same function call to hit the index
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -112,7 +114,7 @@ Token refresh is now implemented. The frontend Auth.js configuration captures th
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 792 tests pass — domain (including UserSettings 15 tests), application (including UserSettingsService 7 tests), controller slice (including UserSettingsController 11 tests), encryption adapter, property, integration (last run: 2026-05-10)
+- Backend: All 807 tests pass — domain (including UserSettings 15 tests), application (including UserSettingsService 7 tests), controller slice (including UserSettingsController 11 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
 - Frontend: 740 total — component tests (including SessionRefreshGuard 6, SessionProvider 3, ThemeProvider 7), page tests (including Settings 14), API client tests (including settings 7), auth token refresh tests (16), Navigation test (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)

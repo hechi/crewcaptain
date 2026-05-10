@@ -27,7 +27,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
 - **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
 - **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
-- **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
+- **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with GIN indexes and relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
 - **Per-Person Markdown Export** — Export all data for a person as a structured Markdown file: profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filter. Sensitive content is marked but not exposed. Download via Export button on person detail page.
 - **Gamification & Engagement** — Dashboard gamification elements for engagement: animated progress ring for PDP goal completion percentage, 1:1 streak counter (consecutive weeks with meetings), achievement badges for milestones (first 1:1, 10 action items closed, etc.), and activity heatmap (contribution-graph style). Micro-animation on task completion (checkmark with glow burst). All animations respect `prefers-reduced-motion`.
 - **User Settings** — Per-user persistent settings page with: theme selection (dark/light), dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), notification type toggles (overdue, due-soon, stale 1:1, anniversary), and achievement visibility toggle. Settings are stored in the database and respected by the notification scheduler and dashboard.
@@ -35,7 +35,6 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 
 ### Planned
 
-- GIN indexes for full-text search (performance optimization for large datasets)
 - Review packet generator (date range summaries)
 - Bulk import (CSV people list)
 
@@ -305,7 +304,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 **Notes:**
 - All results are scoped by the authenticated user (security invariant)
 - Sensitive content snippets are hidden in search results (only title shown)
-- Uses PostgreSQL full-text search with prefix matching and relevance ranking
+- Uses PostgreSQL full-text search with GIN indexes, prefix matching, and relevance ranking
 - Encrypted sensitive fields are not searchable (trade-off for encryption at rest)
 
 **Query parameters for notifications list:**
@@ -443,6 +442,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120006` | Create notifications table |
 | `V20250510120007` | Add full-text search support (placeholder — no schema changes needed) |
 | `V20250510120008` | Create user_settings table |
+| `V20250510120009` | Add GIN indexes for full-text search (immutable wrapper functions + expression indexes) |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

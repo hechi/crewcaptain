@@ -110,12 +110,12 @@ class JpaSearchRepositoryAdapter(
             false AS sensitive,
             p.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(p.name, '') || ' ' || COALESCE(p.preferred_name, '') || ' ' || COALESCE(p.role_title, '') || ' ' || COALESCE(p.email, '') || ' ' || COALESCE(array_to_string(p.tags, ' '), '')),
+                persons_search_vector(p.name, p.preferred_name, p.role_title, p.email, p.tags),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM persons p
         WHERE p.user_id = :userId
-          AND to_tsvector('english', COALESCE(p.name, '') || ' ' || COALESCE(p.preferred_name, '') || ' ' || COALESCE(p.role_title, '') || ' ' || COALESCE(p.email, '') || ' ' || COALESCE(array_to_string(p.tags, ' '), ''))
+          AND persons_search_vector(p.name, p.preferred_name, p.role_title, p.email, p.tags)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 
@@ -130,14 +130,14 @@ class JpaSearchRepositoryAdapter(
             e.sensitive AS sensitive,
             e.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(e.notes_markdown, '') || ' ' || COALESCE(e.outcomes_markdown, '')),
+                one_on_one_entries_search_vector(e.notes_markdown, e.outcomes_markdown),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM one_on_one_entries e
         JOIN persons p ON p.id = e.person_id AND p.user_id = e.user_id
         WHERE e.user_id = :userId
           AND e.sensitive = false
-          AND to_tsvector('english', COALESCE(e.notes_markdown, '') || ' ' || COALESCE(e.outcomes_markdown, ''))
+          AND one_on_one_entries_search_vector(e.notes_markdown, e.outcomes_markdown)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 
@@ -152,14 +152,14 @@ class JpaSearchRepositoryAdapter(
             qn.sensitive AS sensitive,
             qn.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(qn.text, '')),
+                quick_notes_search_vector(qn.text),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM quick_notes qn
         LEFT JOIN persons p ON p.id = qn.person_id AND p.user_id = qn.user_id
         WHERE qn.user_id = :userId
           AND qn.sensitive = false
-          AND to_tsvector('english', COALESCE(qn.text, ''))
+          AND quick_notes_search_vector(qn.text)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 
@@ -174,13 +174,13 @@ class JpaSearchRepositoryAdapter(
             false AS sensitive,
             ai.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(ai.title, '') || ' ' || COALESCE(ai.description, '')),
+                action_items_search_vector(ai.title, ai.description),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM action_items ai
         JOIN persons p ON p.id = ai.person_id AND p.user_id = ai.user_id
         WHERE ai.user_id = :userId
-          AND to_tsvector('english', COALESCE(ai.title, '') || ' ' || COALESCE(ai.description, ''))
+          AND action_items_search_vector(ai.title, ai.description)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 
@@ -195,13 +195,13 @@ class JpaSearchRepositoryAdapter(
             false AS sensitive,
             pg.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(pg.title, '') || ' ' || COALESCE(pg.description, '')),
+                pdp_goals_search_vector(pg.title, pg.description),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM pdp_goals pg
         JOIN persons p ON p.id = pg.person_id AND p.user_id = pg.user_id
         WHERE pg.user_id = :userId
-          AND to_tsvector('english', COALESCE(pg.title, '') || ' ' || COALESCE(pg.description, ''))
+          AND pdp_goals_search_vector(pg.title, pg.description)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 
@@ -216,7 +216,7 @@ class JpaSearchRepositoryAdapter(
             pu.sensitive AS sensitive,
             pu.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(pu.text_markdown, '')),
+                pdp_updates_search_vector(pu.text_markdown),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM pdp_updates pu
@@ -224,7 +224,7 @@ class JpaSearchRepositoryAdapter(
         JOIN persons p ON p.id = pg.person_id AND p.user_id = pg.user_id
         WHERE pg.user_id = :userId
           AND pu.sensitive = false
-          AND to_tsvector('english', COALESCE(pu.text_markdown, ''))
+          AND pdp_updates_search_vector(pu.text_markdown)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 
@@ -239,13 +239,13 @@ class JpaSearchRepositoryAdapter(
             false AS sensitive,
             k.created_at AS created_at,
             ts_rank(
-                to_tsvector('english', COALESCE(k.text, '') || ' ' || COALESCE(array_to_string(k.tags, ' '), '')),
+                kudos_search_vector(k.text, k.tags),
                 to_tsquery('english', CAST(:searchTerms AS text))
             ) AS relevance_score
         FROM kudos k
         JOIN persons p ON p.id = k.person_id AND p.user_id = k.user_id
         WHERE k.user_id = :userId
-          AND to_tsvector('english', COALESCE(k.text, '') || ' ' || COALESCE(array_to_string(k.tags, ' '), ''))
+          AND kudos_search_vector(k.text, k.tags)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 }
