@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { getAuditLog } from '@/lib/api-client';
 import { AuditLogEntry, AuditAction, AuditEntityType } from '@/types/audit-log';
 import Pagination from '@/components/Pagination';
-import Navigation from '@/components/Navigation';
 
 const ENTITY_TYPE_LABELS: Record<AuditEntityType, string> = {
   PERSON: 'Person',
@@ -86,16 +85,14 @@ export default function AuditLogPage() {
   }, [fetchAuditLog]);
 
   return (
-    <>
-      <Navigation />
-      <main
-        data-testid="audit-log-page"
-        style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          padding: '32px 24px',
-        }}
-      >
+    <main
+      data-testid="audit-log-page"
+      style={{
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: '32px 24px',
+      }}
+    >
         <h1
           style={{
             margin: '0 0 24px 0',
@@ -309,6 +306,5 @@ export default function AuditLogPage() {
           </>
         )}
       </main>
-    </>
   );
 }
