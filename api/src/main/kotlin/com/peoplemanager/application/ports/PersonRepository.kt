@@ -11,5 +11,6 @@ interface PersonRepository {
     fun save(person: Person): Person
     fun findByIdAndUserId(personId: PersonId, userId: UserId): Person?
     fun findAllByUserId(userId: UserId, pageable: Pageable, tagFilter: String?, moraleFilter: MoraleStatus?): Page<Person>
+    fun findAllByUserIdUnpaged(userId: UserId): List<Person>
     fun deleteByIdAndUserId(personId: PersonId, userId: UserId): Boolean
 }

@@ -19,6 +19,10 @@ class JpaOneOnOneSeriesRepositoryAdapter(
         return springDataRepository.findByUserIdAndPersonId(userId.value, personId.value)?.toDomain()
     }
 
+    override fun findAllByUserId(userId: UserId): List<OneOnOneSeries> {
+        return springDataRepository.findAllByUserId(userId.value).map { it.toDomain() }
+    }
+
     override fun save(series: OneOnOneSeries): OneOnOneSeries {
         val entity = series.toEntity()
         return springDataRepository.save(entity).toDomain()

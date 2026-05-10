@@ -15,6 +15,7 @@ interface ActionItemRepository {
     fun findAllByUserIdAndPersonId(userId: UserId, personId: PersonId, status: ActionItemStatus?, pageable: Pageable): Page<ActionItem>
     fun findAllByUserId(userId: UserId, status: ActionItemStatus?, pageable: Pageable): Page<ActionItem>
     fun findOverdueByUserId(userId: UserId, referenceDate: LocalDate, pageable: Pageable): Page<ActionItem>
+    fun findDueSoonByUserId(userId: UserId, fromDate: LocalDate, toDate: LocalDate): List<ActionItem>
     fun deleteByIdAndUserIdAndPersonId(actionItemId: ActionItemId, userId: UserId, personId: PersonId): Boolean
     fun countOpenByUserIdAndPersonId(userId: UserId, personId: PersonId): Long
 }

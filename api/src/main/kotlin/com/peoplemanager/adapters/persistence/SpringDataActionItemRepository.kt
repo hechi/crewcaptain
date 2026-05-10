@@ -40,6 +40,13 @@ interface SpringDataActionItemRepository : JpaRepository<ActionItemEntity, UUID>
 
     fun deleteByIdAndUserIdAndPersonId(id: UUID, userId: UUID, personId: UUID): Long
 
+    @Query("SELECT a FROM ActionItemEntity a WHERE a.userId = :userId AND a.status = 'OPEN' AND a.dueDate >= :fromDate AND a.dueDate <= :toDate ORDER BY a.dueDate ASC")
+    fun findDueSoonByUserId(
+        @Param("userId") userId: UUID,
+        @Param("fromDate") fromDate: LocalDate,
+        @Param("toDate") toDate: LocalDate
+    ): List<ActionItemEntity>
+
     @Query("SELECT COUNT(a) FROM ActionItemEntity a WHERE a.userId = :userId AND a.personId = :personId AND a.status = 'OPEN'")
     fun countOpenByUserIdAndPersonId(
         @Param("userId") userId: UUID,

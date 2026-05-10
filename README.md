@@ -24,11 +24,14 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
 - **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
 - **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox) or assigned to a person. Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Full frontend with dedicated Quick Notes page, status filter, and inline create form.
+- **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
 
 ### Planned
 
+- **Dashboard Enhancements** — Additional widgets and customization options
 - **Sensitive Content** — Flag and hide sensitive notes with encryption support
 - **Notifications** — Scheduled reminders for overdue items and upcoming 1:1s
+- **Search** — Full-text search across all manager data
 - **Data Export** — Full data export capabilities
 
 ---
@@ -228,6 +231,16 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | POST   | `/api/v1/quick-notes/{quickNoteId}/attach`              | Attach to a 1:1 entry              |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/convert`             | Mark as converted (to action item)   |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/archive`             | Archive the quick note               |
+
+### Dashboard
+
+| Method | Endpoint                | Description                                    |
+|--------|-------------------------|------------------------------------------------|
+| GET    | `/api/v1/dashboard`     | Get dashboard data (overdue, due-soon, stale 1:1s, anniversaries) |
+
+**Query parameters:**
+- `dueSoonDays` — Number of days to look ahead for due-soon items (default: 3)
+- `anniversaryLookaheadDays` — Number of days to look ahead for anniversaries (default: 30)
 
 **Quick Note fields:**
 - `text` — Required (Markdown text)

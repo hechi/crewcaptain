@@ -47,6 +47,19 @@ export default function Navigation() {
         </Link>
         <div style={{ display: 'flex', gap: '16px' }}>
           <Link
+            href="/dashboard"
+            data-testid="nav-dashboard"
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              transition: 'color 0.2s',
+            }}
+          >
+            Dashboard
+          </Link>
+          <Link
             href="/people"
             data-testid="nav-people"
             style={{
