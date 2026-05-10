@@ -36,6 +36,7 @@ import {
   listKudosByPerson,
   createKudos,
   deleteKudos,
+  exportPersonMarkdown,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
 import PersonForm from '@/components/PersonForm';
@@ -98,6 +99,9 @@ export default function PersonDetailPage() {
   const [kudos, setKudos] = useState<PaginatedKudosResponse | null>(null);
   const [kudosLoading, setKudosLoading] = useState(false);
   const [kudosSubmitting, setKudosSubmitting] = useState(false);
+
+  // Export state
+  const [exporting, setExporting] = useState(false);
 
   const token = session?.accessToken as string;
 
@@ -465,6 +469,26 @@ export default function PersonDetailPage() {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const markdown = await exportPersonMarkdown(token, personId);
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${person?.name || 'export'}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to export person data');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (status === 'loading') {
     return <div data-testid="loading">Loading...</div>;
   }
@@ -532,7 +556,30 @@ export default function PersonDetailPage() {
             <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>{person.roleTitle}</p>
           )}
         </div>
-        <MoraleIndicator moraleStatus={person.moraleStatus} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting}
+            data-testid="export-button"
+            aria-label="Export person data as Markdown"
+            style={{
+              padding: '8px 16px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              cursor: exporting ? 'not-allowed' : 'pointer',
+              background: 'var(--color-bg-elevated)',
+              fontSize: 'var(--text-body)',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'var(--font-mono)',
+              opacity: exporting ? 0.6 : 1,
+              transition: 'border-color 0.2s',
+            }}
+          >
+            {exporting ? 'Exporting...' : '↓ Export'}
+          </button>
+          <MoraleIndicator moraleStatus={person.moraleStatus} />
+        </div>
       </div>
 
       {/* Tabs */}
