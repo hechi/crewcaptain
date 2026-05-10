@@ -120,6 +120,27 @@ export async function deletePerson(token: string, id: string): Promise<void> {
   }, token);
 }
 
+export async function restorePerson(token: string, id: string): Promise<Person> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${id}/restore`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function listDeletedPersons(token: string, params?: {
+  page?: number;
+  size?: number;
+}): Promise<PaginatedResponse<Person>> {
+  const searchParams = new URLSearchParams();
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/persons/trash${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
 export async function listPersons(token: string, params?: {
   page?: number;
   size?: number;

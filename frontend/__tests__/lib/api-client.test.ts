@@ -8,6 +8,8 @@ import {
   addRememberItem,
   removeRememberItem,
   reorderRememberItems,
+  restorePerson,
+  listDeletedPersons,
 } from '@/lib/api-client';
 import { ApiException } from '@/types/api';
 
@@ -513,5 +515,98 @@ describe('error handling', () => {
       expect(apiError.status).toBe(401);
       expect(apiError.error).toBe('Unauthorized');
     }
+  });
+});
+
+describe('restorePerson', () => {
+  it('should send POST request to restore endpoint', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...mockPerson, deletedAt: null }),
+    });
+
+    const result = await restorePerson(mockToken, '550e8400-e29b-41d4-a716-446655440000');
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v1/persons/550e8400-e29b-41d4-a716-446655440000/restore', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+    expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440000');
+  });
+
+  it('should throw ApiException on 404', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({
+        status: 404,
+        error: 'Not Found',
+        message: 'Person not found',
+        timestamp: '2025-05-10T12:00:00Z',
+      }),
+    });
+
+    await expect(restorePerson(mockToken, 'nonexistent-id')).rejects.toBeInstanceOf(ApiException);
+  });
+});
+
+describe('listDeletedPersons', () => {
+  it('should send GET request to trash endpoint', async () => {
+    const paginatedResponse = {
+      content: [{ ...mockPerson, deletedAt: '2025-05-10T12:00:00Z' }],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1,
+    };
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(paginatedResponse),
+    });
+
+    const result = await listDeletedPersons(mockToken);
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v1/persons/trash', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].deletedAt).toBe('2025-05-10T12:00:00Z');
+  });
+
+  it('should send pagination params', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ content: [], page: 1, size: 10, totalElements: 0, totalPages: 0 }),
+    });
+
+    await listDeletedPersons(mockToken, { page: 1, size: 10 });
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v1/persons/trash?page=1&size=10', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+  });
+
+  it('should throw ApiException on error', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: () => Promise.resolve({
+        status: 401,
+        error: 'Unauthorized',
+        message: 'Authentication required',
+        timestamp: '2025-05-10T12:00:00Z',
+      }),
+    });
+
+    await expect(listDeletedPersons(mockToken)).rejects.toBeInstanceOf(ApiException);
   });
 });

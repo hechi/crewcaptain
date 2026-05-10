@@ -70,6 +70,25 @@ export default function PeopleListPage() {
         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
           <button
             type="button"
+            onClick={() => router.push('/people/trash')}
+            data-testid="trash-button"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              transition: 'box-shadow 0.2s',
+            }}
+          >
+            Trash
+          </button>
+          <button
+            type="button"
             onClick={() => setShowImportModal(true)}
             data-testid="import-csv-button"
             style={{

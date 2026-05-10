@@ -678,4 +678,107 @@ class PersonControllerTest {
         }
         Unit
     }
+
+    // ===== Soft-delete and Restore Tests =====
+
+    @Test
+    fun `DELETE persons by id - soft-deletes and returns 204`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+
+        every { personCommandPort.deletePerson(any()) } returns Unit
+
+        mockMvc.perform(
+            delete("/api/v1/persons/${personId.value}")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `POST persons restore - restores soft-deleted person and returns 200`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+        val person = samplePerson(id = personId, userId = userId)
+
+        every { personCommandPort.restorePerson(any()) } returns person
+
+        mockMvc.perform(
+            post("/api/v1/persons/${personId.value}/restore")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(personId.value.toString()))
+            .andExpect(jsonPath("$.name").value("Jane Smith"))
+    }
+
+    @Test
+    fun `POST persons restore - returns 404 when person not found`() {
+        val userId = UserId(UUID.randomUUID())
+        val personId = PersonId(UUID.randomUUID())
+
+        every { personCommandPort.restorePerson(any()) } throws PersonNotFoundException(personId)
+
+        mockMvc.perform(
+            post("/api/v1/persons/${personId.value}/restore")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `GET persons trash - returns paginated deleted persons`() {
+        val userId = UserId(UUID.randomUUID())
+        val deletedPerson = samplePerson(userId = userId, name = "Deleted Person")
+        val page = PageImpl(listOf(deletedPerson), PageRequest.of(0, 20), 1)
+
+        every { personQueryPort.listDeletedPersons(any()) } returns page
+
+        mockMvc.perform(
+            get("/api/v1/persons/trash")
+                .with(authentication(authenticatedJwt(userId)))
+                .param("page", "0")
+                .param("size", "20")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").isArray)
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].name").value("Deleted Person"))
+            .andExpect(jsonPath("$.totalElements").value(1))
+    }
+
+    @Test
+    fun `GET persons trash - returns empty when no deleted persons`() {
+        val userId = UserId(UUID.randomUUID())
+        val page = PageImpl(emptyList<Person>(), PageRequest.of(0, 20), 0)
+
+        every { personQueryPort.listDeletedPersons(any()) } returns page
+
+        mockMvc.perform(
+            get("/api/v1/persons/trash")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").isArray)
+            .andExpect(jsonPath("$.content.length()").value(0))
+            .andExpect(jsonPath("$.totalElements").value(0))
+    }
+
+    @Test
+    fun `GET persons trash - requires authentication`() {
+        mockMvc.perform(
+            get("/api/v1/persons/trash")
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `POST persons restore - requires authentication`() {
+        val personId = PersonId(UUID.randomUUID())
+
+        mockMvc.perform(
+            post("/api/v1/persons/${personId.value}/restore")
+        )
+            .andExpect(status().isUnauthorized)
+    }
 }

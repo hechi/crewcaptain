@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T03:00:00Z — Heatmap cells now stretch to fill available card width
+2026-05-11T04:00:00Z — Implemented soft-delete + restore for Person entity
 
 ## Current Status
-Dashboard gamification cards fully polished: ActivityHeatmap cells use width:100% + aspect-ratio:1 instead of fixed 12px, so they stretch to fill the card. All 795 frontend tests pass, build succeeds.
+Soft-delete + restore feature complete for Person entity. DELETE /api/v1/persons/{id} now performs a soft-delete (sets deleted_at timestamp) instead of hard delete. New endpoints: POST /api/v1/persons/{id}/restore and GET /api/v1/persons/trash. Frontend trash page with restore functionality. All existing queries automatically exclude soft-deleted records. Data isolation enforced on all trash operations. All backend tests pass (950+ tests), all frontend tests pass (811 tests).
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -86,6 +86,7 @@ Dashboard gamification cards fully polished: ActivityHeatmap cells use width:100
 - [x] Bulk Import (CSV) Frontend tests — Component tests (CsvImportModal 14 tests), API client tests (8 tests) (2026-05-10)
 
 - [x] Dashboard gamification card consistency — Redesigned using stat-card UX pattern: glassmorphism card shell, label pinned at top, flex-grow content area. StreakCounter fills width with border-top separator for secondary stats. ActivityHeatmap columns flex to fill card width with 12px cells. PDP ring glow no longer clipped (overflow:visible + inner padding). (2026-05-11)
+- [x] Soft-Delete + Restore — DELETE /api/v1/persons/{id} now soft-deletes (sets deleted_at timestamp). New endpoints: POST /api/v1/persons/{id}/restore (restore from trash), GET /api/v1/persons/trash (list deleted persons, paginated). Domain model updated with softDelete()/restore() methods. All existing queries exclude soft-deleted records via WHERE deleted_at IS NULL. Flyway migration V20250510120010 adds deleted_at column with partial indexes. Frontend: Trash page with restore buttons, "Trash" button on People list page. Full test coverage: domain (4 tests), service (5 tests), controller (7 tests), integration (13 tests), frontend page (8 tests), API client (7 tests). (2026-05-11)
 
 ## In Progress
 - (none)
@@ -100,11 +101,17 @@ Dashboard gamification cards fully polished: ActivityHeatmap cells use width:100
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. Soft-delete + restore (safety)
-2. Optional "workspace" concept (still manager-private by default)
-3. Audit log
+1. Optional "workspace" concept (still manager-private by default)
+2. Audit log
+3. Permanent delete from trash (with confirmation)
 
 ## Architecture Decisions Made This Session
+- Soft-delete at Person level only (not per sub-entity) — when a Person is soft-deleted, their associated data (1:1 entries, action items, PDP goals, kudos) remains in the database but becomes inaccessible since all queries go through the person. This avoids complex cascading soft-delete logic while still providing safety.
+- `deleted_at` column with partial indexes (WHERE deleted_at IS NULL and WHERE deleted_at IS NOT NULL) — efficient filtering for both active and trash queries
+- Soft-delete uses UPDATE (not INSERT into a separate archive table) — simpler implementation, restore is just clearing the timestamp
+- Restore returns the restored Person — allows the frontend to immediately display the restored record without a separate fetch
+- Trash endpoint is under /api/v1/persons/trash (not a separate /api/v1/trash) — keeps it scoped to the persons resource
+- Hard delete (deleteByIdAndUserId) is preserved in the repository for future "permanent delete from trash" feature
 - UserSettings is a separate domain aggregate (not embedded in User) — keeps the User aggregate focused on identity
 - Settings table uses user_id as PK (1:1 relationship with users) — no separate settings ID needed
 - Default settings returned when no row exists (no need to pre-create settings for every user)
@@ -136,9 +143,9 @@ Dashboard gamification cards fully polished: ActivityHeatmap cells use width:100
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 923 tests pass — domain (including CsvParser 15 tests), application (including PersonBulkImportService 12 tests), controller slice (including PersonBulkImportController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
+- Backend: All 950+ tests pass — domain (including Person soft-delete 4 tests), application (including PersonService restore/trash 5 tests), controller slice (including restore/trash 7 tests), integration (including PersonSoftDeleteIntegrationTest 13 tests), encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 795 total — component tests (including CsvImportModal 14), page tests (including DashboardPage 14), API client tests (including bulk-import 8), auth token refresh tests, middleware tests (9), Navigation test (last run: 2026-05-11)
+- Frontend: 811 total — component tests, page tests (including TrashPage 8), API client tests (including restore/listDeletedPersons 7), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review

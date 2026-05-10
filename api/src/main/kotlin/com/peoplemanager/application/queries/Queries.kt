@@ -16,3 +16,9 @@ data class ListPersonsQuery(
     val tagFilter: String? = null,
     val moraleFilter: MoraleStatus? = null
 )
+
+data class ListDeletedPersonsQuery(
+    val userId: UserId,
+    val page: Int = 0,
+    val size: Int = 20
+)

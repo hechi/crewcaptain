@@ -13,4 +13,8 @@ interface PersonRepository {
     fun findAllByUserId(userId: UserId, pageable: Pageable, tagFilter: String?, moraleFilter: MoraleStatus?): Page<Person>
     fun findAllByUserIdUnpaged(userId: UserId): List<Person>
     fun deleteByIdAndUserId(personId: PersonId, userId: UserId): Boolean
+    fun softDeleteByIdAndUserId(personId: PersonId, userId: UserId): Boolean
+    fun restoreByIdAndUserId(personId: PersonId, userId: UserId): Boolean
+    fun findDeletedByIdAndUserId(personId: PersonId, userId: UserId): Person?
+    fun findAllDeletedByUserId(userId: UserId, pageable: Pageable): Page<Person>
 }
