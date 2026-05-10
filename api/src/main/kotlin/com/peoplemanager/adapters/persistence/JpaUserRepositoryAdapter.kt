@@ -22,6 +22,10 @@ class JpaUserRepositoryAdapter(
         return springDataUserRepository.save(entity).toDomain()
     }
 
+    override fun findAllUserIds(): List<UserId> {
+        return springDataUserRepository.findAll().map { UserId(it.id) }
+    }
+
     private fun UserEntity.toDomain(): User = User(
         id = UserId(this.id),
         oidcSubject = this.oidcSubject,

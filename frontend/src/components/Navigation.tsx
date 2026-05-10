@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import NotificationBell from './notifications/NotificationBell';
 
 /**
  * Top navigation bar with CrewCaptain branding.
@@ -13,6 +14,8 @@ export default function Navigation() {
   if (status !== 'authenticated') {
     return null;
   }
+
+  const token = session?.accessToken || '';
 
   return (
     <nav
@@ -37,7 +40,6 @@ export default function Navigation() {
             fontSize: '18px',
             fontFamily: 'var(--font-heading)',
             fontWeight: 700,
-            fontFamily: 'var(--font-heading)',
             color: 'var(--color-primary)',
             textDecoration: 'none',
             letterSpacing: '-0.5px',
@@ -88,6 +90,7 @@ export default function Navigation() {
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <NotificationBell token={token} />
         {session?.user?.name && (
           <span
             data-testid="nav-user-name"

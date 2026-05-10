@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T13:00:00Z — Sensitive content encryption (AES-256-GCM at rest)
+2026-05-10T14:30:00Z — In-app notification scheduling (reminders for overdue items, due-soon items, stale 1:1s, upcoming anniversaries)
 
 ## Current Status
-Sensitive content encryption is now implemented. When `ENCRYPTION_KEY` is configured (Base64-encoded 32-byte AES key), all content marked `sensitive=true` is encrypted at rest using AES-256-GCM with random IVs. Affected fields: 1:1 entry notes/outcomes, quick note text, and PDP update text. The system gracefully handles missing keys (plaintext fallback) and legacy unencrypted data. All 516 frontend tests and all backend tests (including 19 new encryption-specific tests) pass.
+In-app notification scheduling is now implemented. A Spring `@Scheduled` task runs hourly (configurable via cron) and generates notifications for all users based on overdue action items, due-soon items, stale 1:1 reminders, and upcoming work anniversaries. Notifications are deduplicated within a 24-hour window. The frontend includes a notification bell with unread badge in the navigation, a dropdown panel, and a dedicated notifications page with pagination and unread filter. All 566 frontend tests and all backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -59,6 +59,7 @@ Sensitive content encryption is now implemented. When `ENCRYPTION_KEY` is config
 - [x] Dashboard Frontend tests — Component tests (OverdueActionItems 8, DueSoonActionItems 8, StaleOneOnOnes 10, UpcomingAnniversaries 8), API client tests (8), page tests (10) (2026-05-10)
 - [x] Navigation updated — Dashboard link added as first nav item, home page redirects to /dashboard (2026-05-10)
 - [x] Sensitive Content Encryption — AES-256-GCM application-level encryption for sensitive text fields at rest. EncryptionPort interface in application layer, AesGcmEncryptionAdapter in adapters layer. Integrated into persistence adapters (OneOnOneEntry, QuickNote, PdpUpdate). Graceful fallback when no key configured. Legacy unencrypted data support. (2026-05-10)
+- [x] In-App Notification Scheduling — Hourly scheduled task generates notifications for all users. Notification types: ACTION_ITEM_OVERDUE, ACTION_ITEM_DUE_SOON, STALE_ONE_ON_ONE, UPCOMING_ANNIVERSARY. 24-hour deduplication window prevents duplicate notifications. REST API: list (paginated), unread count, mark as read, mark all as read. Frontend: NotificationBell with unread badge in navigation, NotificationPanel dropdown, NotificationItem with type-specific icons and deep links, dedicated /notifications page with pagination and unread filter. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -72,20 +73,20 @@ Sensitive content encryption is now implemented. When `ENCRYPTION_KEY` is config
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
-1. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-2. Search (full-text across all manager data)
-3. Data export functionality (per-person Markdown)
-4. Gamification elements (progress rings, streak counters, micro-animations)
+1. Search (full-text across all manager data)
+2. Data export functionality (per-person Markdown)
+3. Gamification elements (progress rings, streak counters, micro-animations)
+4. Settings page (reminder thresholds, export, encryption key status)
 
 ## Architecture Decisions Made This Session
-- Encryption implemented at the persistence adapter layer (not domain or application) to maintain hexagonal architecture purity — domain stays framework-free, application layer unaware of encryption
-- AES-256-GCM chosen for authenticated encryption (prevents tampering + provides confidentiality)
-- Random 12-byte IV per encryption operation ensures identical plaintext produces different ciphertext
-- Version byte prefix (currently v1) in ciphertext format allows future algorithm migration without breaking existing data
-- Graceful degradation: if ENCRYPTION_KEY is empty/missing, encryption is disabled and text passes through unchanged
-- Legacy data support: decrypt gracefully handles non-Base64, too-short, or unknown-version data by returning as-is
-- No database migration needed: encrypted text stored as Base64 in existing TEXT columns
-- Encryption only applied when `sensitive=true` — non-sensitive content remains plaintext for searchability
+- Notification generation implemented as a Spring `@Scheduled` task in the scheduler adapter layer
+- NotificationGenerationService lives in the application layer (testable without scheduler infrastructure)
+- 24-hour deduplication window prevents notification spam — same type + referenceId won't re-notify within 24h
+- Notifications are per-user and scoped by userId (security invariant maintained)
+- Scheduler iterates all users independently — failure for one user doesn't block others
+- Notification entity is a simple domain model (not a full aggregate) — no complex state transitions beyond read/unread
+- Frontend polls unread count every 60 seconds (no WebSocket needed for MVP)
+- Notification panel is a dropdown from the bell icon; full page at /notifications for history
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -95,29 +96,21 @@ Sensitive content encryption is now implemented. When `ENCRYPTION_KEY` is config
 - Copy `.env.example` to `.env.local` for frontend-specific overrides
 - The `next.config.mjs` is used instead of `next.config.ts` (Next.js 14.x doesn't support TS config)
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
+- Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All tests pass — domain, application (including DashboardService 13 tests), controller slice (including DashboardController 8 tests), encryption adapter (19 tests), encryption integration (10 tests), property, integration (last run: 2026-05-10)
+- Backend: All tests pass — domain (including Notification 14 tests), application (including NotificationService 8 tests, NotificationGenerationService 15 tests), controller slice (including NotificationController 12 tests), encryption adapter (19 tests), encryption integration (10 tests), property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-  - New: AesGcmEncryptionAdapterTest (19 tests — encrypt/decrypt, null handling, unicode, key validation, cross-key, legacy data)
-  - New: EncryptionIntegrationTest (10 tests — verifies encrypted storage in DB for 1:1 entries, quick notes, PDP updates)
-- Frontend: 516 total — component tests (including 4 dashboard components), page tests (including DashboardPage), API client tests (including dashboard) (last run: 2026-05-10)
-  - Includes Dashboard components (OverdueActionItems 8, DueSoonActionItems 8, StaleOneOnOnes 10, UpcomingAnniversaries 8)
-  - Includes Dashboard API client tests (8)
-  - Includes Dashboard page tests (10)
-  - Includes Navigation component tests (9 tests — added Dashboard link test)
-  - Includes QuickNote components (QuickNoteCard 17, QuickNoteForm 11, QuickNoteList 9)
-  - Includes QuickNote API client tests (17)
-  - Includes Kudos components (KudosCard 8, KudosForm 9, KudosList 9)
-  - Includes Kudos API client tests (14)
-  - Includes PDP goal components (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4)
-  - Includes PDP goal API client tests (19)
-  - Includes PDP Goals tab integration tests (10)
-  - Includes action item components (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3)
-  - Includes action item API client tests (15)
-  - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)
+- Frontend: 566 total — component tests (including NotificationBell 10, NotificationItem 14, NotificationPanel 10), page tests, API client tests (including notification 14) (last run: 2026-05-10)
+  - Includes all previously listed test suites
+  - New: NotificationBell component tests (10)
+  - New: NotificationItem component tests (14)
+  - New: NotificationPanel component tests (10)
+  - New: Notification API client tests (14)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
 - Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values
 - Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference?
+- Notification polling interval (60s) is hardcoded in the frontend — should this be configurable?
+- Should notifications be auto-dismissed after a certain age (e.g., 30 days)?
