@@ -67,6 +67,24 @@ enum class ActionItemOwnerType {
     MANAGER, PERSON
 }
 
+@JvmInline
+value class PdpGoalId(val value: UUID) {
+    companion object {
+        fun generate(): PdpGoalId = PdpGoalId(UUID.randomUUID())
+    }
+}
+
+@JvmInline
+value class PdpUpdateId(val value: UUID) {
+    companion object {
+        fun generate(): PdpUpdateId = PdpUpdateId(UUID.randomUUID())
+    }
+}
+
+enum class PdpGoalStatus {
+    ACTIVE, ACHIEVED, PAUSED, DROPPED
+}
+
 data class OidcIdentity(
     val subject: String,
     val issuer: String

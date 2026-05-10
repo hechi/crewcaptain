@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T02:00:00Z — Action Items full-stack implementation complete (backend API + frontend UI)
+2026-05-10T09:00:00Z — At-a-Glance section now shows open action items count and active PDP goals
 
 ## Current Status
-The Action Items feature is fully implemented end-to-end. The backend provides full CRUD with status transitions, data isolation, and overdue filtering. The frontend includes TypeScript types, API client functions, reusable components (ActionItemCard, ActionItemForm, ActionItemList, ActionItemStatusBadge), and an integrated "Action Items" tab on the person detail page with inline create/edit forms, status filtering, complete/cancel/delete actions, and overdue visual indicators. All 297 frontend tests and 329 backend tests pass.
+The PDP Goal tracking feature is fully implemented end-to-end. The backend provides full CRUD for goals with status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), progress updates with sensitive flag, and data isolation. The frontend includes TypeScript types, API client functions (12 functions), reusable components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), and an integrated "PDP Goals" tab on the person detail page with inline create/edit forms, status filtering, and status transition actions. All 365 frontend tests and all backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -36,6 +36,11 @@ The Action Items feature is fully implemented end-to-end. The backend provides f
 - [x] Action Items Backend tests — Domain unit tests (20 tests), application service tests (15 tests), controller slice tests (15 tests), integration tests with data isolation verification (15 tests) (2026-05-10)
 - [x] Action Items Frontend — TypeScript types, API client (8 functions), components (ActionItemCard, ActionItemForm, ActionItemList, ActionItemStatusBadge), person detail "Action Items" tab with inline create/edit, status filter, complete/cancel/delete (2026-05-10)
 - [x] Action Items Frontend tests — Component tests (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3), API client tests (15) (2026-05-10)
+- [x] PDP Goal Tracking Backend API — Full CRUD, status transitions (ACTIVE→ACHIEVED/PAUSED/DROPPED, PAUSED→ACTIVE), progress updates with sensitive flag, per-person listing with status filter, data isolation (2026-05-10)
+- [x] PDP Goal Database migrations — pdp_goals and pdp_updates tables with indexes (2026-05-10)
+- [x] PDP Goal Backend tests — Domain unit tests (PdpGoal 22 tests, PdpUpdate 4 tests), application service tests (18 tests), controller slice tests (17 tests), integration tests with data isolation verification (17 tests) (2026-05-10)
+- [x] PDP Goal Frontend — TypeScript types, API client (12 functions), components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), person detail "PDP Goals" tab with inline create/edit, status filter, achieve/pause/drop/resume actions (2026-05-10)
+- [x] PDP Goal Frontend tests — Component tests (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4), API client tests (19), page integration tests (10) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -48,22 +53,21 @@ The Action Items feature is fully implemented end-to-end. The backend provides f
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. PDP Goal tracking (personal development plans with status transitions)
-2. Kudos recording (positive feedback and achievements)
-3. Quick Notes ("Inbox") — global capture, attach to person/1:1
-4. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
-5. Sensitive content encryption (flag and encrypt private notes)
-6. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-7. Search (full-text across all manager data)
-8. Data export functionality (per-person Markdown)
-9. Gamification elements (progress rings, streak counters, micro-animations)
+1. Kudos recording (positive feedback and achievements)
+2. Quick Notes ("Inbox") — global capture, attach to person/1:1
+3. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+4. Sensitive content encryption (flag and encrypt private notes)
+5. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+6. Search (full-text across all manager data)
+7. Data export functionality (per-person Markdown)
+8. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- Action Items stored as a flat table with userId + personId scoping (not nested under 1:1 entries) — allows items to exist independently of 1:1s while optionally linking via `originating_entry_id`
-- Status transitions enforced at domain level (ActionItem.complete() / cancel()) — prevents invalid state changes regardless of caller
-- Separate cross-person endpoint (`GET /api/v1/action-items`) for manager-wide views — avoids needing to aggregate across persons client-side
-- Overdue filtering done at database level (WHERE status='OPEN' AND due_date < reference_date) — efficient for dashboard queries
-- ownerType stored as VARCHAR (not enum) in DB for flexibility — mapped to Kotlin enum in domain layer
+- PDP Goals stored as a flat table with userId + personId scoping — consistent with action items pattern
+- PDP Updates stored in separate table with FK to pdp_goals (CASCADE DELETE) — allows independent progress tracking
+- Status transitions enforced at domain level (PdpGoal.achieve()/pause()/drop()/resume()) — prevents invalid state changes
+- Sensitive flag on PDP updates (not goals) — aligns with PRD requirement for note-like content sensitivity
+- Progress updates are append-only (create + delete, no edit) — preserves historical accuracy
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -75,9 +79,12 @@ The Action Items feature is fully implemented end-to-end. The backend provides f
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
-- Backend: 329 tests total — domain (including ActionItem), application (including ActionItemService), controller slice (including ActionItemController), property, integration (including ActionItem data isolation) (last run: 2026-05-10)
+- Backend: All tests pass — domain (including PdpGoal + PdpUpdate), application (including PdpGoalService), controller slice (including PdpGoalController), property, integration (including PDP data isolation) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 297 total — component tests (including ActionItem components), page tests (including auth pages), API client tests (including action items) (last run: 2026-05-10)
+- Frontend: 365 total — component tests (including PDP Goal components), page tests (including auth pages, PDP Goals tab), API client tests (including PDP goals) (last run: 2026-05-10)
+  - Includes PDP goal components (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4)
+  - Includes PDP goal API client tests (19)
+  - Includes PDP Goals tab integration tests (10)
   - Includes action item components (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3)
   - Includes action item API client tests (15)
   - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)

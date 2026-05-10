@@ -21,10 +21,10 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Cyberpunk-Lite Design System** — Dark-first UI with electric cyan/neon violet accents, JetBrains Mono headings, glassmorphism cards, glow effects, Inter body text, CSS custom properties design tokens, and consistent navigation
 - **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date
 - **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components.
+- **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
 
 ### Planned
 
-- **PDP Tracking** — Track personal development goals with status transitions
 - **Kudos** — Record positive feedback and achievements
 - **Sensitive Content** — Flag and hide sensitive notes with encryption support
 - **Notifications** — Scheduled reminders for overdue items and upcoming 1:1s
@@ -157,6 +157,44 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - OPEN → CANCELED (via `/cancel`)
 - No other transitions are allowed
 
+### PDP Goals (Personal Development Plans)
+
+| Method | Endpoint                                                              | Description                          |
+|--------|-----------------------------------------------------------------------|--------------------------------------|
+| POST   | `/api/v1/persons/{personId}/pdp-goals`                                | Create a PDP goal                    |
+| GET    | `/api/v1/persons/{personId}/pdp-goals`                                | List PDP goals for a person          |
+| GET    | `/api/v1/persons/{personId}/pdp-goals/{goalId}`                       | Get a PDP goal                       |
+| PUT    | `/api/v1/persons/{personId}/pdp-goals/{goalId}`                       | Update a PDP goal                    |
+| POST   | `/api/v1/persons/{personId}/pdp-goals/{goalId}/achieve`               | Mark goal as ACHIEVED                |
+| POST   | `/api/v1/persons/{personId}/pdp-goals/{goalId}/pause`                 | Mark goal as PAUSED                  |
+| POST   | `/api/v1/persons/{personId}/pdp-goals/{goalId}/drop`                  | Mark goal as DROPPED                 |
+| POST   | `/api/v1/persons/{personId}/pdp-goals/{goalId}/resume`                | Resume a PAUSED goal to ACTIVE       |
+| DELETE | `/api/v1/persons/{personId}/pdp-goals/{goalId}`                       | Delete a PDP goal                    |
+| POST   | `/api/v1/persons/{personId}/pdp-goals/{goalId}/updates`               | Add a progress update                |
+| GET    | `/api/v1/persons/{personId}/pdp-goals/{goalId}/updates`               | List progress updates                |
+| DELETE | `/api/v1/persons/{personId}/pdp-goals/{goalId}/updates/{updateId}`    | Delete a progress update             |
+
+**PDP Goal fields:**
+- `title` — Required (max 500 chars)
+- `description` — Optional text
+- `targetDate` — Optional date (ISO 8601 date)
+
+**PDP Goal status transitions:**
+- ACTIVE → ACHIEVED (via `/achieve`)
+- ACTIVE → PAUSED (via `/pause`)
+- ACTIVE → DROPPED (via `/drop`)
+- PAUSED → ACTIVE (via `/resume`)
+- No other transitions are allowed
+
+**PDP Update fields:**
+- `textMarkdown` — Required (Markdown text)
+- `sensitive` — Optional boolean (default: false)
+
+**Query parameters for PDP goals list endpoint:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `status` — Filter by status (ACTIVE, ACHIEVED, PAUSED, DROPPED)
+
 **Query parameters for entries list endpoint:**
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
@@ -253,6 +291,8 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250508120004` | Create one_on_one_entries table |
 | `V20250508120005` | Create agenda_items table |
 | `V20250510120000` | Create action_items table |
+| `V20250510120001` | Create pdp_goals table |
+| `V20250510120002` | Create pdp_updates table |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

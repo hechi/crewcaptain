@@ -16,9 +16,13 @@ import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
+import com.peoplemanager.application.ports.ActionItemQueryPort
 import com.peoplemanager.application.ports.OneOnOneQueryPort
+import com.peoplemanager.application.ports.PdpGoalQueryPort
 import com.peoplemanager.application.ports.PersonCommandPort
 import com.peoplemanager.application.ports.PersonQueryPort
+import com.peoplemanager.application.queries.CountOpenActionItemsQuery
+import com.peoplemanager.application.queries.CountActivePdpGoalsQuery
 import com.peoplemanager.application.queries.GetLastOneOnOneDateQuery
 import com.peoplemanager.application.queries.GetPersonQuery
 import com.peoplemanager.application.queries.ListPersonsQuery
@@ -44,7 +48,9 @@ import java.util.UUID
 class PersonController(
     private val personCommandPort: PersonCommandPort,
     private val personQueryPort: PersonQueryPort,
-    private val oneOnOneQueryPort: OneOnOneQueryPort
+    private val oneOnOneQueryPort: OneOnOneQueryPort,
+    private val actionItemQueryPort: ActionItemQueryPort,
+    private val pdpGoalQueryPort: PdpGoalQueryPort
 ) {
 
     @PostMapping
@@ -72,7 +78,13 @@ class PersonController(
         val last1on1Date = oneOnOneQueryPort.getLastOneOnOneDate(
             GetLastOneOnOneDateQuery(userId = userId, personId = PersonId(id))
         )
-        return ResponseEntity.ok(PersonResponse.from(person, last1on1Date))
+        val openActionItemsCount = actionItemQueryPort.countOpenActionItems(
+            CountOpenActionItemsQuery(userId = userId, personId = PersonId(id))
+        )
+        val activePdpGoalsCount = pdpGoalQueryPort.countActivePdpGoals(
+            CountActivePdpGoalsQuery(userId = userId, personId = PersonId(id))
+        )
+        return ResponseEntity.ok(PersonResponse.from(person, last1on1Date, openActionItemsCount.toInt(), activePdpGoalsCount.toInt()))
     }
 
     @PutMapping("/{id}")
