@@ -148,16 +148,15 @@ export default function PeopleListPage() {
         </div>
       </div>
 
-      <FilterBar
-        onFilterChange={(newFilters) => {
-          setFilters(newFilters);
-          setPage(0);
-        }}
-        initialTag={filters.tag}
-        initialMorale={filters.morale}
-      />
-
-      <div style={{ marginBottom: 'var(--space-4)', marginTop: 'calc(-1 * var(--space-2))' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap' }}>
+        <FilterBar
+          onFilterChange={(newFilters) => {
+            setFilters(newFilters);
+            setPage(0);
+          }}
+          initialTag={filters.tag}
+          initialMorale={filters.morale}
+        />
         <WorkspaceSelector
           workspaces={workspaces}
           selectedWorkspaceId={workspaceFilter}
