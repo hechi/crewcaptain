@@ -28,10 +28,11 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
 - **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
 - **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
+- **Per-Person Markdown Export** — Export all data for a person as a structured Markdown file: profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filter. Sensitive content is marked but not exposed. Download via Export button on person detail page.
 
 ### Planned
 
-- **Data Export** — Full data export capabilities
+- Gamification elements (progress rings, streak counters, micro-animations)
 
 ---
 
@@ -116,6 +117,16 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | POST   | `/api/v1/persons/{id}/remember-items`   | Add a pinned remember item     |
 | DELETE | `/api/v1/persons/{id}/remember-items/{itemId}` | Remove a remember item  |
 | PUT    | `/api/v1/persons/{id}/remember-items/reorder` | Reorder remember items  |
+| GET    | `/api/v1/persons/{id}/export`           | Export person data as Markdown |
+
+**Export query parameters:**
+- `dateFrom` — Optional start date filter (ISO 8601 date, e.g., 2024-01-01)
+- `dateTo` — Optional end date filter (ISO 8601 date, e.g., 2024-12-31)
+
+**Export response:**
+- Content-Type: `text/markdown; charset=UTF-8`
+- Content-Disposition: `attachment; filename="export.md"`
+- Body: Structured Markdown with profile, remember items, morale, 1:1 history, action items, PDP goals, and kudos
 
 ### 1:1 Entry Management
 

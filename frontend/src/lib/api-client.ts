@@ -610,3 +610,23 @@ export async function search(
   const response = await fetchWithAuth(url, {}, token);
   return response.json();
 }
+
+// --- Person Export ---
+
+export async function exportPersonMarkdown(
+  token: string,
+  personId: string,
+  params?: { dateFrom?: string; dateTo?: string }
+): Promise<string> {
+  const searchParams = new URLSearchParams();
+  if (params?.dateFrom) searchParams.set('dateFrom', params.dateFrom);
+  if (params?.dateTo) searchParams.set('dateTo', params.dateTo);
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${API_BASE_URL}/persons/${personId}/export?${queryString}`
+    : `${API_BASE_URL}/persons/${personId}/export`;
+
+  const response = await fetchWithAuth(url, {}, token);
+  return response.text();
+}

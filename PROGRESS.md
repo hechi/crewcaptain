@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T16:00:00Z — Search deep links: click results to navigate to exact location
+2026-05-10T17:00:00Z — Per-person Markdown export feature
 
 ## Current Status
-Full-text search now links directly to the exact location of each result. Clicking a search result navigates to the specific 1:1 entry page, or to the person detail page with the correct tab (action items, PDP goals, kudos) pre-selected. The person detail page now supports a `?tab=` query parameter for deep linking. All 678 backend tests and 608 frontend tests pass.
+Per-person Markdown export is now fully implemented. Managers can export all data for a person as a structured Markdown file including profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filtering is supported. Sensitive content is marked but not exposed in the export. All 721 backend tests and 623 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -61,6 +61,7 @@ Full-text search now links directly to the exact location of each result. Clicki
 - [x] Sensitive Content Encryption — AES-256-GCM application-level encryption for sensitive text fields at rest. EncryptionPort interface in application layer, AesGcmEncryptionAdapter in adapters layer. Integrated into persistence adapters (OneOnOneEntry, QuickNote, PdpUpdate). Graceful fallback when no key configured. Legacy unencrypted data support. (2026-05-10)
 - [x] In-App Notification Scheduling — Hourly scheduled task generates notifications for all users. Notification types: ACTION_ITEM_OVERDUE, ACTION_ITEM_DUE_SOON, STALE_ONE_ON_ONE, UPCOMING_ANNIVERSARY. 24-hour deduplication window prevents duplicate notifications. REST API: list (paginated), unread count, mark as read, mark all as read. Frontend: NotificationBell with unread badge in navigation, NotificationPanel dropdown, NotificationItem with type-specific icons and deep links, dedicated /notifications page with pagination and unread filter. (2026-05-10)
 - [x] Full-Text Search — GET /api/v1/search endpoint with PostgreSQL full-text search (to_tsvector/to_tsquery with prefix matching). Searches across persons, 1:1 entries, quick notes, action items, PDP goals, PDP updates, and kudos. Type filtering, pagination, relevance ranking. Sensitive content excluded from search (encrypted fields not searchable, sensitive snippets hidden in results). Frontend: dedicated /search page with search input, type filter chips, SearchResultCard component with type badges and deep links, pagination, URL state sync. Navigation link added. Deep links navigate to exact location: 1:1 entry page, person detail with correct tab pre-selected (action-items, pdp-goals, kudos). (2026-05-10)
+- [x] Per-Person Markdown Export — GET /api/v1/persons/{id}/export endpoint. Aggregates all person data (profile, pinned remember items, morale, 1:1 entries, action items, PDP goals with updates, kudos) and formats as structured Markdown. Optional dateFrom/dateTo query parameters for date range filtering. Sensitive content marked but not exposed. Returns text/markdown with Content-Disposition attachment header. Frontend: Export button on person detail page triggers download as {name}.md file. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -74,28 +75,20 @@ Full-text search now links directly to the exact location of each result. Clicki
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
-1. Data export functionality (per-person Markdown)
-2. Gamification elements (progress rings, streak counters, micro-animations)
-3. Settings page (reminder thresholds, export, encryption key status)
-4. GIN indexes for full-text search (performance optimization for large datasets)
+1. Gamification elements (progress rings, streak counters, micro-animations)
+2. Settings page (reminder thresholds, export date range UI, encryption key status)
+3. GIN indexes for full-text search (performance optimization for large datasets)
+4. Review packet generator (date range summaries)
 
 ## Architecture Decisions Made This Session
-- Full-text search implemented using PostgreSQL's built-in to_tsvector/to_tsquery with prefix matching (word:*)
-- Search queries are sanitized to prevent tsquery injection — special characters stripped, words connected with AND
-- GIN indexes deferred for MVP — query-time FTS is efficient because all queries are pre-filtered by user_id (B-tree indexed)
-- Sensitive content excluded from search results: 1:1 entries and quick notes with sensitive=true are filtered out in SQL, PDP updates with sensitive=true also excluded
-- Encrypted sensitive fields are inherently not searchable (ciphertext won't match plaintext queries) — this is an acceptable trade-off
-- Search results include a relevance score from ts_rank for ordering
-- SearchResultResponse DTO hides snippet for sensitive results (defense in depth)
-- Added MissingServletRequestParameterException handler to GlobalExceptionHandler (returns 400 instead of 500)
-- Notification generation implemented as a Spring `@Scheduled` task in the scheduler adapter layer
-- NotificationGenerationService lives in the application layer (testable without scheduler infrastructure)
-- 24-hour deduplication window prevents notification spam — same type + referenceId won't re-notify within 24h
-- Notifications are per-user and scoped by userId (security invariant maintained)
-- Scheduler iterates all users independently — failure for one user doesn't block others
-- Notification entity is a simple domain model (not a full aggregate) — no complex state transitions beyond read/unread
-- Frontend polls unread count every 60 seconds (no WebSocket needed for MVP)
-- Notification panel is a dropdown from the bell icon; full page at /notifications for history
+- Export implemented as a domain service (MarkdownExportFormatter) with no framework dependencies — pure Kotlin formatting logic
+- PersonExportService in application layer aggregates data from all repositories and delegates formatting to the domain service
+- Export endpoint returns raw Markdown bytes with Content-Disposition: attachment header for browser download
+- Date range filtering applied in-memory after fetching from repositories (acceptable for per-person data volumes, avoids adding new repository methods)
+- Sensitive 1:1 entries included in export but with "[Sensitive content]" placeholder instead of actual notes/outcomes
+- Sensitive PDP updates similarly show "[Sensitive content]" placeholder
+- Export uses a max page size of 1000 items per entity type (practical limit for per-person data)
+- Frontend triggers download via Blob + createObjectURL pattern (no server-side file storage needed)
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -108,13 +101,9 @@ Full-text search now links directly to the exact location of each result. Clicki
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 678 tests pass — domain (including SearchResult 6 tests), application (including SearchService 15 tests), controller slice (including SearchController 12 tests), encryption adapter (19 tests), encryption integration (10 tests), property, integration (last run: 2026-05-10)
+- Backend: All 721 tests pass — domain (including MarkdownExportFormatter 24 tests), application (including PersonExportService 11 tests), controller slice (including PersonExportController 8 tests), encryption adapter, property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 608 total — component tests (including SearchResultCard 17), page tests (including search page 13), API client tests (including search 10) (last run: 2026-05-10)
-  - Includes all previously listed test suites
-  - New: SearchResultCard component tests (16)
-  - New: Search page tests (13)
-  - New: Search API client tests (10)
+- Frontend: 623 total — component tests, page tests (including PersonExportButton 7 tests), API client tests (including export 8 tests) (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
