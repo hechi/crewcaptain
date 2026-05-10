@@ -631,6 +631,22 @@ export async function exportPersonMarkdown(
   return response.text();
 }
 
+// --- Review Packet ---
+
+export async function generateReviewPacket(
+  token: string,
+  personId: string,
+  params: { dateFrom: string; dateTo: string }
+): Promise<string> {
+  const searchParams = new URLSearchParams();
+  searchParams.set('dateFrom', params.dateFrom);
+  searchParams.set('dateTo', params.dateTo);
+
+  const url = `${API_BASE_URL}/persons/${personId}/review-packet?${searchParams.toString()}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.text();
+}
+
 // --- Gamification ---
 
 import { GamificationStats } from '@/types/gamification';

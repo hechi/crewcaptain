@@ -37,6 +37,7 @@ import {
   createKudos,
   deleteKudos,
   exportPersonMarkdown,
+  generateReviewPacket,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
 import PersonForm from '@/components/PersonForm';
@@ -48,6 +49,7 @@ import ActionItemList from '@/components/action-items/ActionItemList';
 import ActionItemForm from '@/components/action-items/ActionItemForm';
 import PdpGoalList from '@/components/pdp-goals/PdpGoalList';
 import KudosList from '@/components/kudos/KudosList';
+import ReviewPacketModal from '@/components/ReviewPacketModal';
 
 type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
 
@@ -102,6 +104,10 @@ export default function PersonDetailPage() {
 
   // Export state
   const [exporting, setExporting] = useState(false);
+
+  // Review packet state
+  const [showReviewPacketModal, setShowReviewPacketModal] = useState(false);
+  const [generatingReviewPacket, setGeneratingReviewPacket] = useState(false);
 
   const token = session?.accessToken as string;
 
@@ -489,6 +495,27 @@ export default function PersonDetailPage() {
     }
   };
 
+  const handleGenerateReviewPacket = async (dateFrom: string, dateTo: string) => {
+    setGeneratingReviewPacket(true);
+    try {
+      const markdown = await generateReviewPacket(token, personId, { dateFrom, dateTo });
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${person?.name || 'review'}-review-packet.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setShowReviewPacketModal(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate review packet');
+    } finally {
+      setGeneratingReviewPacket(false);
+    }
+  };
+
   if (status === 'loading') {
     return <div data-testid="loading">Loading...</div>;
   }
@@ -577,6 +604,25 @@ export default function PersonDetailPage() {
             }}
           >
             {exporting ? 'Exporting...' : '↓ Export'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowReviewPacketModal(true)}
+            data-testid="review-packet-button"
+            aria-label="Generate review packet"
+            style={{
+              padding: '8px 16px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              cursor: 'pointer',
+              background: 'var(--color-bg-elevated)',
+              fontSize: 'var(--text-body)',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'var(--font-mono)',
+              transition: 'border-color 0.2s',
+            }}
+          >
+            📋 Review Packet
           </button>
           <MoraleIndicator moraleStatus={person.moraleStatus} />
         </div>
@@ -1137,6 +1183,16 @@ export default function PersonDetailPage() {
             />
           )}
         </div>
+      )}
+
+      {/* Review Packet Modal */}
+      {showReviewPacketModal && (
+        <ReviewPacketModal
+          personName={person.name}
+          onGenerate={handleGenerateReviewPacket}
+          onClose={() => setShowReviewPacketModal(false)}
+          generating={generatingReviewPacket}
+        />
       )}
     </div>
   );

@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T22:00:00Z — GIN indexes for full-text search performance optimization
+2026-05-10T23:00:00Z — Review packet generator feature implementation
 
 ## Current Status
-GIN indexes for full-text search are now implemented. Seven per-table immutable wrapper functions compute tsvector values, and expression-based GIN indexes use these functions for fast full-text search across all searchable tables (persons, one_on_one_entries, quick_notes, action_items, pdp_goals, pdp_updates, kudos). The search repository adapter uses the same functions in queries so PostgreSQL can leverage the indexes. All 807 backend tests and 740 frontend tests pass.
+Review packet generator is now implemented. Managers can generate structured review/performance summary documents for any person over a configurable date range. The review packet includes an executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), current morale, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded from the packet. All 880 backend tests and 758 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -74,6 +74,10 @@ GIN indexes for full-text search are now implemented. Seven per-table immutable 
 - [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load. (2026-05-10)
 - [x] Automatic Token Refresh — Auth.js jwt callback captures refresh_token and expires_at on login, proactively refreshes access token 60s before expiry using OIDC token endpoint discovery. SessionProvider polls session every 4 minutes and on window focus. SessionRefreshGuard component detects unrecoverable refresh failures and triggers re-authentication. offline_access scope added to OIDC authorization request. (2026-05-10)
 - [x] GIN Indexes for Full-Text Search — Per-table immutable wrapper functions (persons_search_vector, one_on_one_entries_search_vector, quick_notes_search_vector, action_items_search_vector, pdp_goals_search_vector, pdp_updates_search_vector, kudos_search_vector) with expression-based GIN indexes. Search queries use the same functions enabling index utilization. Flyway migration V20250510120009. (2026-05-10)
+- [x] Review Packet Generator Backend API — GET /api/v1/persons/{id}/review-packet endpoint with required dateFrom/dateTo parameters. ReviewPacketService aggregates all person data within date range, computes summary statistics (1:1 count, action item completion rate, PDP goal progress, kudos tag summary), and formats as structured Markdown via ReviewPacketFormatter domain service. Sensitive content excluded. All queries scoped by userId. (2026-05-10)
+- [x] Review Packet Generator Backend tests — Domain unit tests (ReviewPacketSummary 10 tests, ReviewPacketFormatter 20 tests), application service tests (ReviewPacketService 10 tests), query validation tests (GenerateReviewPacketQuery 3 tests), controller slice tests (ReviewPacketController 10 tests) (2026-05-10)
+- [x] Review Packet Generator Frontend — API client function (generateReviewPacket), ReviewPacketModal component with date range picker, validation, and generating state. Integrated into person detail page with "Review Packet" button next to Export button. Downloads as {name}-review-packet.md. (2026-05-10)
+- [x] Review Packet Generator Frontend tests — Component tests (ReviewPacketModal 12 tests), API client tests (6 tests) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -88,9 +92,9 @@ GIN indexes for full-text search are now implemented. Seven per-table immutable 
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. Review packet generator (date range summaries)
-2. Bulk import (CSV people list)
-3. Dashboard uses user settings for dueSoonDays/anniversaryLookaheadDays query params (currently uses API defaults)
+1. Bulk import (CSV people list)
+2. Dashboard uses user settings for dueSoonDays/anniversaryLookaheadDays query params (currently uses API defaults)
+3. Soft-delete + restore (safety)
 
 ## Architecture Decisions Made This Session
 - UserSettings is a separate domain aggregate (not embedded in User) — keeps the User aggregate focused on identity
@@ -102,6 +106,10 @@ GIN indexes for full-text search are now implemented. Seven per-table immutable 
 - ThemeProvider uses React context for app-wide theme state — settings page updates propagate immediately
 - GIN indexes use per-table immutable wrapper functions (not generated columns) — PostgreSQL's to_tsvector is STABLE not IMMUTABLE, so we wrap it in IMMUTABLE plpgsql functions that pin the 'english' config
 - Expression-based GIN indexes (not stored tsvector columns) — avoids schema changes to entities, no trigger maintenance, queries must use the same function call to hit the index
+- Review packet is a separate endpoint from export (/review-packet vs /export) — different use case (summary vs raw dump), different required parameters (dateFrom/dateTo required vs optional), different output format (executive summary + statistics vs raw data)
+- ReviewPacketSummary.compute() is a companion factory method — keeps statistics computation logic in the domain layer, testable without framework dependencies
+- ReviewPacketFormatter is a domain service (object) — pure function, no state, no framework dependencies, same pattern as MarkdownExportFormatter
+- Date range is required for review packets (unlike export where it's optional) — a review packet without a date range is meaningless
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -114,9 +122,9 @@ GIN indexes for full-text search are now implemented. Seven per-table immutable 
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 807 tests pass — domain (including UserSettings 15 tests), application (including UserSettingsService 7 tests), controller slice (including UserSettingsController 11 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
+- Backend: All 880 tests pass — domain (including ReviewPacketSummary 10 tests, ReviewPacketFormatter 20 tests), application (including ReviewPacketService 10 tests, GenerateReviewPacketQuery 3 tests), controller slice (including ReviewPacketController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 740 total — component tests (including SessionRefreshGuard 6, SessionProvider 3, ThemeProvider 7), page tests (including Settings 14), API client tests (including settings 7), auth token refresh tests (16), Navigation test (last run: 2026-05-10)
+- Frontend: 758 total — component tests (including ReviewPacketModal 12), page tests, API client tests (including review-packet 6), auth token refresh tests, Navigation test (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
