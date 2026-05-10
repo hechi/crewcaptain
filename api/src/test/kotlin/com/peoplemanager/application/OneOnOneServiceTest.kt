@@ -30,8 +30,9 @@ class OneOnOneServiceTest {
     private val personRepository = mockk<PersonRepository>()
     private val seriesRepository = mockk<OneOnOneSeriesRepository>()
     private val entryRepository = mockk<OneOnOneEntryRepository>()
+    private val auditLogService = mockk<AuditLogService>(relaxed = true)
 
-    private val service = OneOnOneService(personRepository, seriesRepository, entryRepository)
+    private val service = OneOnOneService(personRepository, seriesRepository, entryRepository, auditLogService)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()
@@ -267,6 +268,7 @@ class OneOnOneServiceTest {
         @Test
         fun `should update entry fields`() {
             every { entryRepository.findByIdAndUserIdAndPersonId(entryId, userId, personId) } returns existingEntry
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { entryRepository.save(any()) } answers { firstArg() }
 
             val command = UpdateOneOnOneEntryCommand(
@@ -303,6 +305,7 @@ class OneOnOneServiceTest {
         @Test
         fun `should update agenda items`() {
             every { entryRepository.findByIdAndUserIdAndPersonId(entryId, userId, personId) } returns existingEntry
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { entryRepository.save(any()) } answers { firstArg() }
 
             val command = UpdateOneOnOneEntryCommand(
@@ -327,6 +330,7 @@ class OneOnOneServiceTest {
 
         @Test
         fun `should delete entry successfully`() {
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { entryRepository.deleteByIdAndUserIdAndPersonId(entryId, userId, personId) } returns true
 
             service.deleteEntry(DeleteOneOnOneEntryCommand(userId, personId, entryId))
@@ -336,6 +340,7 @@ class OneOnOneServiceTest {
 
         @Test
         fun `should throw OneOnOneEntryNotFoundException when entry not found`() {
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
             every { entryRepository.deleteByIdAndUserIdAndPersonId(entryId, userId, personId) } returns false
 
             shouldThrow<OneOnOneEntryNotFoundException> {

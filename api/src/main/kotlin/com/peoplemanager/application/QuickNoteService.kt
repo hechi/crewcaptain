@@ -22,7 +22,8 @@ class QuickNoteService(
     private val quickNoteRepository: QuickNoteRepository,
     private val personRepository: PersonRepository,
     private val oneOnOneEntryRepository: OneOnOneEntryRepository,
-    private val actionItemRepository: ActionItemRepository
+    private val actionItemRepository: ActionItemRepository,
+    private val auditLogService: AuditLogService
 ) : QuickNoteCommandPort, QuickNoteQueryPort {
 
     override fun createQuickNote(command: CreateQuickNoteCommand): QuickNote {
@@ -39,7 +40,9 @@ class QuickNoteService(
             sensitive = command.sensitive
         )
 
-        return quickNoteRepository.save(quickNote)
+        val saved = quickNoteRepository.save(quickNote)
+        auditLogService.record(AuditLogEntry.quickNoteCreated(command.userId, saved.id))
+        return saved
     }
 
     override fun updateQuickNote(command: UpdateQuickNoteCommand): QuickNote {
@@ -151,6 +154,7 @@ class QuickNoteService(
     override fun deleteQuickNote(command: DeleteQuickNoteCommand) {
         val deleted = quickNoteRepository.deleteByIdAndUserId(command.quickNoteId, command.userId)
         if (!deleted) throw QuickNoteNotFoundException(command.quickNoteId)
+        auditLogService.record(AuditLogEntry.quickNoteDeleted(command.userId, command.quickNoteId))
     }
 
     override fun getQuickNote(query: GetQuickNoteQuery): QuickNote {

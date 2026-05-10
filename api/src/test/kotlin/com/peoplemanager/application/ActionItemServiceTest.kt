@@ -27,8 +27,9 @@ class ActionItemServiceTest {
 
     private val personRepository = mockk<PersonRepository>()
     private val actionItemRepository = mockk<ActionItemRepository>()
+    private val auditLogService = mockk<AuditLogService>(relaxed = true)
 
-    private val service = ActionItemService(personRepository, actionItemRepository)
+    private val service = ActionItemService(personRepository, actionItemRepository, auditLogService)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()
@@ -242,6 +243,13 @@ class ActionItemServiceTest {
 
         @Test
         fun `should delete action item successfully`() {
+            val existing = ActionItem(
+                id = actionItemId,
+                userId = userId,
+                personId = personId,
+                title = "Test Item"
+            )
+            every { actionItemRepository.findByIdAndUserIdAndPersonId(actionItemId, userId, personId) } returns existing
             every { actionItemRepository.deleteByIdAndUserIdAndPersonId(actionItemId, userId, personId) } returns true
 
             service.deleteActionItem(DeleteActionItemCommand(userId, personId, actionItemId))
@@ -251,7 +259,7 @@ class ActionItemServiceTest {
 
         @Test
         fun `should throw ActionItemNotFoundException when not found`() {
-            every { actionItemRepository.deleteByIdAndUserIdAndPersonId(actionItemId, userId, personId) } returns false
+            every { actionItemRepository.findByIdAndUserIdAndPersonId(actionItemId, userId, personId) } returns null
 
             shouldThrow<ActionItemNotFoundException> {
                 service.deleteActionItem(DeleteActionItemCommand(userId, personId, actionItemId))

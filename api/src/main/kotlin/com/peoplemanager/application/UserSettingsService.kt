@@ -1,6 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.ports.UserSettingsRepository
+import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.domain.Theme
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.UserSettings
@@ -10,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class UserSettingsService(
-    private val userSettingsRepository: UserSettingsRepository
+    private val userSettingsRepository: UserSettingsRepository,
+    private val auditLogService: AuditLogService
 ) {
 
     @Transactional(readOnly = true)
@@ -36,7 +38,9 @@ class UserSettingsService(
             updatedAt = java.time.Instant.now()
         )
 
-        return userSettingsRepository.save(updated)
+        val saved = userSettingsRepository.save(updated)
+        auditLogService.record(AuditLogEntry.userSettingsUpdated(userId))
+        return saved
     }
 }
 

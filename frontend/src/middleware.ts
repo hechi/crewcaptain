@@ -8,5 +8,6 @@ export const config = {
     '/search/:path*',
     '/settings/:path*',
     '/notifications/:path*',
+    '/audit-log/:path*',
   ],
 };

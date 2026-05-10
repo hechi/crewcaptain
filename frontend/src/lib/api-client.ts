@@ -740,3 +740,28 @@ export async function importPersonsCsv(token: string, file: File): Promise<BulkI
 
   return response.json();
 }
+
+// --- Audit Log ---
+
+import { PaginatedAuditLogResponse, AuditAction, AuditEntityType } from '@/types/audit-log';
+
+export async function getAuditLog(
+  token: string,
+  params?: {
+    entityType?: AuditEntityType;
+    action?: AuditAction;
+    page?: number;
+    size?: number;
+  }
+): Promise<PaginatedAuditLogResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.entityType) searchParams.set('entityType', params.entityType);
+  if (params?.action) searchParams.set('action', params.action);
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/audit-log${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}

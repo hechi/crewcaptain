@@ -25,8 +25,9 @@ class PdpGoalServiceTest {
     private val personRepository = mockk<PersonRepository>()
     private val pdpGoalRepository = mockk<PdpGoalRepository>()
     private val pdpUpdateRepository = mockk<PdpUpdateRepository>()
+    private val auditLogService = mockk<AuditLogService>(relaxed = true)
 
-    private val service = PdpGoalService(personRepository, pdpGoalRepository, pdpUpdateRepository)
+    private val service = PdpGoalService(personRepository, pdpGoalRepository, pdpUpdateRepository, auditLogService)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()
@@ -238,6 +239,13 @@ class PdpGoalServiceTest {
 
         @Test
         fun `should delete PDP goal successfully`() {
+            val existing = PdpGoal(
+                id = goalId,
+                userId = userId,
+                personId = personId,
+                title = "Test Goal"
+            )
+            every { pdpGoalRepository.findByIdAndUserIdAndPersonId(goalId, userId, personId) } returns existing
             every { pdpGoalRepository.deleteByIdAndUserIdAndPersonId(goalId, userId, personId) } returns true
 
             service.deletePdpGoal(DeletePdpGoalCommand(userId, personId, goalId))
@@ -247,7 +255,7 @@ class PdpGoalServiceTest {
 
         @Test
         fun `should throw PdpGoalNotFoundException when not found`() {
-            every { pdpGoalRepository.deleteByIdAndUserIdAndPersonId(goalId, userId, personId) } returns false
+            every { pdpGoalRepository.findByIdAndUserIdAndPersonId(goalId, userId, personId) } returns null
 
             shouldThrow<PdpGoalNotFoundException> {
                 service.deletePdpGoal(DeletePdpGoalCommand(userId, personId, goalId))

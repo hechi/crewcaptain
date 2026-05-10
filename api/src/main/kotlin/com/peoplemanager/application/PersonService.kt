@@ -8,6 +8,7 @@ import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
+import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.application.ports.PersonCommandPort
 import com.peoplemanager.application.ports.PersonQueryPort
 import com.peoplemanager.application.ports.PersonRepository
@@ -26,7 +27,8 @@ import java.time.Instant
 
 @Service
 class PersonService(
-    private val personRepository: PersonRepository
+    private val personRepository: PersonRepository,
+    private val auditLogService: AuditLogService
 ) : PersonCommandPort, PersonQueryPort {
 
     override fun createPerson(command: CreatePersonCommand): Person {
@@ -44,7 +46,9 @@ class PersonService(
             moraleNote = null,
             pinnedRememberItems = emptyList()
         )
-        return personRepository.save(person)
+        val saved = personRepository.save(person)
+        auditLogService.record(AuditLogEntry.personCreated(command.userId, saved.id, saved.name))
+        return saved
     }
 
     override fun updatePerson(command: UpdatePersonCommand): Person {
@@ -61,19 +65,26 @@ class PersonService(
             tags = command.tags,
             updatedAt = Instant.now()
         )
-        return personRepository.save(updated)
+        val saved = personRepository.save(updated)
+        auditLogService.record(AuditLogEntry.personUpdated(command.userId, saved.id, saved.name))
+        return saved
     }
 
     override fun deletePerson(command: DeletePersonCommand) {
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
         val deleted = personRepository.softDeleteByIdAndUserId(command.personId, command.userId)
         if (!deleted) throw PersonNotFoundException(command.personId)
+        auditLogService.record(AuditLogEntry.personDeleted(command.userId, command.personId, person.name))
     }
 
     override fun restorePerson(command: RestorePersonCommand): Person {
         val restored = personRepository.restoreByIdAndUserId(command.personId, command.userId)
         if (!restored) throw PersonNotFoundException(command.personId)
-        return personRepository.findByIdAndUserId(command.personId, command.userId)
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
             ?: throw PersonNotFoundException(command.personId)
+        auditLogService.record(AuditLogEntry.personRestored(command.userId, person.id, person.name))
+        return person
     }
 
     override fun setMorale(command: SetMoraleCommand): Person {
