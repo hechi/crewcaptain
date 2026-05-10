@@ -684,3 +684,38 @@ export async function updateUserSettings(token: string, data: UpdateUserSettings
   }, token);
   return response.json();
 }
+
+
+// --- Bulk Import ---
+
+import { BulkImportResponse } from '@/types/bulk-import';
+
+export async function importPersonsCsv(token: string, file: File): Promise<BulkImportResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/persons/import`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorBody;
+    try {
+      errorBody = await response.json();
+    } catch {
+      errorBody = {
+        status: response.status,
+        error: response.statusText || 'Error',
+        message: `Import failed with status ${response.status}`,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    throw new ApiException(errorBody.status, errorBody.error, errorBody.message, errorBody.timestamp);
+  }
+
+  return response.json();
+}

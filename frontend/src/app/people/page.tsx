@@ -9,6 +9,7 @@ import PersonCard from '@/components/PersonCard';
 import FilterBar from '@/components/FilterBar';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
+import CsvImportModal from '@/components/CsvImportModal';
 
 export default function PeopleListPage() {
   const { data: session, status } = useSession();
@@ -19,6 +20,7 @@ export default function PeopleListPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<{ tag: string; morale: MoraleStatus | '' }>({ tag: '', morale: '' });
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchPeople = useCallback(async () => {
     if (status !== 'authenticated' || !session?.accessToken) return;
@@ -65,26 +67,47 @@ export default function PeopleListPage() {
         }}>
           People
         </h1>
-        <button
-          type="button"
-          onClick={() => router.push('/people/new')}
-          data-testid="add-person-button"
-          style={{
-            padding: '10px 20px',
-            backgroundColor: 'var(--color-primary)',
-            color: 'var(--color-bg-base)',
-            border: 'none',
-            borderRadius: 'var(--radius-medium)',
-            fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-semibold)',
-            fontFamily: 'var(--font-mono)',
-            cursor: 'pointer',
-            boxShadow: 'var(--glow-primary)',
-            transition: 'box-shadow 0.2s',
-          }}
-        >
-          Add Person
-        </button>
+        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+          <button
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            data-testid="import-csv-button"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              color: 'var(--color-primary)',
+              border: '1px solid var(--color-primary)',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              transition: 'box-shadow 0.2s',
+            }}
+          >
+            Import CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/people/new')}
+            data-testid="add-person-button"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'var(--color-bg-base)',
+              border: 'none',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              boxShadow: 'var(--glow-primary)',
+              transition: 'box-shadow 0.2s',
+            }}
+          >
+            Add Person
+          </button>
+        </div>
       </div>
 
       <FilterBar
@@ -126,6 +149,17 @@ export default function PeopleListPage() {
             onPageChange={setPage}
           />
         </>
+      )}
+
+      {session?.accessToken && (
+        <CsvImportModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onImportComplete={() => {
+            fetchPeople();
+          }}
+          token={session.accessToken as string}
+        />
       )}
     </div>
   );
