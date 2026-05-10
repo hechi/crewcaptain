@@ -25,11 +25,10 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
 - **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox) or assigned to a person. Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Full frontend with dedicated Quick Notes page, status filter, and inline create form.
 - **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
+- **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
 
 ### Planned
 
-- **Dashboard Enhancements** — Additional widgets and customization options
-- **Sensitive Content** — Flag and hide sensitive notes with encryption support
 - **Notifications** — Scheduled reminders for overdue items and upcoming 1:1s
 - **Search** — Full-text search across all manager data
 - **Data Export** — Full data export capabilities
@@ -294,7 +293,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | `DB_PASSWORD`      | Database password                                | Yes      |
 | `OIDC_ISSUER_URI`  | OIDC issuer URI (authentik provider URL)         | Yes      |
 | `OIDC_JWKS_URI`    | JWKS endpoint URI                                | Yes      |
-| `ENCRYPTION_KEY`   | Master key for sensitive field encryption        | No*      |
+| `ENCRYPTION_KEY`   | Base64-encoded 32-byte AES key for sensitive field encryption (generate with: `openssl rand -base64 32`) | No*      |
 
 ### Frontend
 
@@ -307,7 +306,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | `OIDC_ISSUER`       | authentik OIDC issuer URL                       | Yes      |
 | `API_BASE_URL`      | Internal URL to backend API                     | Yes      |
 
-*`ENCRYPTION_KEY` is required when sensitive field encryption is enabled.
+*`ENCRYPTION_KEY` is required when sensitive field encryption is enabled. Generate with: `openssl rand -base64 32`. Must be exactly 32 bytes when Base64-decoded (256-bit AES key). Without this key, sensitive content is stored in plaintext (the `sensitive` flag still works for UI labeling).
 
 See `.env.example` for a complete template with placeholder values.
 

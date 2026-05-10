@@ -1,5 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
+import com.peoplemanager.application.ports.EncryptionPort
 import com.peoplemanager.application.ports.QuickNoteRepository
 import com.peoplemanager.domain.*
 import org.springframework.data.domain.Page
@@ -10,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 @Transactional
 class JpaQuickNoteRepositoryAdapter(
-    private val springDataRepository: SpringDataQuickNoteRepository
+    private val springDataRepository: SpringDataQuickNoteRepository,
+    private val encryptionPort: EncryptionPort
 ) : QuickNoteRepository {
 
     override fun save(quickNote: QuickNote): QuickNote {
@@ -54,7 +56,7 @@ class JpaQuickNoteRepositoryAdapter(
         id = QuickNoteId(this.id),
         userId = UserId(this.userId),
         personId = this.personId?.let { PersonId(it) },
-        text = this.text,
+        text = if (this.sensitive) encryptionPort.decrypt(this.text) ?: this.text else this.text,
         sensitive = this.sensitive,
         status = QuickNoteStatus.valueOf(this.status),
         attachedEntryId = this.attachedEntryId?.let { OneOnOneEntryId(it) },
@@ -66,7 +68,7 @@ class JpaQuickNoteRepositoryAdapter(
         id = this.id.value,
         userId = this.userId.value,
         personId = this.personId?.value,
-        text = this.text,
+        text = if (this.sensitive) encryptionPort.encrypt(this.text) ?: this.text else this.text,
         sensitive = this.sensitive,
         status = this.status.name,
         attachedEntryId = this.attachedEntryId?.value,

@@ -1,5 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
+import com.peoplemanager.application.ports.EncryptionPort
 import com.peoplemanager.application.ports.OneOnOneEntryRepository
 import com.peoplemanager.domain.AgendaItem
 import com.peoplemanager.domain.AgendaItemId
@@ -16,7 +17,8 @@ import java.time.Instant
 @Repository
 @Transactional
 class JpaOneOnOneEntryRepositoryAdapter(
-    private val springDataRepository: SpringDataOneOnOneEntryRepository
+    private val springDataRepository: SpringDataOneOnOneEntryRepository,
+    private val encryptionPort: EncryptionPort
 ) : OneOnOneEntryRepository {
 
     override fun save(entry: OneOnOneEntry): OneOnOneEntry {
@@ -72,8 +74,8 @@ class JpaOneOnOneEntryRepositoryAdapter(
         personId = PersonId(this.personId),
         meetingDate = this.meetingDate,
         agendaItems = this.agendaItems.map { it.toDomain() },
-        notesMarkdown = this.notesMarkdown,
-        outcomesMarkdown = this.outcomesMarkdown,
+        notesMarkdown = if (this.sensitive) encryptionPort.decrypt(this.notesMarkdown) else this.notesMarkdown,
+        outcomesMarkdown = if (this.sensitive) encryptionPort.decrypt(this.outcomesMarkdown) else this.outcomesMarkdown,
         sensitive = this.sensitive,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
@@ -93,8 +95,8 @@ class JpaOneOnOneEntryRepositoryAdapter(
             userId = this.userId.value,
             personId = this.personId.value,
             meetingDate = this.meetingDate,
-            notesMarkdown = this.notesMarkdown,
-            outcomesMarkdown = this.outcomesMarkdown,
+            notesMarkdown = if (this.sensitive) encryptionPort.encrypt(this.notesMarkdown) else this.notesMarkdown,
+            outcomesMarkdown = if (this.sensitive) encryptionPort.encrypt(this.outcomesMarkdown) else this.outcomesMarkdown,
             sensitive = this.sensitive,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt

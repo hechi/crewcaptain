@@ -1,5 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
+import com.peoplemanager.application.ports.EncryptionPort
 import com.peoplemanager.application.ports.PdpUpdateRepository
 import com.peoplemanager.domain.PdpGoalId
 import com.peoplemanager.domain.PdpUpdate
@@ -13,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 @Transactional
 class JpaPdpUpdateRepositoryAdapter(
-    private val springDataRepository: SpringDataPdpUpdateRepository
+    private val springDataRepository: SpringDataPdpUpdateRepository,
+    private val encryptionPort: EncryptionPort
 ) : PdpUpdateRepository {
 
     override fun save(update: PdpUpdate): PdpUpdate {
@@ -46,7 +48,7 @@ class JpaPdpUpdateRepositoryAdapter(
         id = PdpUpdateId(this.id),
         goalId = PdpGoalId(this.goalId),
         userId = UserId(this.userId),
-        textMarkdown = this.textMarkdown,
+        textMarkdown = if (this.sensitive) encryptionPort.decrypt(this.textMarkdown) ?: this.textMarkdown else this.textMarkdown,
         sensitive = this.sensitive,
         createdAt = this.createdAt
     )
@@ -55,7 +57,7 @@ class JpaPdpUpdateRepositoryAdapter(
         id = this.id.value,
         goalId = this.goalId.value,
         userId = this.userId.value,
-        textMarkdown = this.textMarkdown,
+        textMarkdown = if (this.sensitive) encryptionPort.encrypt(this.textMarkdown) ?: this.textMarkdown else this.textMarkdown,
         sensitive = this.sensitive,
         createdAt = this.createdAt
     )
