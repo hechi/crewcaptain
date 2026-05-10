@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T23:45:00Z — Bulk import (CSV people list) feature implemented
+2026-05-11T00:15:00Z — Added style branch type and no-exceptions golden rule to AGENTS.md
 
 ## Current Status
 Bulk CSV import feature is complete. Managers can now import multiple people at once from a CSV file via the People list page. The backend parses CSV with validation, creates persons, and returns per-row error details. The frontend provides a modal with file selection, preview table, and import results. All 923 backend tests and 785 frontend tests pass (1 pre-existing intermittent Property 14 failure).
