@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T23:00:00Z — Review packet generator feature implementation
+2026-05-10T23:30:00Z — Dashboard wired to user settings thresholds
 
 ## Current Status
-Review packet generator is now implemented. Managers can generate structured review/performance summary documents for any person over a configurable date range. The review packet includes an executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), current morale, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded from the packet. All 880 backend tests and 758 frontend tests pass.
+Dashboard now respects user settings for dueSoonDays and anniversaryLookaheadDays query parameters. Previously the dashboard always used API defaults (3 days / 30 days); now it fetches user settings first and passes the user's configured thresholds to the dashboard API call. All 880 backend tests and 760 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -71,7 +71,7 @@ Review packet generator is now implemented. Managers can generate structured rev
 - [x] User Settings Frontend — TypeScript types, API client (getUserSettings, updateUserSettings), Settings page with theme selector, threshold inputs, notification toggles, achievement visibility toggle, save with success/error feedback. ThemeProvider context for app-wide theme management. Navigation link added. (2026-05-10)
 - [x] User Settings Frontend tests — ThemeProvider tests (7), Settings page tests (14), API client tests (7), Navigation test for settings link (1) (2026-05-10)
 - [x] Light Theme — Full CSS light theme via [data-theme="light"] selector. Clean surfaces (#F8FAFB base), teal/purple accents, proper WCAG contrast, subtle shadows instead of glows, light scrollbar styling. Toggled via Settings page. (2026-05-10)
-- [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load. (2026-05-10)
+- [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load and passes dueSoonDays/anniversaryLookaheadDays as query params to the dashboard API. (2026-05-10)
 - [x] Automatic Token Refresh — Auth.js jwt callback captures refresh_token and expires_at on login, proactively refreshes access token 60s before expiry using OIDC token endpoint discovery. SessionProvider polls session every 4 minutes and on window focus. SessionRefreshGuard component detects unrecoverable refresh failures and triggers re-authentication. offline_access scope added to OIDC authorization request. (2026-05-10)
 - [x] GIN Indexes for Full-Text Search — Per-table immutable wrapper functions (persons_search_vector, one_on_one_entries_search_vector, quick_notes_search_vector, action_items_search_vector, pdp_goals_search_vector, pdp_updates_search_vector, kudos_search_vector) with expression-based GIN indexes. Search queries use the same functions enabling index utilization. Flyway migration V20250510120009. (2026-05-10)
 - [x] Review Packet Generator Backend API — GET /api/v1/persons/{id}/review-packet endpoint with required dateFrom/dateTo parameters. ReviewPacketService aggregates all person data within date range, computes summary statistics (1:1 count, action item completion rate, PDP goal progress, kudos tag summary), and formats as structured Markdown via ReviewPacketFormatter domain service. Sensitive content excluded. All queries scoped by userId. (2026-05-10)
@@ -93,8 +93,7 @@ Review packet generator is now implemented. Managers can generate structured rev
 
 ## Next Steps (Prioritized)
 1. Bulk import (CSV people list)
-2. Dashboard uses user settings for dueSoonDays/anniversaryLookaheadDays query params (currently uses API defaults)
-3. Soft-delete + restore (safety)
+2. Soft-delete + restore (safety)
 
 ## Architecture Decisions Made This Session
 - UserSettings is a separate domain aggregate (not embedded in User) — keeps the User aggregate focused on identity
@@ -124,7 +123,7 @@ Review packet generator is now implemented. Managers can generate structured rev
 ## Test Coverage Summary
 - Backend: All 880 tests pass — domain (including ReviewPacketSummary 10 tests, ReviewPacketFormatter 20 tests), application (including ReviewPacketService 10 tests, GenerateReviewPacketQuery 3 tests), controller slice (including ReviewPacketController 10 tests), encryption adapter, property, integration (including FullTextSearchGinIndex 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 758 total — component tests (including ReviewPacketModal 12), page tests, API client tests (including review-packet 6), auth token refresh tests, Navigation test (last run: 2026-05-10)
+- Frontend: 760 total — component tests (including ReviewPacketModal 12), page tests (including DashboardPage 13), API client tests (including review-packet 6), auth token refresh tests, Navigation test (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
@@ -132,4 +131,4 @@ Review packet generator is now implemented. Managers can generate structured rev
 - Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference? → RESOLVED: Implemented as part of Settings page
 - Notification polling interval (60s) is hardcoded in the frontend — should this be configurable?
 - Should notifications be auto-dismissed after a certain age (e.g., 30 days)?
-- Dashboard currently doesn't pass user's threshold settings as query params to the dashboard API (uses API defaults) — should be wired up in a follow-up
+- `staleOneOnOneDays` setting is stored but not used by the dashboard — the stale 1:1 logic uses cadence-based intervals instead of a fixed threshold. Should the setting override cadence-based logic, or is it only for notifications?

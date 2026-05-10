@@ -177,6 +177,23 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Network error')).toBeInTheDocument();
   });
 
+  it('should show error state when settings API call fails', async () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockGetUserSettings.mockRejectedValue(new Error('Settings unavailable'));
+
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('dashboard-error')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Settings unavailable')).toBeInTheDocument();
+  });
+
   it('should render empty dashboard when no data', async () => {
     mockUseSession.mockReturnValue({
       data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
@@ -224,7 +241,7 @@ describe('DashboardPage', () => {
     expect(screen.queryByTestId('dashboard-alert-summary')).not.toBeInTheDocument();
   });
 
-  it('should call getDashboard with access token', async () => {
+  it('should call getDashboard with access token and user settings thresholds', async () => {
     mockUseSession.mockReturnValue({
       data: { user: { name: 'Test User' }, expires: '', accessToken: 'my-token' },
       status: 'authenticated',
@@ -240,7 +257,44 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(mockGetDashboard).toHaveBeenCalledWith('my-token');
+      expect(mockGetDashboard).toHaveBeenCalledWith('my-token', {
+        dueSoonDays: 3,
+        anniversaryLookaheadDays: 30,
+      });
+    });
+  });
+
+  it('should pass custom user settings thresholds to getDashboard', async () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'my-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockGetUserSettings.mockResolvedValue({
+      dueSoonDays: 7,
+      staleOneOnOneDays: 21,
+      anniversaryLookaheadDays: 60,
+      theme: 'DARK',
+      showAchievements: true,
+      notifyActionItemOverdue: true,
+      notifyActionItemDueSoon: true,
+      notifyStaleOneOnOne: true,
+      notifyUpcomingAnniversary: true,
+    });
+    mockGetDashboard.mockResolvedValue({
+      overdueActionItems: [],
+      dueSoonActionItems: [],
+      staleOneOnOnes: [],
+      upcomingAnniversaries: [],
+    });
+
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(mockGetDashboard).toHaveBeenCalledWith('my-token', {
+        dueSoonDays: 7,
+        anniversaryLookaheadDays: 60,
+      });
     });
   });
 

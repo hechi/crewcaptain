@@ -26,14 +26,20 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [dashResult, gamResult, settingsResult] = await Promise.all([
-        getDashboard(session.accessToken as string),
-        getGamificationStats(session.accessToken as string),
-        getUserSettings(session.accessToken as string),
+      const token = session.accessToken as string;
+      // Fetch settings first so we can use thresholds for the dashboard query
+      const settingsResult = await getUserSettings(token);
+      setUserSettings(settingsResult);
+
+      const [dashResult, gamResult] = await Promise.all([
+        getDashboard(token, {
+          dueSoonDays: settingsResult.dueSoonDays,
+          anniversaryLookaheadDays: settingsResult.anniversaryLookaheadDays,
+        }),
+        getGamificationStats(token),
       ]);
       setDashboard(dashResult);
       setGamification(gamResult);
-      setUserSettings(settingsResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load dashboard');
     } finally {
