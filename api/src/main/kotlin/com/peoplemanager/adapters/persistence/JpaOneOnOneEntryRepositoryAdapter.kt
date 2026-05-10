@@ -71,6 +71,14 @@ class JpaOneOnOneEntryRepositoryAdapter(
         return springDataRepository.findLatestMeetingDate(userId.value, personId.value)
     }
 
+    override fun countByUserId(userId: UserId): Long {
+        return springDataRepository.countByUserId(userId.value)
+    }
+
+    override fun findAllMeetingDatesByUserId(userId: UserId): List<Instant> {
+        return springDataRepository.findAllMeetingDatesByUserId(userId.value)
+    }
+
     private fun OneOnOneEntryEntity.toDomain(): OneOnOneEntry {
         val decryptedNotes = if (this.sensitive) {
             try {

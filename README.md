@@ -29,10 +29,11 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
 - **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
 - **Per-Person Markdown Export** — Export all data for a person as a structured Markdown file: profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filter. Sensitive content is marked but not exposed. Download via Export button on person detail page.
+- **Gamification & Engagement** — Dashboard gamification elements for engagement: animated progress ring for PDP goal completion percentage, 1:1 streak counter (consecutive weeks with meetings), achievement badges for milestones (first 1:1, 10 action items closed, etc.), and activity heatmap (contribution-graph style). Micro-animation on task completion (checkmark with glow burst). All animations respect `prefers-reduced-motion`.
 
 ### Planned
 
-- Gamification elements (progress rings, streak counters, micro-animations)
+- Settings page (reminder thresholds, export date range UI, encryption key status)
 
 ---
 

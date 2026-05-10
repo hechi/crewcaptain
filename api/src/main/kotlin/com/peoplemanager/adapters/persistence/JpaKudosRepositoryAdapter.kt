@@ -56,6 +56,10 @@ class JpaKudosRepositoryAdapter(
         return deleted > 0
     }
 
+    override fun countByUserId(userId: UserId): Long {
+        return springDataRepository.countByUserId(userId.value)
+    }
+
     private fun KudosEntity.toDomain(): Kudos = Kudos(
         id = KudosId(this.id),
         userId = UserId(this.userId),

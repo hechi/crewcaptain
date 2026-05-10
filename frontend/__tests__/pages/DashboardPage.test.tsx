@@ -9,13 +9,15 @@ jest.mock('next-auth/react', () => ({
 
 jest.mock('@/lib/api-client', () => ({
   getDashboard: jest.fn(),
+  getGamificationStats: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
-import { getDashboard } from '@/lib/api-client';
+import { getDashboard, getGamificationStats } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 const mockGetDashboard = getDashboard as jest.MockedFunction<typeof getDashboard>;
+const mockGetGamificationStats = getGamificationStats as jest.MockedFunction<typeof getGamificationStats>;
 
 const mockDashboardData = {
   overdueActionItems: [
@@ -61,9 +63,24 @@ const mockDashboardData = {
   ],
 };
 
+const mockGamificationData = {
+  streaks: { currentStreak: 3, longestStreak: 5, totalOneOnOnesHeld: 15 },
+  achievements: [
+    { type: 'FIRST_ONE_ON_ONE' as const, unlocked: true, label: 'First 1:1', description: 'Hold your first 1:1 meeting', current: 15, target: 1 },
+    { type: 'TEN_ONE_ON_ONES' as const, unlocked: true, label: '10 1:1s', description: 'Hold 10 one-on-one meetings', current: 15, target: 10 },
+    { type: 'FIFTY_ONE_ON_ONES' as const, unlocked: false, label: '50 1:1s', description: 'Hold 50 one-on-one meetings', current: 15, target: 50 },
+  ],
+  activityHeatmap: [
+    { date: '2026-05-09', count: 1 },
+    { date: '2026-05-10', count: 0 },
+  ],
+  pdpProgress: { totalActive: 2, totalAchieved: 1, totalPaused: 0, totalDropped: 0, completionPercentage: 33 },
+};
+
 describe('DashboardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetGamificationStats.mockResolvedValue(mockGamificationData);
   });
 
   it('should show loading state initially', () => {
@@ -73,6 +90,7 @@ describe('DashboardPage', () => {
       update: jest.fn(),
     });
     mockGetDashboard.mockReturnValue(new Promise(() => {})); // Never resolves
+    mockGetGamificationStats.mockReturnValue(new Promise(() => {})); // Never resolves
 
     render(<DashboardPage />);
     expect(screen.getByTestId('dashboard-loading')).toBeInTheDocument();

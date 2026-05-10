@@ -13,4 +13,5 @@ interface KudosRepository {
     fun findAllByUserIdAndPersonId(userId: UserId, personId: PersonId, pageable: Pageable): Page<Kudos>
     fun findAllByUserId(userId: UserId, pageable: Pageable): Page<Kudos>
     fun deleteByIdAndUserIdAndPersonId(kudosId: KudosId, userId: UserId, personId: PersonId): Boolean
+    fun countByUserId(userId: UserId): Long
 }

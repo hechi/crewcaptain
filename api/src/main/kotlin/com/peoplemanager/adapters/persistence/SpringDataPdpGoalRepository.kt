@@ -28,4 +28,10 @@ interface SpringDataPdpGoalRepository : JpaRepository<PdpGoalEntity, UUID> {
         @Param("userId") userId: UUID,
         @Param("personId") personId: UUID
     ): Long
+
+    @Query("SELECT COUNT(g) FROM PdpGoalEntity g WHERE g.userId = :userId AND g.status = :status")
+    fun countByUserIdAndStatus(
+        @Param("userId") userId: UUID,
+        @Param("status") status: String
+    ): Long
 }

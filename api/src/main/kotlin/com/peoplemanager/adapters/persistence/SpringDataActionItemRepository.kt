@@ -52,4 +52,10 @@ interface SpringDataActionItemRepository : JpaRepository<ActionItemEntity, UUID>
         @Param("userId") userId: UUID,
         @Param("personId") personId: UUID
     ): Long
+
+    @Query("SELECT COUNT(a) FROM ActionItemEntity a WHERE a.userId = :userId AND a.status = :status")
+    fun countByUserIdAndStatus(
+        @Param("userId") userId: UUID,
+        @Param("status") status: String
+    ): Long
 }

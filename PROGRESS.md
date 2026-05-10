@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T17:00:00Z — Per-person Markdown export feature
+2026-05-10T18:30:00Z — Gamification elements (progress rings, streak counters, achievements, activity heatmap)
 
 ## Current Status
-Per-person Markdown export is now fully implemented. Managers can export all data for a person as a structured Markdown file including profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filtering is supported. Sensitive content is marked but not exposed in the export. All 721 backend tests and 623 frontend tests pass.
+Gamification and engagement elements are now fully implemented. The dashboard features an animated PDP progress ring, 1:1 streak counter (consecutive weeks), achievement badges for milestones, and a contribution-graph style activity heatmap. A reusable CompletionAnimation component provides micro-animations for task completion. Backend provides a dedicated `/api/v1/gamification/stats` endpoint aggregating streaks, achievements, activity data, and PDP progress. All 758 backend tests and 674 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -62,6 +62,10 @@ Per-person Markdown export is now fully implemented. Managers can export all dat
 - [x] In-App Notification Scheduling — Hourly scheduled task generates notifications for all users. Notification types: ACTION_ITEM_OVERDUE, ACTION_ITEM_DUE_SOON, STALE_ONE_ON_ONE, UPCOMING_ANNIVERSARY. 24-hour deduplication window prevents duplicate notifications. REST API: list (paginated), unread count, mark as read, mark all as read. Frontend: NotificationBell with unread badge in navigation, NotificationPanel dropdown, NotificationItem with type-specific icons and deep links, dedicated /notifications page with pagination and unread filter. (2026-05-10)
 - [x] Full-Text Search — GET /api/v1/search endpoint with PostgreSQL full-text search (to_tsvector/to_tsquery with prefix matching). Searches across persons, 1:1 entries, quick notes, action items, PDP goals, PDP updates, and kudos. Type filtering, pagination, relevance ranking. Sensitive content excluded from search (encrypted fields not searchable, sensitive snippets hidden in results). Frontend: dedicated /search page with search input, type filter chips, SearchResultCard component with type badges and deep links, pagination, URL state sync. Navigation link added. Deep links navigate to exact location: 1:1 entry page, person detail with correct tab pre-selected (action-items, pdp-goals, kudos). (2026-05-10)
 - [x] Per-Person Markdown Export — GET /api/v1/persons/{id}/export endpoint. Aggregates all person data (profile, pinned remember items, morale, 1:1 entries, action items, PDP goals with updates, kudos) and formats as structured Markdown. Optional dateFrom/dateTo query parameters for date range filtering. Sensitive content marked but not exposed. Returns text/markdown with Content-Disposition attachment header. Frontend: Export button on person detail page triggers download as {name}.md file. (2026-05-10)
+- [x] Gamification Backend API — GET /api/v1/gamification/stats endpoint. GamificationService computes 1:1 streaks (consecutive weeks with meetings), achievement milestones (13 types across 1:1s, action items, PDP goals, kudos, and streaks), activity heatmap (configurable days window, default 90), and PDP progress summary (active/achieved/paused/dropped with completion percentage). All queries scoped by userId. (2026-05-10)
+- [x] Gamification Backend tests — Domain unit tests (GamificationStats 8 tests), application service tests (GamificationService 18 tests), controller slice tests (GamificationController 8 tests) (2026-05-10)
+- [x] Gamification Frontend — TypeScript types, API client (getGamificationStats), components (ProgressRing with animated SVG arc and glow, StreakCounter with monospace readout, AchievementBadge with Lucide SVG icons and category colors, ActivityHeatmap contribution graph, CompletionAnimation with checkmark glow burst). Dashboard integration with gamification stats section above existing grid. (2026-05-10)
+- [x] Gamification Frontend tests — Component tests (ProgressRing 10, StreakCounter 8, AchievementBadge 9, ActivityHeatmap 9, CompletionAnimation 6), API client tests (8) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -75,20 +79,19 @@ Per-person Markdown export is now fully implemented. Managers can export all dat
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
-1. Gamification elements (progress rings, streak counters, micro-animations)
-2. Settings page (reminder thresholds, export date range UI, encryption key status)
-3. GIN indexes for full-text search (performance optimization for large datasets)
-4. Review packet generator (date range summaries)
+1. Settings page (reminder thresholds, export date range UI, encryption key status)
+2. GIN indexes for full-text search (performance optimization for large datasets)
+3. Review packet generator (date range summaries)
+4. Bulk import (CSV people list)
 
 ## Architecture Decisions Made This Session
-- Export implemented as a domain service (MarkdownExportFormatter) with no framework dependencies — pure Kotlin formatting logic
-- PersonExportService in application layer aggregates data from all repositories and delegates formatting to the domain service
-- Export endpoint returns raw Markdown bytes with Content-Disposition: attachment header for browser download
-- Date range filtering applied in-memory after fetching from repositories (acceptable for per-person data volumes, avoids adding new repository methods)
-- Sensitive 1:1 entries included in export but with "[Sensitive content]" placeholder instead of actual notes/outcomes
-- Sensitive PDP updates similarly show "[Sensitive content]" placeholder
-- Export uses a max page size of 1000 items per entity type (practical limit for per-person data)
-- Frontend triggers download via Blob + createObjectURL pattern (no server-side file storage needed)
+- Gamification stats computed on-demand via dedicated endpoint (no persistent gamification state) — keeps the system simple and avoids stale data
+- Streak calculation uses epoch-day-based week grouping for consistent week boundaries regardless of locale
+- Achievements are computed dynamically from current counts (not stored) — always reflects real-time state
+- Activity heatmap uses 1:1 meeting dates as the activity signal (most meaningful engagement metric for managers)
+- Frontend gamification components use inline SVG for ProgressRing (no external animation library needed)
+- CompletionAnimation is a standalone reusable component that can be integrated into any action completion flow
+- All gamification respects `prefers-reduced-motion` via existing global CSS rule that disables transitions/animations
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -101,9 +104,9 @@ Per-person Markdown export is now fully implemented. Managers can export all dat
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 721 tests pass — domain (including MarkdownExportFormatter 24 tests), application (including PersonExportService 11 tests), controller slice (including PersonExportController 8 tests), encryption adapter, property, integration (last run: 2026-05-10)
+- Backend: All 758 tests pass — domain (including GamificationStats 8 tests), application (including GamificationService 18 tests), controller slice (including GamificationController 8 tests), encryption adapter, property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 623 total — component tests, page tests (including PersonExportButton 7 tests), API client tests (including export 8 tests) (last run: 2026-05-10)
+- Frontend: 674 total — component tests (including ProgressRing 10, StreakCounter 8, AchievementBadge 10, ActivityHeatmap 9, CompletionAnimation 6), page tests, API client tests (including gamification 8) (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
