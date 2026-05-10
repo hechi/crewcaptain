@@ -23,6 +23,10 @@ Project Name: CrewCaptain
 6. **Ask before inventing.** If a requirement is ambiguous, state your
    assumption explicitly and flag it for human review rather than silently
    deciding.
+7. **No exceptions for "small" changes.** Documentation-only edits, single-line
+   fixes, config tweaks — all follow the full workflow (§3). The size of a change
+   does not justify skipping branching, committing, or updating PROGRESS.md.
+   If it touches a file in this repo, it gets a branch.
 
 ---
 
@@ -140,6 +144,7 @@ All work happens on feature/fix branches off `main`. Never commit directly to
 | Refactor    | `refactor/<short-description>`       | `refactor/extract-notification-port`     |
 | Chore       | `chore/<short-description>`          | `chore/upgrade-spring-boot-3.4`          |
 | Docs        | `docs/<short-description>`           | `docs/add-authentik-setup-guide`         |
+| Style       | `style/<short-description>`          | `style/update-dashboard-layout`          |
 | Hotfix      | `hotfix/<short-description>`         | `hotfix/fix-jwt-validation-crash`        |
 
 **Rules:**
