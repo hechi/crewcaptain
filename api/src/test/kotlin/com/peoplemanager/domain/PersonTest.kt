@@ -310,4 +310,57 @@ class PersonTest {
         updated.pinnedRememberItems[0].text shouldBe "Second"
         updated.pinnedRememberItems[1].text shouldBe "First"
     }
+
+    // --- Soft-delete tests ---
+
+    @Test
+    fun `should soft-delete a person by setting deletedAt`() {
+        val person = createValidPerson()
+
+        person.isDeleted shouldBe false
+        person.deletedAt shouldBe null
+
+        val deleted = person.softDelete()
+
+        deleted.isDeleted shouldBe true
+        deleted.deletedAt shouldNotBe null
+        deleted.updatedAt shouldNotBe person.updatedAt
+    }
+
+    @Test
+    fun `should restore a soft-deleted person`() {
+        val person = createValidPerson().softDelete()
+
+        person.isDeleted shouldBe true
+
+        val restored = person.restore()
+
+        restored.isDeleted shouldBe false
+        restored.deletedAt shouldBe null
+        restored.updatedAt shouldNotBe person.updatedAt
+    }
+
+    @Test
+    fun `should throw when restoring a non-deleted person`() {
+        val person = createValidPerson()
+
+        val exception = assertThrows<IllegalArgumentException> {
+            person.restore()
+        }
+        exception.message shouldBe "Cannot restore a person that is not deleted"
+    }
+
+    @Test
+    fun `soft-deleted person should preserve all other fields`() {
+        val person = createValidPerson(name = "Preserved Name")
+        val deleted = person.softDelete()
+
+        deleted.id shouldBe person.id
+        deleted.userId shouldBe person.userId
+        deleted.name shouldBe "Preserved Name"
+        deleted.preferredName shouldBe person.preferredName
+        deleted.roleTitle shouldBe person.roleTitle
+        deleted.tags shouldBe person.tags
+        deleted.moraleStatus shouldBe person.moraleStatus
+    }
 }

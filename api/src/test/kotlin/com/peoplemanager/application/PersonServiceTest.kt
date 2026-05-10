@@ -5,10 +5,12 @@ import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
+import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.queries.GetPersonQuery
+import com.peoplemanager.application.queries.ListDeletedPersonsQuery
 import com.peoplemanager.application.queries.ListPersonsQuery
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.Person
@@ -164,26 +166,77 @@ class PersonServiceTest {
     inner class DeletePerson {
 
         @Test
-        fun `should call deleteByIdAndUserId and succeed`() {
+        fun `should call softDeleteByIdAndUserId and succeed`() {
             val command = DeletePersonCommand(userId = userId, personId = personId)
 
-            every { personRepository.deleteByIdAndUserId(personId, userId) } returns true
+            every { personRepository.softDeleteByIdAndUserId(personId, userId) } returns true
 
             personService.deletePerson(command)
 
-            verify(exactly = 1) { personRepository.deleteByIdAndUserId(personId, userId) }
+            verify(exactly = 1) { personRepository.softDeleteByIdAndUserId(personId, userId) }
         }
 
         @Test
         fun `should throw PersonNotFoundException when person not found`() {
             val command = DeletePersonCommand(userId = userId, personId = personId)
 
-            every { personRepository.deleteByIdAndUserId(personId, userId) } returns false
+            every { personRepository.softDeleteByIdAndUserId(personId, userId) } returns false
 
             val exception = shouldThrow<PersonNotFoundException> {
                 personService.deletePerson(command)
             }
             exception.personId shouldBe personId
+        }
+    }
+
+    @Nested
+    inner class RestorePerson {
+
+        @Test
+        fun `should call restoreByIdAndUserId and return restored person`() {
+            val command = RestorePersonCommand(userId = userId, personId = personId)
+            val restoredPerson = createTestPerson()
+
+            every { personRepository.restoreByIdAndUserId(personId, userId) } returns true
+            every { personRepository.findByIdAndUserId(personId, userId) } returns restoredPerson
+
+            val result = personService.restorePerson(command)
+
+            result shouldBe restoredPerson
+            verify(exactly = 1) { personRepository.restoreByIdAndUserId(personId, userId) }
+            verify(exactly = 1) { personRepository.findByIdAndUserId(personId, userId) }
+        }
+
+        @Test
+        fun `should throw PersonNotFoundException when deleted person not found`() {
+            val command = RestorePersonCommand(userId = userId, personId = personId)
+
+            every { personRepository.restoreByIdAndUserId(personId, userId) } returns false
+
+            val exception = shouldThrow<PersonNotFoundException> {
+                personService.restorePerson(command)
+            }
+            exception.personId shouldBe personId
+        }
+    }
+
+    @Nested
+    inner class ListDeletedPersons {
+
+        @Test
+        fun `should delegate to repository with correct pageable`() {
+            val query = ListDeletedPersonsQuery(userId = userId, page = 0, size = 20)
+            val persons = listOf(createTestPerson())
+            val page = PageImpl(persons, PageRequest.of(0, 20), 1)
+
+            every { personRepository.findAllDeletedByUserId(userId, any<Pageable>()) } returns page
+
+            val result = personService.listDeletedPersons(query)
+
+            result.content shouldBe persons
+            result.totalElements shouldBe 1
+
+            verify(exactly = 1) { personRepository.findAllDeletedByUserId(userId, any<Pageable>()) }
         }
     }
 

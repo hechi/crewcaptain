@@ -5,12 +5,14 @@ import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
+import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
 import com.peoplemanager.application.ports.PersonCommandPort
 import com.peoplemanager.application.ports.PersonQueryPort
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.queries.GetPersonQuery
+import com.peoplemanager.application.queries.ListDeletedPersonsQuery
 import com.peoplemanager.application.queries.ListPersonsQuery
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.Person
@@ -63,8 +65,15 @@ class PersonService(
     }
 
     override fun deletePerson(command: DeletePersonCommand) {
-        val deleted = personRepository.deleteByIdAndUserId(command.personId, command.userId)
+        val deleted = personRepository.softDeleteByIdAndUserId(command.personId, command.userId)
         if (!deleted) throw PersonNotFoundException(command.personId)
+    }
+
+    override fun restorePerson(command: RestorePersonCommand): Person {
+        val restored = personRepository.restoreByIdAndUserId(command.personId, command.userId)
+        if (!restored) throw PersonNotFoundException(command.personId)
+        return personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
     }
 
     override fun setMorale(command: SetMoraleCommand): Person {
@@ -110,5 +119,10 @@ class PersonService(
     override fun listPersons(query: ListPersonsQuery): Page<Person> {
         val pageable = PageRequest.of(query.page, query.size, Sort.by(Sort.Direction.ASC, "name"))
         return personRepository.findAllByUserId(query.userId, pageable, query.tagFilter, query.moraleFilter)
+    }
+
+    override fun listDeletedPersons(query: ListDeletedPersonsQuery): Page<Person> {
+        val pageable = PageRequest.of(query.page, query.size)
+        return personRepository.findAllDeletedByUserId(query.userId, pageable)
     }
 }

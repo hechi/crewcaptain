@@ -14,6 +14,7 @@ import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
+import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
 import com.peoplemanager.application.ports.ActionItemQueryPort
@@ -25,6 +26,7 @@ import com.peoplemanager.application.queries.CountOpenActionItemsQuery
 import com.peoplemanager.application.queries.CountActivePdpGoalsQuery
 import com.peoplemanager.application.queries.GetLastOneOnOneDateQuery
 import com.peoplemanager.application.queries.GetPersonQuery
+import com.peoplemanager.application.queries.ListDeletedPersonsQuery
 import com.peoplemanager.application.queries.ListPersonsQuery
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.PersonId
@@ -114,6 +116,25 @@ class PersonController(
         val command = DeletePersonCommand(userId = userId, personId = PersonId(id))
         personCommandPort.deletePerson(command)
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{id}/restore")
+    fun restorePerson(@PathVariable id: UUID): ResponseEntity<PersonResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = RestorePersonCommand(userId = userId, personId = PersonId(id))
+        val person = personCommandPort.restorePerson(command)
+        return ResponseEntity.ok(PersonResponse.from(person))
+    }
+
+    @GetMapping("/trash")
+    fun listDeletedPersons(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int
+    ): ResponseEntity<PaginatedPersonResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val query = ListDeletedPersonsQuery(userId = userId, page = page, size = size)
+        val result = personQueryPort.listDeletedPersons(query)
+        return ResponseEntity.ok(PaginatedPersonResponse.from(result))
     }
 
     @GetMapping

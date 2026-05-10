@@ -28,6 +28,7 @@ export interface Person {
   atAGlance: AtAGlance;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface PaginatedResponse<T> {

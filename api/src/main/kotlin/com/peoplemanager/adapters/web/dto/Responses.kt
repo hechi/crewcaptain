@@ -22,7 +22,8 @@ data class PersonResponse(
     val pinnedRememberItems: List<RememberItemResponse>,
     val atAGlance: AtAGlanceResponse,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
+    val deletedAt: Instant?
 ) {
     companion object {
         fun from(person: Person, last1on1Date: Instant? = null, openActionItemsCount: Int? = null, activePdpGoalsCount: Int? = null): PersonResponse = PersonResponse(
@@ -47,7 +48,8 @@ data class PersonResponse(
                 }
             ),
             createdAt = person.createdAt,
-            updatedAt = person.updatedAt
+            updatedAt = person.updatedAt,
+            deletedAt = person.deletedAt
         )
     }
 }

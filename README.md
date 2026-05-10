@@ -34,10 +34,12 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Light Theme** — Full light theme alternative to the default cyberpunk dark theme. Clean surfaces, teal/purple accents, proper contrast ratios, and subtle shadows instead of glows. Toggled via Settings page.
 - **Review Packet Generator** — Generate structured review/performance summary documents for a person over a configurable date range. Includes executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), morale status, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded. Download as Markdown via "Review Packet" button on person detail page.
 - **Bulk Import (CSV)** — Import multiple people at once from a CSV file. Supports columns: name (required), preferred_name, role_title, timezone, start_date (YYYY-MM-DD), email, tags (pipe-separated). Preview before import, per-row error reporting, max 500 rows per import. Accessible via "Import CSV" button on the People list page.
+- **Soft-Delete + Restore** — Deleting a person moves them to trash (soft-delete) instead of permanently removing them. Trash page shows all deleted people with restore capability. All queries automatically exclude soft-deleted records. Data isolation enforced on trash operations.
 
 ### Planned
 
-- Soft-delete + restore (safety)
+- Optional "workspace" concept (still manager-private by default)
+- Audit log
 
 ---
 
@@ -117,7 +119,9 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | GET    | `/api/v1/persons`                       | List persons (paginated)       |
 | GET    | `/api/v1/persons/{id}`                  | Get person by ID               |
 | PUT    | `/api/v1/persons/{id}`                  | Update a person                |
-| DELETE | `/api/v1/persons/{id}`                  | Delete a person                |
+| DELETE | `/api/v1/persons/{id}`                  | Soft-delete a person (move to trash) |
+| POST   | `/api/v1/persons/{id}/restore`          | Restore a soft-deleted person  |
+| GET    | `/api/v1/persons/trash`                 | List deleted persons (paginated) |
 | PUT    | `/api/v1/persons/{id}/morale`           | Set morale status              |
 | POST   | `/api/v1/persons/{id}/remember-items`   | Add a pinned remember item     |
 | DELETE | `/api/v1/persons/{id}/remember-items/{itemId}` | Remove a remember item  |
@@ -463,6 +467,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120007` | Add full-text search support (placeholder — no schema changes needed) |
 | `V20250510120008` | Create user_settings table |
 | `V20250510120009` | Add GIN indexes for full-text search (immutable wrapper functions + expression indexes) |
+| `V20250510120010` | Add soft-delete support to persons table (deleted_at column + indexes) |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

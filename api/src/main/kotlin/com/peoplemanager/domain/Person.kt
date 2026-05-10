@@ -17,10 +17,20 @@ data class Person(
     val moraleNote: String? = null,
     val pinnedRememberItems: List<PinnedRememberItem> = emptyList(),
     val createdAt: Instant = Instant.now(),
-    val updatedAt: Instant = Instant.now()
+    val updatedAt: Instant = Instant.now(),
+    val deletedAt: Instant? = null
 ) {
     init {
         require(name.isNotBlank()) { "Person name must not be blank" }
+    }
+
+    val isDeleted: Boolean get() = deletedAt != null
+
+    fun softDelete(): Person = copy(deletedAt = Instant.now(), updatedAt = Instant.now())
+
+    fun restore(): Person {
+        require(isDeleted) { "Cannot restore a person that is not deleted" }
+        return copy(deletedAt = null, updatedAt = Instant.now())
     }
 
     fun updateMorale(status: MoraleStatus, note: String?): Person =

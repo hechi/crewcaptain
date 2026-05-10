@@ -34,6 +34,11 @@ data class DeletePersonCommand(
     val personId: PersonId
 )
 
+data class RestorePersonCommand(
+    val userId: UserId,
+    val personId: PersonId
+)
+
 data class SetMoraleCommand(
     val userId: UserId,
     val personId: PersonId,

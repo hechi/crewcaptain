@@ -190,4 +190,22 @@ describe('PeopleListPage', () => {
 
     expect(screen.getByText('Network error')).toBeInTheDocument();
   });
+
+  it('should render Trash button that navigates to /people/trash', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: {}, expires: '' },
+      status: 'authenticated',
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
+    mockListPersons.mockResolvedValue(mockPaginatedResponse);
+
+    render(<PeopleListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('trash-button')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('trash-button'));
+    expect(mockPush).toHaveBeenCalledWith('/people/trash');
+  });
 });
