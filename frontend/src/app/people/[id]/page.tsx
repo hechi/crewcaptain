@@ -278,6 +278,7 @@ export default function PersonDetailPage() {
       await createActionItem(token, personId, data as CreateActionItemRequest);
       setShowActionItemForm(false);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create action item');
     } finally {
@@ -303,6 +304,7 @@ export default function PersonDetailPage() {
     try {
       await completeActionItem(token, personId, id);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete action item');
     }
@@ -312,6 +314,7 @@ export default function PersonDetailPage() {
     try {
       await cancelActionItem(token, personId, id);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel action item');
     }
@@ -321,6 +324,7 @@ export default function PersonDetailPage() {
     try {
       await deleteActionItem(token, personId, id);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete action item');
     }
@@ -339,6 +343,7 @@ export default function PersonDetailPage() {
     try {
       await createPdpGoal(token, personId, data);
       fetchPdpGoals(pdpGoalsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create PDP goal');
     }
@@ -357,6 +362,7 @@ export default function PersonDetailPage() {
     try {
       await achievePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to achieve PDP goal');
     }
@@ -366,6 +372,7 @@ export default function PersonDetailPage() {
     try {
       await pausePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to pause PDP goal');
     }
@@ -375,6 +382,7 @@ export default function PersonDetailPage() {
     try {
       await dropPdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to drop PDP goal');
     }
@@ -384,6 +392,7 @@ export default function PersonDetailPage() {
     try {
       await resumePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resume PDP goal');
     }
@@ -393,6 +402,7 @@ export default function PersonDetailPage() {
     try {
       await deletePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
+      fetchPerson();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete PDP goal');
     }

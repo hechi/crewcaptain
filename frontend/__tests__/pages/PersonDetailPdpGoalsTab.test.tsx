@@ -216,6 +216,11 @@ describe('PersonDetailPage - PDP Goals Tab', () => {
         targetDate: null,
       });
     });
+
+    // Should re-fetch person to update at-a-glance counters
+    await waitFor(() => {
+      expect(mockGetPerson).toHaveBeenCalledTimes(2); // initial + after create
+    });
   });
 
   it('should achieve a PDP goal', async () => {
@@ -233,10 +238,16 @@ describe('PersonDetailPage - PDP Goals Tab', () => {
       expect(screen.getAllByTestId('pdp-goal-achieve-btn')).toHaveLength(1);
     });
 
+    mockGetPerson.mockClear();
     fireEvent.click(screen.getByTestId('pdp-goal-achieve-btn'));
 
     await waitFor(() => {
       expect(mockAchievePdpGoal).toHaveBeenCalledWith('test-token', '123e4567-e89b-12d3-a456-426614174000', 'goal-1');
+    });
+
+    // Should re-fetch person to update at-a-glance counters
+    await waitFor(() => {
+      expect(mockGetPerson).toHaveBeenCalled();
     });
   });
 
