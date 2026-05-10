@@ -31,6 +31,8 @@ export default function QuickNoteCard({
   onFetchEntries,
 }: QuickNoteCardProps) {
   const [showPersonPicker, setShowPersonPicker] = useState(false);
+  const [showAttachPersonPicker, setShowAttachPersonPicker] = useState(false);
+  const [attachSelectedPersonId, setAttachSelectedPersonId] = useState<string | null>(null);
   const [showConvertPersonPicker, setShowConvertPersonPicker] = useState(false);
   const [showEntryPicker, setShowEntryPicker] = useState(false);
   const [entries, setEntries] = useState<OneOnOneEntry[]>([]);
@@ -68,8 +70,8 @@ export default function QuickNoteCard({
 
   const handleShowEntryPicker = async () => {
     if (!quickNote.personId) {
-      // Need to assign a person first
-      setShowPersonPicker(true);
+      // Show combined person+entry picker flow
+      setShowAttachPersonPicker(true);
       return;
     }
     setShowEntryPicker(true);
@@ -84,9 +86,30 @@ export default function QuickNoteCard({
     }
   };
 
+  const handleAttachPersonSelected = async (personId: string) => {
+    // Person selected in the attach flow — immediately load their entries
+    setShowAttachPersonPicker(false);
+    setAttachSelectedPersonId(personId);
+    setShowEntryPicker(true);
+    if (onFetchEntries) {
+      setEntriesLoading(true);
+      try {
+        const result = await onFetchEntries(personId);
+        setEntries(result);
+      } finally {
+        setEntriesLoading(false);
+      }
+    }
+  };
+
   const handleAttachToEntry = (entryId: string) => {
+    // If we selected a person during this flow, assign first
+    if (attachSelectedPersonId && !quickNote.personId) {
+      onAssignPerson(quickNote.id, attachSelectedPersonId);
+    }
     onAttach(quickNote.id, entryId);
     setShowEntryPicker(false);
+    setAttachSelectedPersonId(null);
   };
 
   return (
@@ -209,6 +232,41 @@ export default function QuickNoteCard({
           <button
             type="button"
             onClick={() => setShowPersonPicker(false)}
+            style={{ marginTop: '6px', padding: '4px 8px', fontSize: 'var(--text-caption)', border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Attach Person Picker — shown when attaching without a person assigned */}
+      {showAttachPersonPicker && (
+        <div data-testid="attach-person-picker" style={{ marginBottom: '12px', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-elevated)' }}>
+          <label style={{ display: 'block', fontSize: 'var(--text-caption)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>
+            Select person to see their 1:1s:
+          </label>
+          <select
+            data-testid="attach-person-picker-select"
+            onChange={(e) => { if (e.target.value) handleAttachPersonSelected(e.target.value); }}
+            defaultValue=""
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              fontSize: 'var(--text-body)',
+            }}
+          >
+            <option value="" disabled>Select a person...</option>
+            {persons.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}{p.roleTitle ? ` — ${p.roleTitle}` : ''}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setShowAttachPersonPicker(false)}
             style={{ marginTop: '6px', padding: '4px 8px', fontSize: 'var(--text-caption)', border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
           >
             Cancel

@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T10:45:00Z — Quick Notes: real conversion to action items and real attachment to 1:1 agenda
+2026-05-10T10:50:00Z — Quick Notes: improved attach-to-1:1 flow (single continuous step)
 
 ## Current Status
 The Quick Notes feature now performs real data operations: "Attach to 1:1" adds the note text as an agenda item to the selected 1:1 entry, and "→ Action Item" creates an actual action item for the selected person. Both flows include person pickers when needed. All 460 frontend tests and all backend tests pass (except the pre-existing intermittent Property 14 edge case).

@@ -147,11 +147,18 @@ describe('QuickNoteCard', () => {
     expect(mockOnDelete).toHaveBeenCalledWith('note-1');
   });
 
-  it('should show person picker when attach is clicked without person assigned', () => {
+  it('should show attach person picker when attach is clicked without person assigned', () => {
     renderCard();
     fireEvent.click(screen.getByTestId('quick-note-attach-btn'));
-    // Should show person picker since no person is assigned
-    expect(screen.getByTestId('person-picker')).toBeInTheDocument();
+    expect(screen.getByTestId('attach-person-picker')).toBeInTheDocument();
+  });
+
+  it('should show entry picker after selecting person in attach flow', async () => {
+    renderCard();
+    fireEvent.click(screen.getByTestId('quick-note-attach-btn'));
+    fireEvent.change(screen.getByTestId('attach-person-picker-select'), { target: { value: 'person-1' } });
+    // Entry picker should appear after person selection
+    expect(screen.getByTestId('entry-picker')).toBeInTheDocument();
   });
 
   it('should render with correct test id', () => {
