@@ -22,10 +22,10 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date
 - **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components.
 - **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
+- **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
 
 ### Planned
 
-- **Kudos** — Record positive feedback and achievements
 - **Sensitive Content** — Flag and hide sensitive notes with encryption support
 - **Notifications** — Scheduled reminders for overdue items and upcoming 1:1s
 - **Data Export** — Full data export capabilities
@@ -195,6 +195,25 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `size` — Page size (default: 20)
 - `status` — Filter by status (ACTIVE, ACHIEVED, PAUSED, DROPPED)
 
+### Kudos / Recognition
+
+| Method | Endpoint                                                | Description                          |
+|--------|---------------------------------------------------------|--------------------------------------|
+| POST   | `/api/v1/persons/{personId}/kudos`                      | Create a kudos entry                 |
+| GET    | `/api/v1/persons/{personId}/kudos`                      | List kudos for a person (paginated)  |
+| GET    | `/api/v1/persons/{personId}/kudos/{kudosId}`            | Get a kudos entry                    |
+| DELETE | `/api/v1/persons/{personId}/kudos/{kudosId}`            | Delete a kudos entry                 |
+| GET    | `/api/v1/kudos`                                         | List all kudos (cross-person)        |
+
+**Kudos fields:**
+- `text` — Required (Markdown text)
+- `date` — Optional date (ISO 8601 date, defaults to today)
+- `tags` — Optional list of strings (e.g., ["impact", "collaboration"])
+
+**Query parameters for kudos list endpoints:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+
 **Query parameters for entries list endpoint:**
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
@@ -293,6 +312,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120000` | Create action_items table |
 | `V20250510120001` | Create pdp_goals table |
 | `V20250510120002` | Create pdp_updates table |
+| `V20250510120003` | Create kudos table |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 

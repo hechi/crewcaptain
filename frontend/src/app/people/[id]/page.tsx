@@ -7,6 +7,7 @@ import { Person, MoraleStatus, PaginatedResponse } from '@/types/person';
 import { OneOnOneEntry, OneOnOneSeries } from '@/types/one-on-one';
 import { ActionItem, ActionItemStatus, PaginatedActionItemResponse, CreateActionItemRequest, UpdateActionItemRequest } from '@/types/action-item';
 import { PdpGoal, PdpGoalStatus, PaginatedPdpGoalResponse, CreatePdpGoalRequest, UpdatePdpGoalRequest } from '@/types/pdp-goal';
+import { Kudos, PaginatedKudosResponse, CreateKudosRequest } from '@/types/kudos';
 import {
   getPerson,
   updatePerson,
@@ -32,6 +33,9 @@ import {
   dropPdpGoal,
   resumePdpGoal,
   deletePdpGoal,
+  listKudosByPerson,
+  createKudos,
+  deleteKudos,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
 import PersonForm from '@/components/PersonForm';
@@ -42,8 +46,9 @@ import SeriesConfigPanel from '@/components/one-on-one/SeriesConfigPanel';
 import ActionItemList from '@/components/action-items/ActionItemList';
 import ActionItemForm from '@/components/action-items/ActionItemForm';
 import PdpGoalList from '@/components/pdp-goals/PdpGoalList';
+import KudosList from '@/components/kudos/KudosList';
 
-type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals';
+type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
 
 export default function PersonDetailPage() {
   const { data: session, status } = useSession();
@@ -83,6 +88,11 @@ export default function PersonDetailPage() {
   const [pdpGoals, setPdpGoals] = useState<PaginatedPdpGoalResponse | null>(null);
   const [pdpGoalsLoading, setPdpGoalsLoading] = useState(false);
   const [pdpGoalsStatusFilter, setPdpGoalsStatusFilter] = useState<PdpGoalStatus | null>(null);
+
+  // Kudos state
+  const [kudos, setKudos] = useState<PaginatedKudosResponse | null>(null);
+  const [kudosLoading, setKudosLoading] = useState(false);
+  const [kudosSubmitting, setKudosSubmitting] = useState(false);
 
   const token = session?.accessToken as string;
 
@@ -162,6 +172,20 @@ export default function PersonDetailPage() {
     }
   }, [token, status, personId]);
 
+  const fetchKudos = useCallback(async () => {
+    if (status !== 'authenticated' || !token) return;
+
+    setKudosLoading(true);
+    try {
+      const result = await listKudosByPerson(token, personId);
+      setKudos(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load kudos');
+    } finally {
+      setKudosLoading(false);
+    }
+  }, [token, status, personId]);
+
   useEffect(() => {
     fetchPerson();
   }, [fetchPerson]);
@@ -184,6 +208,12 @@ export default function PersonDetailPage() {
       fetchPdpGoals(pdpGoalsStatusFilter);
     }
   }, [activeTab, pdpGoalsStatusFilter, fetchPdpGoals]);
+
+  useEffect(() => {
+    if (activeTab === 'kudos') {
+      fetchKudos();
+    }
+  }, [activeTab, fetchKudos]);
 
   const handleUpdate = async (data: {
     name: string;
@@ -408,6 +438,28 @@ export default function PersonDetailPage() {
     }
   };
 
+  // Kudos handlers
+  const handleCreateKudos = async (data: CreateKudosRequest) => {
+    setKudosSubmitting(true);
+    try {
+      await createKudos(token, personId, data);
+      fetchKudos();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create kudos');
+    } finally {
+      setKudosSubmitting(false);
+    }
+  };
+
+  const handleDeleteKudos = async (kudosId: string) => {
+    try {
+      await deleteKudos(token, personId, kudosId);
+      fetchKudos();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete kudos');
+    }
+  };
+
   if (status === 'loading') {
     return <div data-testid="loading">Loading...</div>;
   }
@@ -581,6 +633,29 @@ export default function PersonDetailPage() {
           }}
         >
           PDP Goals
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'kudos'}
+          aria-controls="tab-panel-kudos"
+          onClick={() => setActiveTab('kudos')}
+          data-testid="tab-kudos"
+          style={{
+            padding: '10px 20px',
+            border: 'none',
+            borderBottom: activeTab === 'kudos' ? '2px solid var(--color-primary)' : '2px solid transparent',
+            background: 'none',
+            fontSize: 'var(--text-body)',
+            fontWeight: activeTab === 'kudos' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+            color: activeTab === 'kudos' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            cursor: 'pointer',
+            marginBottom: '-1px',
+            fontFamily: 'var(--font-mono)',
+            transition: 'color 0.2s',
+          }}
+        >
+          Kudos
         </button>
       </div>
 
@@ -989,6 +1064,24 @@ export default function PersonDetailPage() {
               onDeleteGoal={handleDeletePdpGoal}
               statusFilter={pdpGoalsStatusFilter}
               onStatusFilterChange={setPdpGoalsStatusFilter}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Kudos Tab Panel */}
+      {activeTab === 'kudos' && (
+        <div id="tab-panel-kudos" role="tabpanel" aria-labelledby="tab-kudos">
+          {kudosLoading && !kudos ? (
+            <div data-testid="kudos-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
+              Loading kudos...
+            </div>
+          ) : (
+            <KudosList
+              kudos={kudos?.content || []}
+              onCreateKudos={handleCreateKudos}
+              onDeleteKudos={handleDeleteKudos}
+              isSubmitting={kudosSubmitting}
             />
           )}
         </div>

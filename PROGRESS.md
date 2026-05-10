@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T09:00:00Z — At-a-Glance section now shows open action items count and active PDP goals
+2026-05-10T09:30:00Z — Kudos / Recognition feature fully implemented end-to-end
 
 ## Current Status
-The PDP Goal tracking feature is fully implemented end-to-end. The backend provides full CRUD for goals with status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), progress updates with sensitive flag, and data isolation. The frontend includes TypeScript types, API client functions (12 functions), reusable components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), and an integrated "PDP Goals" tab on the person detail page with inline create/edit forms, status filtering, and status transition actions. All 365 frontend tests and all backend tests pass.
+The Kudos / Recognition feature is fully implemented end-to-end. The backend provides create, get, list (per-person and cross-person), and delete for kudos entries with date, Markdown text, and optional tags. The frontend includes TypeScript types, API client functions (5 functions), reusable components (KudosCard, KudosForm, KudosList), and an integrated "Kudos" tab on the person detail page with inline create form and delete. All 405 frontend tests and all backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -41,6 +41,11 @@ The PDP Goal tracking feature is fully implemented end-to-end. The backend provi
 - [x] PDP Goal Backend tests — Domain unit tests (PdpGoal 22 tests, PdpUpdate 4 tests), application service tests (18 tests), controller slice tests (17 tests), integration tests with data isolation verification (17 tests) (2026-05-10)
 - [x] PDP Goal Frontend — TypeScript types, API client (12 functions), components (PdpGoalCard, PdpGoalForm, PdpGoalList, PdpGoalStatusBadge), person detail "PDP Goals" tab with inline create/edit, status filter, achieve/pause/drop/resume actions (2026-05-10)
 - [x] PDP Goal Frontend tests — Component tests (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4), API client tests (19), page integration tests (10) (2026-05-10)
+- [x] Kudos / Recognition Backend API — Create, get, list (per-person + cross-person), delete. Date, Markdown text, optional tags. Data isolation enforced. (2026-05-10)
+- [x] Kudos Database migration — kudos table with indexes (user_id, user_id+person_id, user_id+date) (2026-05-10)
+- [x] Kudos Backend tests — Domain unit tests (8 tests), application service tests (10 tests), controller slice tests (12 tests), integration tests with data isolation verification (10 tests) (2026-05-10)
+- [x] Kudos Frontend — TypeScript types, API client (5 functions), components (KudosCard, KudosForm, KudosList), person detail "Kudos" tab with inline create form and delete (2026-05-10)
+- [x] Kudos Frontend tests — Component tests (KudosCard 8, KudosForm 9, KudosList 9), API client tests (14) (2026-05-10)
 
 ## In Progress
 - (none)
@@ -53,21 +58,19 @@ The PDP Goal tracking feature is fully implemented end-to-end. The backend provi
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. Kudos recording (positive feedback and achievements)
-2. Quick Notes ("Inbox") — global capture, attach to person/1:1
-3. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
-4. Sensitive content encryption (flag and encrypt private notes)
-5. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-6. Search (full-text across all manager data)
-7. Data export functionality (per-person Markdown)
-8. Gamification elements (progress rings, streak counters, micro-animations)
+1. Quick Notes ("Inbox") — global capture, attach to person/1:1
+2. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
+3. Sensitive content encryption (flag and encrypt private notes)
+4. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+5. Search (full-text across all manager data)
+6. Data export functionality (per-person Markdown)
+7. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- PDP Goals stored as a flat table with userId + personId scoping — consistent with action items pattern
-- PDP Updates stored in separate table with FK to pdp_goals (CASCADE DELETE) — allows independent progress tracking
-- Status transitions enforced at domain level (PdpGoal.achieve()/pause()/drop()/resume()) — prevents invalid state changes
-- Sensitive flag on PDP updates (not goals) — aligns with PRD requirement for note-like content sensitivity
-- Progress updates are append-only (create + delete, no edit) — preserves historical accuracy
+- Kudos are immutable after creation (create + delete only, no update) — recognition entries should not be edited after the fact
+- Kudos stored as a flat table with userId + personId scoping — consistent with action items and PDP goals pattern
+- Tags stored as PostgreSQL TEXT[] array — simple, queryable, no separate join table needed for MVP
+- Sorted by date descending by default — most recent recognition shown first
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -79,9 +82,11 @@ The PDP Goal tracking feature is fully implemented end-to-end. The backend provi
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
-- Backend: All tests pass — domain (including PdpGoal + PdpUpdate), application (including PdpGoalService), controller slice (including PdpGoalController), property, integration (including PDP data isolation) (last run: 2026-05-10)
+- Backend: All tests pass — domain (including Kudos), application (including KudosService), controller slice (including KudosController), property, integration (including Kudos data isolation) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 365 total — component tests (including PDP Goal components), page tests (including auth pages, PDP Goals tab), API client tests (including PDP goals) (last run: 2026-05-10)
+- Frontend: 405 total — component tests (including Kudos components), page tests (including auth pages, Kudos tab), API client tests (including kudos) (last run: 2026-05-10)
+  - Includes Kudos components (KudosCard 8, KudosForm 9, KudosList 9)
+  - Includes Kudos API client tests (14)
   - Includes PDP goal components (PdpGoalCard 18, PdpGoalForm 8, PdpGoalList 9, PdpGoalStatusBadge 4)
   - Includes PDP goal API client tests (19)
   - Includes PDP Goals tab integration tests (10)

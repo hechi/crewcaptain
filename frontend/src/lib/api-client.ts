@@ -24,6 +24,11 @@ import {
   PaginatedPdpGoalResponse,
   PaginatedPdpUpdateResponse,
 } from '@/types/pdp-goal';
+import {
+  Kudos,
+  CreateKudosRequest,
+  PaginatedKudosResponse,
+} from '@/types/kudos';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -383,4 +388,53 @@ export async function deletePdpUpdate(token: string, personId: string, goalId: s
   await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/pdp-goals/${goalId}/updates/${updateId}`, {
     method: 'DELETE',
   }, token);
+}
+
+// --- Kudos ---
+
+export async function createKudos(token: string, personId: string, data: CreateKudosRequest): Promise<Kudos> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/kudos`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function getKudos(token: string, personId: string, kudosId: string): Promise<Kudos> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/kudos/${kudosId}`, {}, token);
+  return response.json();
+}
+
+export async function deleteKudos(token: string, personId: string, kudosId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/kudos/${kudosId}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function listKudosByPerson(token: string, personId: string, params?: {
+  page?: number;
+  size?: number;
+}): Promise<PaginatedKudosResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/persons/${personId}/kudos${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function listAllKudos(token: string, params?: {
+  page?: number;
+  size?: number;
+}): Promise<PaginatedKudosResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/kudos${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
 }
