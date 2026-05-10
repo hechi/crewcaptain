@@ -83,7 +83,7 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
               flexDirection: 'column',
               gap: '2px',
               flex: 1,
-              alignItems: 'center',
+              minWidth: 0,
             }}
           >
             {week.map((day, dayIdx) => (
@@ -93,8 +93,8 @@ export default function ActivityHeatmap({ days }: ActivityHeatmapProps) {
                 title={day.count >= 0 ? `${day.date}: ${day.count} ${day.count === 1 ? 'activity' : 'activities'}` : undefined}
                 aria-label={day.count >= 0 ? `${day.date}: ${day.count} activities` : undefined}
                 style={{
-                  width: '12px',
-                  height: '12px',
+                  width: '100%',
+                  aspectRatio: '1',
                   borderRadius: '2px',
                   backgroundColor: day.count < 0
                     ? 'transparent'

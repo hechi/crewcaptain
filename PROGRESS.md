@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T02:45:00Z — Fixed gamification cards to fill available space and prevent glow clipping
+2026-05-11T03:00:00Z — Heatmap cells now stretch to fill available card width
 
 ## Current Status
-Dashboard gamification cards now fill their available space properly: StreakCounter uses full width with a separator line for secondary stats, ActivityHeatmap columns flex to fill the card width with larger cells, and PDP Goals ring glow is no longer clipped (overflow:visible + inner padding). All 795 frontend tests pass, build succeeds.
+Dashboard gamification cards fully polished: ActivityHeatmap cells use width:100% + aspect-ratio:1 instead of fixed 12px, so they stretch to fill the card. All 795 frontend tests pass, build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
