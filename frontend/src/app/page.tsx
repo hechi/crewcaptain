@@ -56,7 +56,6 @@ export default function Home() {
             fontSize: 'var(--text-h1)',
             fontFamily: 'var(--font-heading)',
             fontWeight: 'var(--weight-bold)',
-            fontFamily: 'var(--font-heading)',
             color: 'var(--color-primary)',
             marginBottom: 'var(--space-2)',
             letterSpacing: '-0.5px',

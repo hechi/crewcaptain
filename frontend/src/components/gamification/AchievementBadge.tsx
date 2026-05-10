@@ -15,20 +15,14 @@ import {
   Star,
   Flame,
   Gem,
+  LucideIcon,
 } from 'lucide-react';
-import { ComponentType } from 'react';
 
 interface AchievementBadgeProps {
   achievement: Achievement;
 }
 
-interface LucideIconProps {
-  size?: number;
-  color?: string;
-  strokeWidth?: number;
-}
-
-const achievementIcons: Record<AchievementType, ComponentType<LucideIconProps>> = {
+const achievementIcons: Record<AchievementType, LucideIcon> = {
   FIRST_ONE_ON_ONE: Target,
   TEN_ONE_ON_ONES: Hash,
   FIFTY_ONE_ON_ONES: Trophy,
