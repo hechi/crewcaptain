@@ -87,6 +87,19 @@ export default function Navigation() {
           >
             Quick Notes
           </Link>
+          <Link
+            href="/search"
+            data-testid="nav-search"
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              transition: 'color 0.2s',
+            }}
+          >
+            Search
+          </Link>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
