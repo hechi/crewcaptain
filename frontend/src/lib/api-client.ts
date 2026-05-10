@@ -38,6 +38,7 @@ import {
   AttachQuickNoteToEntryRequest,
   PaginatedQuickNoteResponse,
 } from '@/types/quick-note';
+import { DashboardResponse } from '@/types/dashboard';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
@@ -523,5 +524,24 @@ export async function archiveQuickNote(token: string, quickNoteId: string): Prom
   const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/archive`, {
     method: 'POST',
   }, token);
+  return response.json();
+}
+
+// ===== Dashboard =====
+
+export async function getDashboard(
+  token: string,
+  options?: { dueSoonDays?: number; anniversaryLookaheadDays?: number }
+): Promise<DashboardResponse> {
+  const params = new URLSearchParams();
+  if (options?.dueSoonDays !== undefined) {
+    params.set('dueSoonDays', options.dueSoonDays.toString());
+  }
+  if (options?.anniversaryLookaheadDays !== undefined) {
+    params.set('anniversaryLookaheadDays', options.anniversaryLookaheadDays.toString());
+  }
+  const queryString = params.toString();
+  const url = `${API_BASE_URL}/dashboard${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
   return response.json();
 }

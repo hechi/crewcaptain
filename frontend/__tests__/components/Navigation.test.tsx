@@ -85,6 +85,19 @@ describe('Navigation', () => {
     expect(peopleLink).toHaveAttribute('href', '/people');
   });
 
+  it('should display Dashboard nav link', () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+
+    render(<Navigation />);
+    const dashboardLink = screen.getByTestId('nav-dashboard');
+    expect(dashboardLink).toHaveTextContent('Dashboard');
+    expect(dashboardLink).toHaveAttribute('href', '/dashboard');
+  });
+
   it('should display user name when available', () => {
     mockUseSession.mockReturnValue({
       data: { user: { name: 'Jane Manager' }, expires: '', accessToken: 'test-token' },

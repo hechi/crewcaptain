@@ -45,6 +45,10 @@ class JpaPersonRepositoryAdapter(
         return page.map { it.toDomain() }
     }
 
+    override fun findAllByUserIdUnpaged(userId: UserId): List<Person> {
+        return springDataPersonRepository.findAllByUserId(userId.value).map { it.toDomain() }
+    }
+
     override fun deleteByIdAndUserId(personId: PersonId, userId: UserId): Boolean {
         val deleted = springDataPersonRepository.deleteByIdAndUserId(personId.value, userId.value)
         return deleted > 0

@@ -10,6 +10,7 @@ import java.util.UUID
 interface SpringDataPersonRepository : JpaRepository<PersonEntity, UUID> {
     fun findByIdAndUserId(id: UUID, userId: UUID): PersonEntity?
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<PersonEntity>
+    fun findAllByUserId(userId: UUID): List<PersonEntity>
     fun deleteByIdAndUserId(id: UUID, userId: UUID): Long
 
     @Query("SELECT p FROM PersonEntity p WHERE p.userId = :userId AND p.moraleStatus = :moraleStatus")

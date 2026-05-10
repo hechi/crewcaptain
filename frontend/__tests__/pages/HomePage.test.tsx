@@ -49,7 +49,7 @@ describe('Home Page', () => {
     expect(screen.getByText('CrewCaptain')).toBeInTheDocument();
   });
 
-  it('should redirect to /people when authenticated', async () => {
+  it('should redirect to /dashboard when authenticated', async () => {
     mockUseSession.mockReturnValue({
       data: { user: {}, expires: '', accessToken: 'test-token' },
       status: 'authenticated',
@@ -59,7 +59,7 @@ describe('Home Page', () => {
     render(<Home />);
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/people');
+      expect(mockReplace).toHaveBeenCalledWith('/dashboard');
     });
   });
 
@@ -72,6 +72,6 @@ describe('Home Page', () => {
 
     render(<Home />);
     screen.getByTestId('signin-button').click();
-    expect(mockSignIn).toHaveBeenCalledWith('oidc', { callbackUrl: '/people' });
+    expect(mockSignIn).toHaveBeenCalledWith('oidc', { callbackUrl: '/dashboard' });
   });
 });

@@ -76,6 +76,16 @@ class JpaActionItemRepositoryAdapter(
         ).map { it.toDomain() }
     }
 
+    override fun findDueSoonByUserId(
+        userId: UserId,
+        fromDate: LocalDate,
+        toDate: LocalDate
+    ): List<ActionItem> {
+        return springDataRepository.findDueSoonByUserId(
+            userId.value, fromDate, toDate
+        ).map { it.toDomain() }
+    }
+
     override fun deleteByIdAndUserIdAndPersonId(
         actionItemId: ActionItemId,
         userId: UserId,

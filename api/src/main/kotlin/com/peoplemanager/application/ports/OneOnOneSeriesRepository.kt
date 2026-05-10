@@ -6,5 +6,6 @@ import com.peoplemanager.domain.UserId
 
 interface OneOnOneSeriesRepository {
     fun findByUserIdAndPersonId(userId: UserId, personId: PersonId): OneOnOneSeries?
+    fun findAllByUserId(userId: UserId): List<OneOnOneSeries>
     fun save(series: OneOnOneSeries): OneOnOneSeries
 }

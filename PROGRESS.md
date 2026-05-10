@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T10:50:00Z — Quick Notes: improved attach-to-1:1 flow (single continuous step)
+2026-05-10T12:30:00Z — Dashboard feature (overdue items, due-soon items, stale 1:1 reminders, upcoming anniversaries)
 
 ## Current Status
-The Quick Notes feature now performs real data operations: "Attach to 1:1" adds the note text as an agenda item to the selected 1:1 entry, and "→ Action Item" creates an actual action item for the selected person. Both flows include person pickers when needed. All 460 frontend tests and all backend tests pass (except the pre-existing intermittent Property 14 edge case).
+The Dashboard feature is now complete. Authenticated users land on `/dashboard` which shows four sections: overdue action items, due-soon action items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. All data is scoped by userId. Backend has a dedicated DashboardService and DashboardController with configurable lookahead parameters. Frontend has four dashboard components with cyberpunk-lite styling, empty states, and person links. All 516 frontend tests and all backend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -53,6 +53,11 @@ The Quick Notes feature now performs real data operations: "Attach to 1:1" adds 
 - [x] Quick Notes Frontend tests — Component tests (QuickNoteCard 16, QuickNoteForm 11, QuickNoteList 9), API client tests (17) (2026-05-10)
 - [x] Quick Notes 1:1 Attachment — Backend schema migration (attached_entry_id FK), domain model updated, attach endpoint requires entryId, validates entry exists and belongs to user, adds note text as agenda item to the 1:1 entry, frontend entry picker UI (2026-05-10)
 - [x] Quick Notes Action Item Conversion — Convert endpoint requires personId, creates actual action item with note text as title, assigns to person's action item list, frontend person picker for conversion (2026-05-10)
+- [x] Dashboard Backend API — GET /api/v1/dashboard endpoint with configurable dueSoonDays and anniversaryLookaheadDays parameters. DashboardService aggregates overdue items, due-soon items, stale 1:1 reminders, and upcoming anniversaries. All queries scoped by userId. (2026-05-10)
+- [x] Dashboard Backend tests — DashboardService unit tests (13 tests), DashboardController slice tests (8 tests) (2026-05-10)
+- [x] Dashboard Frontend — TypeScript types, API client (getDashboard with options), components (OverdueActionItems, DueSoonActionItems, StaleOneOnOnes, UpcomingAnniversaries), dedicated Dashboard page with grid layout, alert summary, empty states, person links (2026-05-10)
+- [x] Dashboard Frontend tests — Component tests (OverdueActionItems 8, DueSoonActionItems 8, StaleOneOnOnes 10, UpcomingAnniversaries 8), API client tests (8), page tests (10) (2026-05-10)
+- [x] Navigation updated — Dashboard link added as first nav item, home page redirects to /dashboard (2026-05-10)
 
 ## In Progress
 - (none)
@@ -65,20 +70,19 @@ The Quick Notes feature now performs real data operations: "Attach to 1:1" adds 
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 
 ## Next Steps (Prioritized)
-1. Dashboard (upcoming 1:1s, overdue items, stale 1:1 alerts)
-2. Sensitive content encryption (flag and encrypt private notes)
-3. Notification scheduling (reminders for overdue items and upcoming 1:1s)
-4. Search (full-text across all manager data)
-5. Data export functionality (per-person Markdown)
-6. Gamification elements (progress rings, streak counters, micro-animations)
+1. Sensitive content encryption (flag and encrypt private notes)
+2. Notification scheduling (reminders for overdue items and upcoming 1:1s)
+3. Search (full-text across all manager data)
+4. Data export functionality (per-person Markdown)
+5. Gamification elements (progress rings, streak counters, micro-animations)
 
 ## Architecture Decisions Made This Session
-- Quick Notes are global (not per-person) — they belong to the user and can optionally be assigned to a person
-- Status transitions are one-way from INBOX only — once attached/converted/archived, the note cannot go back to INBOX
-- Quick Notes use a flat endpoint structure (`/api/v1/quick-notes`) rather than nested under persons, since they can be unassigned
-- Assign-to-person is a separate action from create/update — allows quick capture first, organize later
-- Attach to 1:1 stores a foreign key reference (`attached_entry_id`) to the specific 1:1 entry — validates entry exists and belongs to user
-- Person must be assigned before attaching to a 1:1 (UI enforces this by showing person picker first)
+- Dashboard is a read-only aggregation endpoint — no new database tables needed
+- Dashboard computes stale 1:1s by comparing last meeting date against cadence interval (WEEKLY=7d, BIWEEKLY=14d, MONTHLY=30d, CUSTOM=N days)
+- If no meeting ever occurred for a series, staleness is computed from series creation date
+- Overdue items limited to 10 (paginated at backend), due-soon items returned as full list
+- Anniversary calculation handles year rollover (if anniversary already passed this year, shows next year's)
+- Dashboard is the new landing page for authenticated users (replaces /people redirect)
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -90,9 +94,13 @@ The Quick Notes feature now performs real data operations: "Attach to 1:1" adds 
 - JetBrains Mono font loaded via Google Fonts CDN alongside Inter
 
 ## Test Coverage Summary
-- Backend: All tests pass — domain (including QuickNote 16 tests), application (including QuickNoteService 18 tests), controller slice (including QuickNoteController 17 tests), property, integration (including QuickNote data isolation 15 tests) (last run: 2026-05-10)
+- Backend: All tests pass — domain, application (including DashboardService 13 tests), controller slice (including DashboardController 8 tests), property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 460 total — component tests (including QuickNote components), page tests (including auth pages), API client tests (including quick-notes) (last run: 2026-05-10)
+- Frontend: 516 total — component tests (including 4 dashboard components), page tests (including DashboardPage), API client tests (including dashboard) (last run: 2026-05-10)
+  - Includes Dashboard components (OverdueActionItems 8, DueSoonActionItems 8, StaleOneOnOnes 10, UpcomingAnniversaries 8)
+  - Includes Dashboard API client tests (8)
+  - Includes Dashboard page tests (10)
+  - Includes Navigation component tests (9 tests — added Dashboard link test)
   - Includes QuickNote components (QuickNoteCard 17, QuickNoteForm 11, QuickNoteList 9)
   - Includes QuickNote API client tests (17)
   - Includes Kudos components (KudosCard 8, KudosForm 9, KudosList 9)
@@ -103,8 +111,6 @@ The Quick Notes feature now performs real data operations: "Attach to 1:1" adds 
   - Includes action item components (ActionItemCard 14, ActionItemForm 8, ActionItemList 9, ActionItemStatusBadge 3)
   - Includes action item API client tests (15)
   - Includes 1:1 components (timeline, entry editor, series config, Markdown editor, agenda items, sensitive toggle)
-  - Includes Navigation component tests (8 tests)
-  - Includes ThemeTokens design system tests (13 tests)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review

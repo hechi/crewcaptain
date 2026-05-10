@@ -10,7 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.replace('/people');
+      router.replace('/dashboard');
     }
   }, [status, router]);
 
@@ -77,7 +77,7 @@ export default function Home() {
         </p>
         <button
           type="button"
-          onClick={() => signIn('oidc', { callbackUrl: '/people' })}
+          onClick={() => signIn('oidc', { callbackUrl: '/dashboard' })}
           data-testid="signin-button"
           style={{
             padding: '14px 32px',
