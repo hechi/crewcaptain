@@ -348,4 +348,35 @@ describe('DashboardPage', () => {
 
     expect(screen.getByText('3 years')).toBeInTheDocument();
   });
+
+  it('should render all gamification cards with consistent card styling', async () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockGetDashboard.mockResolvedValue(mockDashboardData);
+
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('dashboard-gamification')).toBeInTheDocument();
+    });
+
+    const streakSection = screen.getByTestId('dashboard-section-streak');
+    const pdpSection = screen.getByTestId('dashboard-section-pdp-progress');
+    const activitySection = screen.getByTestId('dashboard-section-activity');
+
+    // All three sections should have the same card styling
+    const expectedCardStyle = {
+      padding: 'var(--space-4)',
+      borderRadius: 'var(--radius-medium)',
+      border: '1px solid var(--color-border)',
+      backgroundColor: 'var(--color-bg-surface)',
+    };
+
+    expect(streakSection).toHaveStyle(expectedCardStyle);
+    expect(pdpSection).toHaveStyle(expectedCardStyle);
+    expect(activitySection).toHaveStyle(expectedCardStyle);
+  });
 });

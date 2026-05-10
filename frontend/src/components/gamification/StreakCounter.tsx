@@ -23,14 +23,6 @@ export default function StreakCounter({
   return (
     <div
       data-testid="streak-counter"
-      style={{
-        padding: 'var(--space-4)',
-        borderRadius: 'var(--radius-medium)',
-        border: `1px solid ${isActive ? 'var(--color-primary)' : 'var(--color-border)'}`,
-        backgroundColor: 'var(--color-bg-surface)',
-        boxShadow: isActive ? 'var(--glow-primary)' : 'none',
-        transition: 'border-color 0.2s, box-shadow 0.2s',
-      }}
     >
       {/* Main streak display */}
       <div
