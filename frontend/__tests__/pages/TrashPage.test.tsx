@@ -11,14 +11,16 @@ jest.mock('next-auth/react', () => ({
 jest.mock('@/lib/api-client', () => ({
   listDeletedPersons: jest.fn(),
   restorePerson: jest.fn(),
+  permanentlyDeletePerson: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
-import { listDeletedPersons, restorePerson } from '@/lib/api-client';
+import { listDeletedPersons, restorePerson, permanentlyDeletePerson } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 const mockListDeletedPersons = listDeletedPersons as jest.MockedFunction<typeof listDeletedPersons>;
 const mockRestorePerson = restorePerson as jest.MockedFunction<typeof restorePerson>;
+const mockPermanentlyDeletePerson = permanentlyDeletePerson as jest.MockedFunction<typeof permanentlyDeletePerson>;
 
 const mockDeletedPerson: Person = {
   id: '123e4567-e89b-12d3-a456-426614174000',
@@ -228,6 +230,166 @@ describe('TrashPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Restoring...')).toBeInTheDocument();
+    });
+  });
+
+  // --- Permanent Delete Tests ---
+
+  it('should show Delete Forever button for each trash item', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: { name: 'Test' }, expires: '2099-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockListDeletedPersons.mockResolvedValue(mockPaginatedResponse);
+
+    render(<TrashPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`)).toBeInTheDocument();
+    });
+    expect(screen.getByText('Delete Forever')).toBeInTheDocument();
+  });
+
+  it('should show confirmation when Delete Forever is clicked', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: { name: 'Test' }, expires: '2099-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockListDeletedPersons.mockResolvedValue(mockPaginatedResponse);
+
+    render(<TrashPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted Person')).toBeInTheDocument();
+    });
+
+    const deleteButton = screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(deleteButton);
+
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
+    expect(screen.getByTestId(`confirm-delete-button-${mockDeletedPerson.id}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`cancel-delete-button-${mockDeletedPerson.id}`)).toBeInTheDocument();
+  });
+
+  it('should cancel confirmation when Cancel is clicked', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: { name: 'Test' }, expires: '2099-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockListDeletedPersons.mockResolvedValue(mockPaginatedResponse);
+
+    render(<TrashPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted Person')).toBeInTheDocument();
+    });
+
+    const deleteButton = screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(deleteButton);
+
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
+
+    const cancelButton = screen.getByTestId(`cancel-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(cancelButton);
+
+    // Confirmation should be gone, Delete Forever button should be back
+    expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument();
+    expect(screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`)).toBeInTheDocument();
+  });
+
+  it('should permanently delete person when confirmed', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: { name: 'Test' }, expires: '2099-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockListDeletedPersons
+      .mockResolvedValueOnce(mockPaginatedResponse)
+      .mockResolvedValueOnce({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 });
+    mockPermanentlyDeletePerson.mockResolvedValue(undefined);
+
+    render(<TrashPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted Person')).toBeInTheDocument();
+    });
+
+    // Click Delete Forever
+    const deleteButton = screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(deleteButton);
+
+    // Confirm
+    const confirmButton = screen.getByTestId(`confirm-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(mockPermanentlyDeletePerson).toHaveBeenCalledWith('test-token', mockDeletedPerson.id);
+    });
+
+    // After delete, the list should be refreshed
+    await waitFor(() => {
+      expect(mockListDeletedPersons).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('should show error when permanent delete fails', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: { name: 'Test' }, expires: '2099-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockListDeletedPersons.mockResolvedValue(mockPaginatedResponse);
+    mockPermanentlyDeletePerson.mockRejectedValue(new Error('Delete failed'));
+
+    render(<TrashPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted Person')).toBeInTheDocument();
+    });
+
+    // Click Delete Forever
+    const deleteButton = screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(deleteButton);
+
+    // Confirm
+    const confirmButton = screen.getByTestId(`confirm-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-message')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Delete failed')).toBeInTheDocument();
+  });
+
+  it('should show Deleting state on confirm button during permanent delete', async () => {
+    mockUseSession.mockReturnValue({
+      data: { accessToken: 'test-token', user: { name: 'Test' }, expires: '2099-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockListDeletedPersons.mockResolvedValue(mockPaginatedResponse);
+    // Make delete hang
+    mockPermanentlyDeletePerson.mockImplementation(() => new Promise(() => {}));
+
+    render(<TrashPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted Person')).toBeInTheDocument();
+    });
+
+    // Click Delete Forever
+    const deleteButton = screen.getByTestId(`permanent-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(deleteButton);
+
+    // Confirm
+    const confirmButton = screen.getByTestId(`confirm-delete-button-${mockDeletedPerson.id}`);
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleting...')).toBeInTheDocument();
     });
   });
 });

@@ -127,6 +127,12 @@ export async function restorePerson(token: string, id: string): Promise<Person> 
   return response.json();
 }
 
+export async function permanentlyDeletePerson(token: string, id: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/persons/${id}/permanent`, {
+    method: 'DELETE',
+  }, token);
+}
+
 export async function listDeletedPersons(token: string, params?: {
   page?: number;
   size?: number;

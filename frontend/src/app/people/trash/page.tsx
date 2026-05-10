@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Person, PaginatedResponse } from '@/types/person';
-import { listDeletedPersons, restorePerson } from '@/lib/api-client';
+import { listDeletedPersons, restorePerson, permanentlyDeletePerson } from '@/lib/api-client';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 
@@ -15,6 +15,8 @@ export default function TrashPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchDeletedPeople = useCallback(async () => {
     if (status !== 'authenticated' || !session?.accessToken) return;
@@ -52,6 +54,22 @@ export default function TrashPage() {
     }
   };
 
+  const handlePermanentDelete = async (personId: string) => {
+    if (!session?.accessToken) return;
+
+    setDeletingId(personId);
+    try {
+      await permanentlyDeletePerson(session.accessToken as string, personId);
+      setConfirmDeleteId(null);
+      await fetchDeletedPeople();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to permanently delete person');
+      setConfirmDeleteId(null);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (status === 'loading') {
     return <div data-testid="loading">Loading...</div>;
   }
@@ -76,7 +94,7 @@ export default function TrashPage() {
       </div>
 
       <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-        Deleted people are kept here. You can restore them at any time.
+        Deleted people are kept here. You can restore them or permanently delete them.
       </p>
 
       {loading && <div data-testid="loading" style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>}
@@ -129,25 +147,90 @@ export default function TrashPage() {
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleRestore(person.id)}
-                  disabled={restoringId === person.id}
-                  data-testid={`restore-button-${person.id}`}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'transparent',
-                    color: 'var(--color-primary)',
-                    border: '1px solid var(--color-primary)',
-                    borderRadius: 'var(--radius-medium)',
-                    fontSize: 'var(--text-small)',
-                    fontWeight: 'var(--weight-semibold)',
-                    cursor: restoringId === person.id ? 'not-allowed' : 'pointer',
-                    opacity: restoringId === person.id ? 0.5 : 1,
-                  }}
-                >
-                  {restoringId === person.id ? 'Restoring...' : 'Restore'}
-                </button>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleRestore(person.id)}
+                    disabled={restoringId === person.id || deletingId === person.id}
+                    data-testid={`restore-button-${person.id}`}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: 'transparent',
+                      color: 'var(--color-primary)',
+                      border: '1px solid var(--color-primary)',
+                      borderRadius: 'var(--radius-medium)',
+                      fontSize: 'var(--text-small)',
+                      fontWeight: 'var(--weight-semibold)',
+                      cursor: restoringId === person.id ? 'not-allowed' : 'pointer',
+                      opacity: restoringId === person.id ? 0.5 : 1,
+                    }}
+                  >
+                    {restoringId === person.id ? 'Restoring...' : 'Restore'}
+                  </button>
+                  {confirmDeleteId === person.id ? (
+                    <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--color-alert)', fontSize: 'var(--text-small)' }}>
+                        Are you sure?
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handlePermanentDelete(person.id)}
+                        disabled={deletingId === person.id}
+                        data-testid={`confirm-delete-button-${person.id}`}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: 'var(--color-alert)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 'var(--radius-medium)',
+                          fontSize: 'var(--text-small)',
+                          fontWeight: 'var(--weight-semibold)',
+                          cursor: deletingId === person.id ? 'not-allowed' : 'pointer',
+                          opacity: deletingId === person.id ? 0.5 : 1,
+                        }}
+                      >
+                        {deletingId === person.id ? 'Deleting...' : 'Yes, Delete'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(null)}
+                        data-testid={`cancel-delete-button-${person.id}`}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: 'transparent',
+                          color: 'var(--color-text-secondary)',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: 'var(--radius-medium)',
+                          fontSize: 'var(--text-small)',
+                          fontWeight: 'var(--weight-semibold)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteId(person.id)}
+                      disabled={restoringId === person.id || deletingId === person.id}
+                      data-testid={`permanent-delete-button-${person.id}`}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: 'transparent',
+                        color: 'var(--color-alert)',
+                        border: '1px solid var(--color-alert)',
+                        borderRadius: 'var(--radius-medium)',
+                        fontSize: 'var(--text-small)',
+                        fontWeight: 'var(--weight-semibold)',
+                        cursor: restoringId === person.id || deletingId === person.id ? 'not-allowed' : 'pointer',
+                        opacity: restoringId === person.id || deletingId === person.id ? 0.5 : 1,
+                      }}
+                    >
+                      Delete Forever
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

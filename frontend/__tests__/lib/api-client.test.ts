@@ -9,6 +9,7 @@ import {
   removeRememberItem,
   reorderRememberItems,
   restorePerson,
+  permanentlyDeletePerson,
   listDeletedPersons,
 } from '@/lib/api-client';
 import { ApiException } from '@/types/api';
@@ -550,6 +551,40 @@ describe('restorePerson', () => {
     });
 
     await expect(restorePerson(mockToken, 'nonexistent-id')).rejects.toBeInstanceOf(ApiException);
+  });
+});
+
+describe('permanentlyDeletePerson', () => {
+  it('should send DELETE request to permanent endpoint', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(undefined),
+    });
+
+    await permanentlyDeletePerson(mockToken, '550e8400-e29b-41d4-a716-446655440000');
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v1/persons/550e8400-e29b-41d4-a716-446655440000/permanent', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+  });
+
+  it('should throw ApiException on 404', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({
+        status: 404,
+        error: 'Not Found',
+        message: 'Person not found',
+        timestamp: '2025-05-10T12:00:00Z',
+      }),
+    });
+
+    await expect(permanentlyDeletePerson(mockToken, 'nonexistent-id')).rejects.toBeInstanceOf(ApiException);
   });
 });
 

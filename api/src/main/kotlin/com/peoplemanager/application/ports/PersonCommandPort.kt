@@ -3,6 +3,7 @@ package com.peoplemanager.application.ports
 import com.peoplemanager.application.commands.AddRememberItemCommand
 import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
+import com.peoplemanager.application.commands.PermanentDeletePersonCommand
 import com.peoplemanager.application.commands.RemoveRememberItemCommand
 import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
@@ -15,6 +16,7 @@ interface PersonCommandPort {
     fun createPerson(command: CreatePersonCommand): Person
     fun updatePerson(command: UpdatePersonCommand): Person
     fun deletePerson(command: DeletePersonCommand)
+    fun permanentDeletePerson(command: PermanentDeletePersonCommand)
     fun restorePerson(command: RestorePersonCommand): Person
     fun setMorale(command: SetMoraleCommand): Person
     fun addRememberItem(command: AddRememberItemCommand): List<PinnedRememberItem>

@@ -144,6 +144,17 @@ class AuditLogEntryTest {
         }
 
         @Test
+        fun `personPermanentlyDeleted should create correct entry`() {
+            val entry = AuditLogEntry.personPermanentlyDeleted(userId, personId, "Charlie")
+
+            entry.action shouldBe AuditAction.DELETE
+            entry.entityType shouldBe AuditEntityType.PERSON
+            entry.entityId shouldBe personId.value.toString()
+            entry.personId shouldBe null
+            entry.summary shouldBe "Permanently deleted person \"Charlie\""
+        }
+
+        @Test
         fun `oneOnOneEntryCreated should create correct entry`() {
             val entryId = OneOnOneEntryId.generate()
             val entry = AuditLogEntry.oneOnOneEntryCreated(userId, entryId, personId, "John")
