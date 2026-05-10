@@ -20,10 +20,12 @@ class NotificationGenerationServiceTest {
     private val oneOnOneSeriesRepository = mockk<OneOnOneSeriesRepository>()
     private val oneOnOneEntryRepository = mockk<OneOnOneEntryRepository>()
     private val notificationRepository = mockk<NotificationRepository>()
+    private val userSettingsRepository = mockk<UserSettingsRepository>()
 
     private val service = NotificationGenerationService(
         userRepository, personRepository, actionItemRepository,
-        oneOnOneSeriesRepository, oneOnOneEntryRepository, notificationRepository
+        oneOnOneSeriesRepository, oneOnOneEntryRepository, notificationRepository,
+        userSettingsRepository
     )
 
     private val userId = UserId.generate()
@@ -46,6 +48,7 @@ class NotificationGenerationServiceTest {
         clearAllMocks()
         every { notificationRepository.saveAll(any()) } answers { firstArg() }
         every { notificationRepository.existsByUserIdAndTypeAndReferenceIdAndCreatedAfter(any(), any(), any(), any()) } returns false
+        every { userSettingsRepository.findByUserId(any()) } returns null
     }
 
     @Nested

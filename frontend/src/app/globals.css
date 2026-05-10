@@ -227,3 +227,102 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+/* ===== Light Theme ===== */
+[data-theme="light"] {
+  /* Background Layers */
+  --color-bg-base: #F8FAFB;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #F1F5F9;
+  --color-bg-overlay: rgba(255, 255, 255, 0.9);
+
+  /* Primary Accent — Teal (readable on light) */
+  --color-primary: #0891B2;
+  --color-primary-hover: #0E7490;
+  --color-primary-muted: rgba(8, 145, 178, 0.1);
+
+  /* Secondary Accent — Purple */
+  --color-secondary: #7C3AED;
+  --color-secondary-hover: #6D28D9;
+  --color-secondary-muted: rgba(124, 58, 237, 0.1);
+
+  /* Alert / Destructive */
+  --color-alert: #DC2626;
+  --color-alert-muted: rgba(220, 38, 38, 0.08);
+
+  /* Success */
+  --color-success: #16A34A;
+  --color-success-muted: rgba(22, 163, 74, 0.08);
+
+  /* Warning */
+  --color-warning: #CA8A04;
+  --color-warning-muted: rgba(202, 138, 4, 0.08);
+
+  /* Semantic aliases */
+  --color-error: var(--color-alert);
+  --color-error-bg: var(--color-alert-muted);
+  --color-error-border: rgba(220, 38, 38, 0.2);
+  --color-warning-bg: var(--color-warning-muted);
+  --color-warning-border: rgba(202, 138, 4, 0.2);
+
+  /* Text */
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+
+  /* Legacy neutral aliases */
+  --color-neutral-text: var(--color-text-primary);
+  --color-neutral-text-secondary: var(--color-text-secondary);
+  --color-neutral-text-muted: var(--color-text-muted);
+  --color-neutral-bg: var(--color-bg-base);
+  --color-neutral-surface: var(--color-bg-surface);
+  --color-neutral-border: var(--color-border);
+  --color-neutral-border-light: var(--color-border-subtle);
+
+  /* Legacy accent alias */
+  --color-accent: var(--color-primary);
+  --color-secondary-dark: var(--color-secondary);
+
+  /* Borders */
+  --color-border: #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-border-glow: rgba(8, 145, 178, 0.2);
+
+  /* Morale Colors (slightly muted for light bg) */
+  --color-morale-green: #16A34A;
+  --color-morale-yellow: #CA8A04;
+  --color-morale-red: #DC2626;
+  --color-morale-unknown: #94A3B8;
+
+  /* Glow Effects — subtle shadows instead of glows */
+  --glow-primary: 0 1px 3px rgba(8, 145, 178, 0.15);
+  --glow-primary-strong: 0 2px 8px rgba(8, 145, 178, 0.2);
+  --glow-alert: 0 1px 3px rgba(220, 38, 38, 0.15);
+  --glow-success: 0 1px 3px rgba(22, 163, 74, 0.15);
+  --glow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  /* Glassmorphism — clean surfaces for light theme */
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: 1px solid rgba(8, 145, 178, 0.1);
+  --glass-blur: blur(12px);
+  --glass-elevated-bg: rgba(241, 245, 249, 0.95);
+  --glass-elevated-border: 1px solid rgba(8, 145, 178, 0.12);
+  --glass-elevated-blur: blur(16px);
+
+  /* Shadows — traditional shadows for light theme */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--color-bg-base);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

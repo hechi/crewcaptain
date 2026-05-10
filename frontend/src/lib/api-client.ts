@@ -650,3 +650,21 @@ export async function getGamificationStats(
   const response = await fetchWithAuth(url, {}, token);
   return response.json();
 }
+
+
+// --- User Settings ---
+
+import { UserSettings, UpdateUserSettingsRequest } from '@/types/settings';
+
+export async function getUserSettings(token: string): Promise<UserSettings> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/settings`, {}, token);
+  return response.json();
+}
+
+export async function updateUserSettings(token: string, data: UpdateUserSettingsRequest): Promise<UserSettings> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/settings`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}

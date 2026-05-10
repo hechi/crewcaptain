@@ -142,4 +142,17 @@ describe('Navigation', () => {
     render(<Navigation />);
     expect(screen.getByLabelText('Main navigation')).toBeInTheDocument();
   });
+
+  it('should display Settings nav link', () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+
+    render(<Navigation />);
+    const settingsLink = screen.getByTestId('nav-settings');
+    expect(settingsLink).toHaveTextContent('Settings');
+    expect(settingsLink).toHaveAttribute('href', '/settings');
+  });
 });

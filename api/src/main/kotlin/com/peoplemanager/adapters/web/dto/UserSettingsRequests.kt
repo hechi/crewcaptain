@@ -1,0 +1,24 @@
+package com.peoplemanager.adapters.web.dto
+
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
+
+data class UpdateUserSettingsRequest(
+    @field:Min(1) @field:Max(30)
+    val dueSoonDays: Int,
+
+    @field:Min(1) @field:Max(90)
+    val staleOneOnOneDays: Int,
+
+    @field:Min(1) @field:Max(90)
+    val anniversaryLookaheadDays: Int,
+
+    val theme: String,
+
+    val showAchievements: Boolean,
+
+    val notifyActionItemOverdue: Boolean,
+    val notifyActionItemDueSoon: Boolean,
+    val notifyStaleOneOnOne: Boolean,
+    val notifyUpcomingAnniversary: Boolean
+)

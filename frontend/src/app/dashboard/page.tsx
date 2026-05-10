@@ -4,17 +4,19 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { DashboardResponse } from '@/types/dashboard';
 import { GamificationStats } from '@/types/gamification';
-import { getDashboard, getGamificationStats } from '@/lib/api-client';
+import { getDashboard, getGamificationStats, getUserSettings } from '@/lib/api-client';
 import OverdueActionItems from '@/components/dashboard/OverdueActionItems';
 import DueSoonActionItems from '@/components/dashboard/DueSoonActionItems';
 import StaleOneOnOnes from '@/components/dashboard/StaleOneOnOnes';
 import UpcomingAnniversaries from '@/components/dashboard/UpcomingAnniversaries';
 import { ProgressRing, StreakCounter, AchievementBadge, ActivityHeatmap } from '@/components/gamification';
+import { UserSettings } from '@/types/settings';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,12 +26,14 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [dashResult, gamResult] = await Promise.all([
+      const [dashResult, gamResult, settingsResult] = await Promise.all([
         getDashboard(session.accessToken as string),
         getGamificationStats(session.accessToken as string),
+        getUserSettings(session.accessToken as string),
       ]);
       setDashboard(dashResult);
       setGamification(gamResult);
+      setUserSettings(settingsResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load dashboard');
     } finally {
@@ -236,7 +240,7 @@ export default function DashboardPage() {
       )}
 
       {/* Achievements */}
-      {gamification && gamification.achievements.length > 0 && (
+      {gamification && gamification.achievements.length > 0 && (userSettings?.showAchievements !== false) && (
         <section
           data-testid="dashboard-section-achievements"
           style={{ marginBottom: 'var(--space-6)' }}

@@ -6,6 +6,7 @@ import com.peoplemanager.application.ports.OneOnOneEntryRepository
 import com.peoplemanager.application.ports.OneOnOneSeriesRepository
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.ports.UserRepository
+import com.peoplemanager.application.ports.UserSettingsRepository
 import com.peoplemanager.domain.*
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -30,7 +31,8 @@ class NotificationGenerationService(
     private val actionItemRepository: ActionItemRepository,
     private val oneOnOneSeriesRepository: OneOnOneSeriesRepository,
     private val oneOnOneEntryRepository: OneOnOneEntryRepository,
-    private val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository,
+    private val userSettingsRepository: UserSettingsRepository
 ) {
 
     companion object {
@@ -42,8 +44,13 @@ class NotificationGenerationService(
 
     /**
      * Generate notifications for a single user. Returns the count of new notifications created.
+     * Respects user notification preferences — disabled notification types are skipped.
      */
     fun generateForUser(userId: UserId, dueSoonDays: Int = DEFAULT_DUE_SOON_DAYS, anniversaryLookaheadDays: Int = DEFAULT_ANNIVERSARY_LOOKAHEAD_DAYS): Int {
+        val settings = userSettingsRepository.findByUserId(userId)
+        val effectiveDueSoonDays = settings?.dueSoonDays ?: dueSoonDays
+        val effectiveAnniversaryDays = settings?.anniversaryLookaheadDays ?: anniversaryLookaheadDays
+
         val today = LocalDate.now()
         val deduplicationCutoff = Instant.now().minus(DEDUPLICATION_WINDOW)
         val persons = personRepository.findAllByUserIdUnpaged(userId)
@@ -51,17 +58,25 @@ class NotificationGenerationService(
 
         val notifications = mutableListOf<Notification>()
 
-        // 1. Overdue action items
-        notifications.addAll(generateOverdueActionItemNotifications(userId, today, personMap, deduplicationCutoff))
+        // 1. Overdue action items (if enabled)
+        if (settings?.notifyActionItemOverdue != false) {
+            notifications.addAll(generateOverdueActionItemNotifications(userId, today, personMap, deduplicationCutoff))
+        }
 
-        // 2. Due soon action items
-        notifications.addAll(generateDueSoonActionItemNotifications(userId, today, dueSoonDays, personMap, deduplicationCutoff))
+        // 2. Due soon action items (if enabled)
+        if (settings?.notifyActionItemDueSoon != false) {
+            notifications.addAll(generateDueSoonActionItemNotifications(userId, today, effectiveDueSoonDays, personMap, deduplicationCutoff))
+        }
 
-        // 3. Stale 1:1 reminders
-        notifications.addAll(generateStaleOneOnOneNotifications(userId, today, personMap, deduplicationCutoff))
+        // 3. Stale 1:1 reminders (if enabled)
+        if (settings?.notifyStaleOneOnOne != false) {
+            notifications.addAll(generateStaleOneOnOneNotifications(userId, today, personMap, deduplicationCutoff))
+        }
 
-        // 4. Upcoming anniversaries
-        notifications.addAll(generateAnniversaryNotifications(userId, today, anniversaryLookaheadDays, persons, deduplicationCutoff))
+        // 4. Upcoming anniversaries (if enabled)
+        if (settings?.notifyUpcomingAnniversary != false) {
+            notifications.addAll(generateAnniversaryNotifications(userId, today, effectiveAnniversaryDays, persons, deduplicationCutoff))
+        }
 
         if (notifications.isNotEmpty()) {
             notificationRepository.saveAll(notifications)
