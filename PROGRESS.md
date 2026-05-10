@@ -101,9 +101,11 @@ Soft-delete + restore feature complete for Person entity. DELETE /api/v1/persons
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
 
 ## Next Steps (Prioritized)
-1. Optional "workspace" concept (still manager-private by default)
-2. Audit log
-3. Permanent delete from trash (with confirmation)
+1. Audit log
+2. Permanent delete from trash (with confirmation)
+
+## Future Features
+- **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (still private, no sharing). A person belongs to one workspace. Opt-in: if no workspaces exist, everything works as today. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and optional persistent context switch in the UI.
 
 ## Architecture Decisions Made This Session
 - Soft-delete at Person level only (not per sub-entity) — when a Person is soft-deleted, their associated data (1:1 entries, action items, PDP goals, kudos) remains in the database but becomes inaccessible since all queries go through the person. This avoids complex cascading soft-delete logic while still providing safety.
