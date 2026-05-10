@@ -256,8 +256,8 @@ export default function DashboardPage() {
           </h3>
           <div
             style={{
-              display: 'flex',
-              flexWrap: 'wrap',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               gap: '8px',
             }}
           >
