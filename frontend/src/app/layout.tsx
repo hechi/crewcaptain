@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import SessionProvider from '@/components/SessionProvider'
 import Navigation from '@/components/Navigation'
+import ThemeProvider from '@/components/ThemeProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -32,8 +33,10 @@ export default function RootLayout({
       </head>
       <body>
         <SessionProvider>
-          <Navigation />
-          <main>{children}</main>
+          <ThemeProvider>
+            <Navigation />
+            <main>{children}</main>
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

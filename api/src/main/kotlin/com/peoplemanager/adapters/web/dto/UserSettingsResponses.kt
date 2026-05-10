@@ -1,0 +1,29 @@
+package com.peoplemanager.adapters.web.dto
+
+import com.peoplemanager.domain.UserSettings
+
+data class UserSettingsResponse(
+    val dueSoonDays: Int,
+    val staleOneOnOneDays: Int,
+    val anniversaryLookaheadDays: Int,
+    val theme: String,
+    val showAchievements: Boolean,
+    val notifyActionItemOverdue: Boolean,
+    val notifyActionItemDueSoon: Boolean,
+    val notifyStaleOneOnOne: Boolean,
+    val notifyUpcomingAnniversary: Boolean
+) {
+    companion object {
+        fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
+            dueSoonDays = settings.dueSoonDays,
+            staleOneOnOneDays = settings.staleOneOnOneDays,
+            anniversaryLookaheadDays = settings.anniversaryLookaheadDays,
+            theme = settings.theme.name,
+            showAchievements = settings.showAchievements,
+            notifyActionItemOverdue = settings.notifyActionItemOverdue,
+            notifyActionItemDueSoon = settings.notifyActionItemDueSoon,
+            notifyStaleOneOnOne = settings.notifyStaleOneOnOne,
+            notifyUpcomingAnniversary = settings.notifyUpcomingAnniversary
+        )
+    }
+}

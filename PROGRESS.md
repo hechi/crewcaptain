@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T18:30:00Z — Gamification elements (progress rings, streak counters, achievements, activity heatmap)
+2026-05-10T19:30:00Z — User Settings page with theme toggle, notification preferences, and dashboard thresholds
 
 ## Current Status
-Gamification and engagement elements are now fully implemented. The dashboard features an animated PDP progress ring, 1:1 streak counter (consecutive weeks), achievement badges for milestones, and a contribution-graph style activity heatmap. A reusable CompletionAnimation component provides micro-animations for task completion. Backend provides a dedicated `/api/v1/gamification/stats` endpoint aggregating streaks, achievements, activity data, and PDP progress. All 758 backend tests and 674 frontend tests pass.
+User Settings feature is fully implemented. Users can configure dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), toggle notification types on/off, switch between dark and light themes, and show/hide achievements on the dashboard. Settings are persisted per-user in the database. The notification scheduler respects user preferences (disabled notification types are skipped). A full light theme has been implemented as an alternative to the cyberpunk dark theme. All 792 backend tests and 708 frontend tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -65,7 +65,13 @@ Gamification and engagement elements are now fully implemented. The dashboard fe
 - [x] Gamification Backend API — GET /api/v1/gamification/stats endpoint. GamificationService computes 1:1 streaks (consecutive weeks with meetings), achievement milestones (13 types across 1:1s, action items, PDP goals, kudos, and streaks), activity heatmap (configurable days window, default 90), and PDP progress summary (active/achieved/paused/dropped with completion percentage). All queries scoped by userId. (2026-05-10)
 - [x] Gamification Backend tests — Domain unit tests (GamificationStats 8 tests), application service tests (GamificationService 18 tests), controller slice tests (GamificationController 8 tests) (2026-05-10)
 - [x] Gamification Frontend — TypeScript types, API client (getGamificationStats), components (ProgressRing with animated SVG arc and glow, StreakCounter with monospace readout, AchievementBadge with Lucide SVG icons and category colors, ActivityHeatmap contribution graph, CompletionAnimation with checkmark glow burst). Dashboard integration with gamification stats section above existing grid. (2026-05-10)
-- [x] Gamification Frontend tests — Component tests (ProgressRing 10, StreakCounter 8, AchievementBadge 9, ActivityHeatmap 9, CompletionAnimation 6), API client tests (8) (2026-05-10)
+- [x] Gamification Frontend tests — Component tests (ProgressRing 10, StreakCounter 8, AchievementBadge 10, ActivityHeatmap 9, CompletionAnimation 6), API client tests (8) (2026-05-10)
+- [x] User Settings Backend API — GET/PUT /api/v1/settings endpoint. UserSettings domain aggregate with validation (threshold ranges). UserSettingsService for get/update. JPA persistence adapter. Flyway migration for user_settings table. Notification scheduler respects per-user notification toggles and threshold settings. (2026-05-10)
+- [x] User Settings Backend tests — Domain unit tests (UserSettings 15 tests), application service tests (UserSettingsService 7 tests), controller slice tests (UserSettingsController 11 tests) (2026-05-10)
+- [x] User Settings Frontend — TypeScript types, API client (getUserSettings, updateUserSettings), Settings page with theme selector, threshold inputs, notification toggles, achievement visibility toggle, save with success/error feedback. ThemeProvider context for app-wide theme management. Navigation link added. (2026-05-10)
+- [x] User Settings Frontend tests — ThemeProvider tests (7), Settings page tests (14), API client tests (7), Navigation test for settings link (1) (2026-05-10)
+- [x] Light Theme — Full CSS light theme via [data-theme="light"] selector. Clean surfaces (#F8FAFB base), teal/purple accents, proper WCAG contrast, subtle shadows instead of glows, light scrollbar styling. Toggled via Settings page. (2026-05-10)
+- [x] Dashboard respects settings — Achievement section visibility controlled by showAchievements setting. Dashboard fetches user settings on load. (2026-05-10)
 
 ## In Progress
 - (none)
@@ -79,19 +85,19 @@ Gamification and engagement elements are now fully implemented. The dashboard fe
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 
 ## Next Steps (Prioritized)
-1. Settings page (reminder thresholds, export date range UI, encryption key status)
-2. GIN indexes for full-text search (performance optimization for large datasets)
-3. Review packet generator (date range summaries)
-4. Bulk import (CSV people list)
+1. GIN indexes for full-text search (performance optimization for large datasets)
+2. Review packet generator (date range summaries)
+3. Bulk import (CSV people list)
+4. Dashboard uses user settings for dueSoonDays/anniversaryLookaheadDays query params (currently uses API defaults)
 
 ## Architecture Decisions Made This Session
-- Gamification stats computed on-demand via dedicated endpoint (no persistent gamification state) — keeps the system simple and avoids stale data
-- Streak calculation uses epoch-day-based week grouping for consistent week boundaries regardless of locale
-- Achievements are computed dynamically from current counts (not stored) — always reflects real-time state
-- Activity heatmap uses 1:1 meeting dates as the activity signal (most meaningful engagement metric for managers)
-- Frontend gamification components use inline SVG for ProgressRing (no external animation library needed)
-- CompletionAnimation is a standalone reusable component that can be integrated into any action completion flow
-- All gamification respects `prefers-reduced-motion` via existing global CSS rule that disables transitions/animations
+- UserSettings is a separate domain aggregate (not embedded in User) — keeps the User aggregate focused on identity
+- Settings table uses user_id as PK (1:1 relationship with users) — no separate settings ID needed
+- Default settings returned when no row exists (no need to pre-create settings for every user)
+- Notification scheduler reads user settings to respect notification toggles — disabled types are skipped entirely
+- Theme is stored as a string enum (DARK/LIGHT) — extensible for future themes
+- Light theme uses CSS custom properties override via [data-theme="light"] attribute on <html> — zero JS overhead for theme switching
+- ThemeProvider uses React context for app-wide theme state — settings page updates propagate immediately
 
 ## Environment / Setup Notes
 - Java 21 is required for backend development (use SDKMAN: `sdk install java 21-tem`)
@@ -104,13 +110,14 @@ Gamification and engagement elements are now fully implemented. The dashboard fe
 - Notification scheduler runs every hour by default; configure via `NOTIFICATION_CRON` env var
 
 ## Test Coverage Summary
-- Backend: All 758 tests pass — domain (including GamificationStats 8 tests), application (including GamificationService 18 tests), controller slice (including GamificationController 8 tests), encryption adapter, property, integration (last run: 2026-05-10)
+- Backend: All 792 tests pass — domain (including UserSettings 15 tests), application (including UserSettingsService 7 tests), controller slice (including UserSettingsController 11 tests), encryption adapter, property, integration (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 674 total — component tests (including ProgressRing 10, StreakCounter 8, AchievementBadge 10, ActivityHeatmap 9, CompletionAnimation 6), page tests, API client tests (including gamification 8) (last run: 2026-05-10)
+- Frontend: 708 total — component tests (including ThemeProvider 7), page tests (including Settings 14), API client tests (including settings 7), Navigation test (last run: 2026-05-10)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
 - Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values
-- Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference?
+- Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference? → RESOLVED: Implemented as part of Settings page
 - Notification polling interval (60s) is hardcoded in the frontend — should this be configurable?
 - Should notifications be auto-dismissed after a certain age (e.g., 30 days)?
+- Dashboard currently doesn't pass user's threshold settings as query params to the dashboard API (uses API defaults) — should be wired up in a follow-up

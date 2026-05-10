@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Navigation from '@/components/Navigation';
 import PersonCard from '@/components/PersonCard';
@@ -48,11 +48,11 @@ describe('Cyberpunk Theme Design Tokens', () => {
       expect(userName).toHaveStyle({ fontFamily: 'var(--font-mono)' });
     });
 
-    it('should use primary-muted background for sign out button', () => {
+    it('should use alert color for sign out button in user menu', () => {
       render(<Navigation />);
-      const signOut = screen.getByTestId('nav-signout');
-      expect(signOut).toHaveStyle({ backgroundColor: 'var(--color-primary-muted)' });
-      expect(signOut).toHaveStyle({ color: 'var(--color-primary)' });
+      fireEvent.click(screen.getByTestId('nav-user-menu-trigger'));
+      const signOutBtn = screen.getByTestId('nav-signout');
+      expect(signOutBtn).toHaveStyle({ color: 'var(--color-alert)' });
     });
   });
 

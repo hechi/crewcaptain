@@ -30,10 +30,14 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
 - **Per-Person Markdown Export** — Export all data for a person as a structured Markdown file: profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filter. Sensitive content is marked but not exposed. Download via Export button on person detail page.
 - **Gamification & Engagement** — Dashboard gamification elements for engagement: animated progress ring for PDP goal completion percentage, 1:1 streak counter (consecutive weeks with meetings), achievement badges for milestones (first 1:1, 10 action items closed, etc.), and activity heatmap (contribution-graph style). Micro-animation on task completion (checkmark with glow burst). All animations respect `prefers-reduced-motion`.
+- **User Settings** — Per-user persistent settings page with: theme selection (dark/light), dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), notification type toggles (overdue, due-soon, stale 1:1, anniversary), and achievement visibility toggle. Settings are stored in the database and respected by the notification scheduler and dashboard.
+- **Light Theme** — Full light theme alternative to the default cyberpunk dark theme. Clean surfaces, teal/purple accents, proper contrast ratios, and subtle shadows instead of glows. Toggled via Settings page.
 
 ### Planned
 
-- Settings page (reminder thresholds, export date range UI, encryption key status)
+- GIN indexes for full-text search (performance optimization for large datasets)
+- Review packet generator (date range summaries)
+- Bulk import (CSV people list)
 
 ---
 
@@ -268,6 +272,24 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 |--------|-------------------|------------------------------------------------|
 | GET    | `/api/v1/search`  | Full-text search across all manager data       |
 
+### User Settings
+
+| Method | Endpoint          | Description                                    |
+|--------|-------------------|------------------------------------------------|
+| GET    | `/api/v1/settings` | Get current user settings (returns defaults if none saved) |
+| PUT    | `/api/v1/settings` | Update user settings                          |
+
+**Settings fields:**
+- `dueSoonDays` — Days before due date to show "due soon" (1–30, default: 3)
+- `staleOneOnOneDays` — Days without a 1:1 before it's considered stale (1–90, default: 14)
+- `anniversaryLookaheadDays` — Days to look ahead for anniversaries (1–90, default: 30)
+- `theme` — UI theme: `DARK` or `LIGHT` (default: DARK)
+- `showAchievements` — Show achievement badges on dashboard (default: true)
+- `notifyActionItemOverdue` — Enable overdue action item notifications (default: true)
+- `notifyActionItemDueSoon` — Enable due-soon action item notifications (default: true)
+- `notifyStaleOneOnOne` — Enable stale 1:1 notifications (default: true)
+- `notifyUpcomingAnniversary` — Enable anniversary notifications (default: true)
+
 **Query parameters:**
 - `q` — Search query (required)
 - `type` — Filter by result type (repeatable): PERSON, ONE_ON_ONE_ENTRY, QUICK_NOTE, ACTION_ITEM, PDP_GOAL, PDP_UPDATE, KUDOS
@@ -420,6 +442,7 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120005` | Add attached_entry_id to quick_notes |
 | `V20250510120006` | Create notifications table |
 | `V20250510120007` | Add full-text search support (placeholder — no schema changes needed) |
+| `V20250510120008` | Create user_settings table |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 
