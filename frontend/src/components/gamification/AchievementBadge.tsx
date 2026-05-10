@@ -1,25 +1,47 @@
 'use client';
 
 import { Achievement, AchievementType } from '@/types/gamification';
+import {
+  Target,
+  Hash,
+  Trophy,
+  CheckCircle2,
+  ClipboardCheck,
+  Zap,
+  Award,
+  Sprout,
+  TreePine,
+  HandHeart,
+  Star,
+  Flame,
+  Gem,
+} from 'lucide-react';
+import { ComponentType } from 'react';
 
 interface AchievementBadgeProps {
   achievement: Achievement;
 }
 
-const achievementIcons: Record<AchievementType, string> = {
-  FIRST_ONE_ON_ONE: '🎯',
-  TEN_ONE_ON_ONES: '🔟',
-  FIFTY_ONE_ON_ONES: '🏆',
-  FIRST_ACTION_ITEM_CLOSED: '✅',
-  TEN_ACTION_ITEMS_CLOSED: '📋',
-  FIFTY_ACTION_ITEMS_CLOSED: '⚡',
-  HUNDRED_ACTION_ITEMS_CLOSED: '💯',
-  FIRST_PDP_GOAL_ACHIEVED: '🌱',
-  FIVE_PDP_GOALS_ACHIEVED: '🌳',
-  FIRST_KUDOS_GIVEN: '👏',
-  TEN_KUDOS_GIVEN: '🌟',
-  STREAK_SEVEN: '🔥',
-  STREAK_THIRTY: '💎',
+interface LucideIconProps {
+  size?: number;
+  color?: string;
+  strokeWidth?: number;
+}
+
+const achievementIcons: Record<AchievementType, ComponentType<LucideIconProps>> = {
+  FIRST_ONE_ON_ONE: Target,
+  TEN_ONE_ON_ONES: Hash,
+  FIFTY_ONE_ON_ONES: Trophy,
+  FIRST_ACTION_ITEM_CLOSED: CheckCircle2,
+  TEN_ACTION_ITEMS_CLOSED: ClipboardCheck,
+  FIFTY_ACTION_ITEMS_CLOSED: Zap,
+  HUNDRED_ACTION_ITEMS_CLOSED: Award,
+  FIRST_PDP_GOAL_ACHIEVED: Sprout,
+  FIVE_PDP_GOALS_ACHIEVED: TreePine,
+  FIRST_KUDOS_GIVEN: HandHeart,
+  TEN_KUDOS_GIVEN: Star,
+  STREAK_SEVEN: Flame,
+  STREAK_THIRTY: Gem,
 };
 
 const achievementColors: Record<AchievementType, string> = {
@@ -40,10 +62,11 @@ const achievementColors: Record<AchievementType, string> = {
 
 /**
  * Displays a single achievement badge with icon, label, and description.
- * Uses glow effects matching the achievement category color.
+ * Uses Lucide outlined icons for consistent rendering across all platforms.
+ * Glow effects match the achievement category color.
  */
 export default function AchievementBadge({ achievement }: AchievementBadgeProps) {
-  const icon = achievementIcons[achievement.type];
+  const IconComponent = achievementIcons[achievement.type];
   const color = achievementColors[achievement.type];
 
   return (
@@ -66,14 +89,16 @@ export default function AchievementBadge({ achievement }: AchievementBadgeProps)
       <span
         data-testid="achievement-icon"
         style={{
-          fontSize: '20px',
-          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           flexShrink: 0,
+          width: '24px',
+          height: '24px',
         }}
-        role="img"
         aria-hidden="true"
       >
-        {icon}
+        <IconComponent size={18} color={color} strokeWidth={1.5} />
       </span>
 
       {/* Text */}
