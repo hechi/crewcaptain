@@ -61,28 +61,35 @@ const achievementColors: Record<AchievementType, string> = {
 };
 
 /**
- * Displays a single achievement badge with icon, label, and description.
- * Uses Lucide outlined icons for consistent rendering across all platforms.
- * Glow effects match the achievement category color.
+ * Displays a single achievement badge with icon, label, description, and progress.
+ * Unlocked achievements show in full color with glow.
+ * Locked achievements are dimmed with a progress indicator (current/target).
  */
 export default function AchievementBadge({ achievement }: AchievementBadgeProps) {
   const IconComponent = achievementIcons[achievement.type];
   const color = achievementColors[achievement.type];
+  const isUnlocked = achievement.unlocked;
+  const progressText = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;
 
   return (
     <div
       data-testid="achievement-badge"
-      aria-label={`Achievement: ${achievement.label} - ${achievement.description}`}
+      aria-label={
+        isUnlocked
+          ? `Achievement unlocked: ${achievement.label} - ${achievement.description}`
+          : `Achievement locked: ${achievement.label} - ${progressText} - ${achievement.description}`
+      }
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
         padding: '10px 14px',
         borderRadius: 'var(--radius-medium)',
-        border: `1px solid ${color}`,
+        border: `1px solid ${isUnlocked ? color : 'var(--color-border)'}`,
         backgroundColor: 'var(--color-bg-surface)',
-        boxShadow: `0 0 8px ${color}33`,
-        transition: 'box-shadow 0.2s, border-color 0.2s',
+        boxShadow: isUnlocked ? `0 0 8px ${color}33` : 'none',
+        opacity: isUnlocked ? 1 : 0.6,
+        transition: 'box-shadow 0.2s, border-color 0.2s, opacity 0.2s',
       }}
     >
       {/* Icon */}
@@ -98,18 +105,22 @@ export default function AchievementBadge({ achievement }: AchievementBadgeProps)
         }}
         aria-hidden="true"
       >
-        <IconComponent size={18} color={color} strokeWidth={1.5} />
+        <IconComponent
+          size={18}
+          color={isUnlocked ? color : 'var(--color-text-muted)'}
+          strokeWidth={1.5}
+        />
       </span>
 
       {/* Text */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 }}>
         <span
           data-testid="achievement-label"
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 'var(--text-caption)',
             fontWeight: 'var(--weight-semibold)',
-            color: color,
+            color: isUnlocked ? color : 'var(--color-text-muted)',
             letterSpacing: '0.3px',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -132,6 +143,21 @@ export default function AchievementBadge({ achievement }: AchievementBadgeProps)
           {achievement.description}
         </span>
       </div>
+
+      {/* Progress indicator */}
+      <span
+        data-testid="achievement-progress"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '11px',
+          fontWeight: 'var(--weight-medium)',
+          color: isUnlocked ? color : 'var(--color-text-secondary)',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+        }}
+      >
+        {progressText}
+      </span>
     </div>
   );
 }

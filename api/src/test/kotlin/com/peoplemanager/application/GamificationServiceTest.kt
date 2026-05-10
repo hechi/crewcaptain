@@ -58,7 +58,8 @@ class GamificationServiceTest {
             result.streaks.currentStreak shouldBe 0
             result.streaks.longestStreak shouldBe 0
             result.streaks.totalOneOnOnesHeld shouldBe 0
-            result.achievements.shouldBeEmpty()
+            result.achievements shouldHaveSize 13
+            result.achievements.all { !it.unlocked } shouldBe true
             result.pdpProgress.totalActive shouldBe 0
             result.pdpProgress.totalAchieved shouldBe 0
             result.pdpProgress.completionPercentage shouldBe 0
@@ -194,7 +195,10 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 1, longestStreak = 1, totalOneOnOnesHeld = 1)
             val result = service.computeAchievements(userId, streaks)
 
-            result.any { it.type == AchievementType.FIRST_ONE_ON_ONE } shouldBe true
+            val achievement = result.first { it.type == AchievementType.FIRST_ONE_ON_ONE }
+            achievement.unlocked shouldBe true
+            achievement.current shouldBe 1
+            achievement.target shouldBe 1
         }
 
         @Test
@@ -206,10 +210,10 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 5, longestStreak = 10, totalOneOnOnesHeld = 50)
             val result = service.computeAchievements(userId, streaks)
 
-            result.any { it.type == AchievementType.FIRST_ONE_ON_ONE } shouldBe true
-            result.any { it.type == AchievementType.TEN_ONE_ON_ONES } shouldBe true
-            result.any { it.type == AchievementType.FIFTY_ONE_ON_ONES } shouldBe true
-            result.any { it.type == AchievementType.STREAK_SEVEN } shouldBe true
+            result.first { it.type == AchievementType.FIRST_ONE_ON_ONE }.unlocked shouldBe true
+            result.first { it.type == AchievementType.TEN_ONE_ON_ONES }.unlocked shouldBe true
+            result.first { it.type == AchievementType.FIFTY_ONE_ON_ONES }.unlocked shouldBe true
+            result.first { it.type == AchievementType.STREAK_SEVEN }.unlocked shouldBe true
         }
 
         @Test
@@ -221,10 +225,10 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 0, longestStreak = 0, totalOneOnOnesHeld = 0)
             val result = service.computeAchievements(userId, streaks)
 
-            result.any { it.type == AchievementType.FIRST_ACTION_ITEM_CLOSED } shouldBe true
-            result.any { it.type == AchievementType.TEN_ACTION_ITEMS_CLOSED } shouldBe true
-            result.any { it.type == AchievementType.FIFTY_ACTION_ITEMS_CLOSED } shouldBe true
-            result.any { it.type == AchievementType.HUNDRED_ACTION_ITEMS_CLOSED } shouldBe true
+            result.first { it.type == AchievementType.FIRST_ACTION_ITEM_CLOSED }.unlocked shouldBe true
+            result.first { it.type == AchievementType.TEN_ACTION_ITEMS_CLOSED }.unlocked shouldBe true
+            result.first { it.type == AchievementType.FIFTY_ACTION_ITEMS_CLOSED }.unlocked shouldBe true
+            result.first { it.type == AchievementType.HUNDRED_ACTION_ITEMS_CLOSED }.unlocked shouldBe true
         }
 
         @Test
@@ -236,8 +240,8 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 0, longestStreak = 0, totalOneOnOnesHeld = 0)
             val result = service.computeAchievements(userId, streaks)
 
-            result.any { it.type == AchievementType.FIRST_PDP_GOAL_ACHIEVED } shouldBe true
-            result.any { it.type == AchievementType.FIVE_PDP_GOALS_ACHIEVED } shouldBe true
+            result.first { it.type == AchievementType.FIRST_PDP_GOAL_ACHIEVED }.unlocked shouldBe true
+            result.first { it.type == AchievementType.FIVE_PDP_GOALS_ACHIEVED }.unlocked shouldBe true
         }
 
         @Test
@@ -249,8 +253,8 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 0, longestStreak = 0, totalOneOnOnesHeld = 0)
             val result = service.computeAchievements(userId, streaks)
 
-            result.any { it.type == AchievementType.FIRST_KUDOS_GIVEN } shouldBe true
-            result.any { it.type == AchievementType.TEN_KUDOS_GIVEN } shouldBe true
+            result.first { it.type == AchievementType.FIRST_KUDOS_GIVEN }.unlocked shouldBe true
+            result.first { it.type == AchievementType.TEN_KUDOS_GIVEN }.unlocked shouldBe true
         }
 
         @Test
@@ -262,8 +266,8 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 30, longestStreak = 30, totalOneOnOnesHeld = 30)
             val result = service.computeAchievements(userId, streaks)
 
-            result.any { it.type == AchievementType.STREAK_SEVEN } shouldBe true
-            result.any { it.type == AchievementType.STREAK_THIRTY } shouldBe true
+            result.first { it.type == AchievementType.STREAK_SEVEN }.unlocked shouldBe true
+            result.first { it.type == AchievementType.STREAK_THIRTY }.unlocked shouldBe true
         }
 
         @Test
@@ -275,7 +279,9 @@ class GamificationServiceTest {
             val streaks = StreakData(currentStreak = 0, longestStreak = 0, totalOneOnOnesHeld = 0)
             val result = service.computeAchievements(userId, streaks)
 
-            result.shouldBeEmpty()
+            result shouldHaveSize 13
+            result.all { !it.unlocked } shouldBe true
+            result.all { it.current == 0 } shouldBe true
         }
     }
 

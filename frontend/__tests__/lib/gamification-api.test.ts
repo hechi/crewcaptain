@@ -15,7 +15,7 @@ describe('Gamification API Client', () => {
     const mockStats = {
       streaks: { currentStreak: 5, longestStreak: 10, totalOneOnOnesHeld: 25 },
       achievements: [
-        { type: 'FIRST_ONE_ON_ONE', unlockedAt: '2026-01-15', label: 'First 1:1', description: 'Held your first 1:1 meeting' },
+        { type: 'FIRST_ONE_ON_ONE', unlocked: true, label: 'First 1:1', description: 'Hold your first 1:1 meeting', current: 25, target: 1 },
       ],
       activityHeatmap: [
         { date: '2026-05-01', count: 2 },

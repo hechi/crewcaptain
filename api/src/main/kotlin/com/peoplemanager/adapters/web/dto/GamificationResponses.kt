@@ -40,16 +40,20 @@ data class StreakDataResponse(
 
 data class AchievementResponse(
     val type: AchievementType,
-    val unlockedAt: LocalDate,
+    val unlocked: Boolean,
     val label: String,
-    val description: String
+    val description: String,
+    val current: Int,
+    val target: Int
 ) {
     companion object {
         fun from(achievement: Achievement): AchievementResponse = AchievementResponse(
             type = achievement.type,
-            unlockedAt = achievement.unlockedAt,
+            unlocked = achievement.unlocked,
             label = achievement.label,
-            description = achievement.description
+            description = achievement.description,
+            current = achievement.current,
+            target = achievement.target
         )
     }
 }

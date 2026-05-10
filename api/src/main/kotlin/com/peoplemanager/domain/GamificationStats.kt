@@ -24,13 +24,15 @@ data class StreakData(
 )
 
 /**
- * An achievement milestone the manager has reached.
+ * An achievement milestone — either unlocked or still in progress.
  */
 data class Achievement(
     val type: AchievementType,
-    val unlockedAt: LocalDate,
+    val unlocked: Boolean,
     val label: String,
-    val description: String
+    val description: String,
+    val current: Int,
+    val target: Int
 )
 
 enum class AchievementType {

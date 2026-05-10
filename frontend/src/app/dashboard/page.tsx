@@ -252,7 +252,7 @@ export default function DashboardPage() {
               margin: '0 0 12px 0',
             }}
           >
-            Achievements
+            Achievements ({gamification.achievements.filter(a => a.unlocked).length}/{gamification.achievements.length})
           </h3>
           <div
             style={{

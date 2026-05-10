@@ -82,8 +82,8 @@ class GamificationControllerTest {
         val stats = GamificationStats(
             streaks = StreakData(currentStreak = 5, longestStreak = 10, totalOneOnOnesHeld = 25),
             achievements = listOf(
-                Achievement(AchievementType.FIRST_ONE_ON_ONE, LocalDate.of(2026, 1, 15), "First 1:1", "Held your first 1:1 meeting"),
-                Achievement(AchievementType.TEN_ONE_ON_ONES, LocalDate.of(2026, 3, 1), "10 1:1s", "Held 10 one-on-one meetings")
+                Achievement(AchievementType.FIRST_ONE_ON_ONE, true, "First 1:1", "Hold your first 1:1 meeting", 25, 1),
+                Achievement(AchievementType.TEN_ONE_ON_ONES, true, "10 1:1s", "Hold 10 one-on-one meetings", 25, 10)
             ),
             activityHeatmap = listOf(
                 ActivityDay(LocalDate.of(2026, 5, 1), 2),
@@ -105,6 +105,9 @@ class GamificationControllerTest {
             .andExpect(jsonPath("$.achievements").isArray)
             .andExpect(jsonPath("$.achievements[0].type").value("FIRST_ONE_ON_ONE"))
             .andExpect(jsonPath("$.achievements[0].label").value("First 1:1"))
+            .andExpect(jsonPath("$.achievements[0].unlocked").value(true))
+            .andExpect(jsonPath("$.achievements[0].current").value(25))
+            .andExpect(jsonPath("$.achievements[0].target").value(1))
             .andExpect(jsonPath("$.achievements[1].type").value("TEN_ONE_ON_ONES"))
             .andExpect(jsonPath("$.activityHeatmap").isArray)
             .andExpect(jsonPath("$.activityHeatmap[0].date").value("2026-05-01"))

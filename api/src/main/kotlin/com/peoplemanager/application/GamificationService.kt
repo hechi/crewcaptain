@@ -103,64 +103,36 @@ class GamificationService(
     }
 
     internal fun computeAchievements(userId: UserId, streaks: StreakData): List<Achievement> {
-        val achievements = mutableListOf<Achievement>()
-        val today = LocalDate.now()
-
         val totalOneOnOnes = streaks.totalOneOnOnesHeld
-        val totalActionItemsClosed = actionItemRepository.countByUserIdAndStatus(userId, ActionItemStatus.DONE)
-        val totalPdpGoalsAchieved = pdpGoalRepository.countByUserIdAndStatus(userId, PdpGoalStatus.ACHIEVED)
-        val totalKudosGiven = kudosRepository.countByUserId(userId)
+        val totalActionItemsClosed = actionItemRepository.countByUserIdAndStatus(userId, ActionItemStatus.DONE).toInt()
+        val totalPdpGoalsAchieved = pdpGoalRepository.countByUserIdAndStatus(userId, PdpGoalStatus.ACHIEVED).toInt()
+        val totalKudosGiven = kudosRepository.countByUserId(userId).toInt()
+        val longestStreak = streaks.longestStreak
 
-        // 1:1 milestones
-        if (totalOneOnOnes >= 1) {
-            achievements.add(Achievement(AchievementType.FIRST_ONE_ON_ONE, today, "First 1:1", "Held your first 1:1 meeting"))
-        }
-        if (totalOneOnOnes >= 10) {
-            achievements.add(Achievement(AchievementType.TEN_ONE_ON_ONES, today, "10 1:1s", "Held 10 one-on-one meetings"))
-        }
-        if (totalOneOnOnes >= 50) {
-            achievements.add(Achievement(AchievementType.FIFTY_ONE_ON_ONES, today, "50 1:1s", "Held 50 one-on-one meetings"))
-        }
+        return listOf(
+            // 1:1 milestones
+            Achievement(AchievementType.FIRST_ONE_ON_ONE, totalOneOnOnes >= 1, "First 1:1", "Hold your first 1:1 meeting", totalOneOnOnes, 1),
+            Achievement(AchievementType.TEN_ONE_ON_ONES, totalOneOnOnes >= 10, "10 1:1s", "Hold 10 one-on-one meetings", totalOneOnOnes, 10),
+            Achievement(AchievementType.FIFTY_ONE_ON_ONES, totalOneOnOnes >= 50, "50 1:1s", "Hold 50 one-on-one meetings", totalOneOnOnes, 50),
 
-        // Action item milestones
-        if (totalActionItemsClosed >= 1) {
-            achievements.add(Achievement(AchievementType.FIRST_ACTION_ITEM_CLOSED, today, "First Close", "Closed your first action item"))
-        }
-        if (totalActionItemsClosed >= 10) {
-            achievements.add(Achievement(AchievementType.TEN_ACTION_ITEMS_CLOSED, today, "10 Closed", "Closed 10 action items"))
-        }
-        if (totalActionItemsClosed >= 50) {
-            achievements.add(Achievement(AchievementType.FIFTY_ACTION_ITEMS_CLOSED, today, "50 Closed", "Closed 50 action items"))
-        }
-        if (totalActionItemsClosed >= 100) {
-            achievements.add(Achievement(AchievementType.HUNDRED_ACTION_ITEMS_CLOSED, today, "100 Closed", "Closed 100 action items"))
-        }
+            // Action item milestones
+            Achievement(AchievementType.FIRST_ACTION_ITEM_CLOSED, totalActionItemsClosed >= 1, "First Close", "Close your first action item", totalActionItemsClosed, 1),
+            Achievement(AchievementType.TEN_ACTION_ITEMS_CLOSED, totalActionItemsClosed >= 10, "10 Closed", "Close 10 action items", totalActionItemsClosed, 10),
+            Achievement(AchievementType.FIFTY_ACTION_ITEMS_CLOSED, totalActionItemsClosed >= 50, "50 Closed", "Close 50 action items", totalActionItemsClosed, 50),
+            Achievement(AchievementType.HUNDRED_ACTION_ITEMS_CLOSED, totalActionItemsClosed >= 100, "100 Closed", "Close 100 action items", totalActionItemsClosed, 100),
 
-        // PDP milestones
-        if (totalPdpGoalsAchieved >= 1) {
-            achievements.add(Achievement(AchievementType.FIRST_PDP_GOAL_ACHIEVED, today, "First Goal", "Achieved your first PDP goal"))
-        }
-        if (totalPdpGoalsAchieved >= 5) {
-            achievements.add(Achievement(AchievementType.FIVE_PDP_GOALS_ACHIEVED, today, "5 Goals", "Achieved 5 PDP goals"))
-        }
+            // PDP milestones
+            Achievement(AchievementType.FIRST_PDP_GOAL_ACHIEVED, totalPdpGoalsAchieved >= 1, "First Goal", "Achieve your first PDP goal", totalPdpGoalsAchieved, 1),
+            Achievement(AchievementType.FIVE_PDP_GOALS_ACHIEVED, totalPdpGoalsAchieved >= 5, "5 Goals", "Achieve 5 PDP goals", totalPdpGoalsAchieved, 5),
 
-        // Kudos milestones
-        if (totalKudosGiven >= 1) {
-            achievements.add(Achievement(AchievementType.FIRST_KUDOS_GIVEN, today, "First Kudos", "Gave your first kudos"))
-        }
-        if (totalKudosGiven >= 10) {
-            achievements.add(Achievement(AchievementType.TEN_KUDOS_GIVEN, today, "10 Kudos", "Gave 10 kudos to your team"))
-        }
+            // Kudos milestones
+            Achievement(AchievementType.FIRST_KUDOS_GIVEN, totalKudosGiven >= 1, "First Kudos", "Give your first kudos", totalKudosGiven, 1),
+            Achievement(AchievementType.TEN_KUDOS_GIVEN, totalKudosGiven >= 10, "10 Kudos", "Give 10 kudos to your team", totalKudosGiven, 10),
 
-        // Streak milestones
-        if (streaks.longestStreak >= 7) {
-            achievements.add(Achievement(AchievementType.STREAK_SEVEN, today, "7-Week Streak", "Maintained a 7-week 1:1 streak"))
-        }
-        if (streaks.longestStreak >= 30) {
-            achievements.add(Achievement(AchievementType.STREAK_THIRTY, today, "30-Week Streak", "Maintained a 30-week 1:1 streak"))
-        }
-
-        return achievements
+            // Streak milestones
+            Achievement(AchievementType.STREAK_SEVEN, longestStreak >= 7, "7-Week Streak", "Maintain a 7-week 1:1 streak", longestStreak, 7),
+            Achievement(AchievementType.STREAK_THIRTY, longestStreak >= 30, "30-Week Streak", "Maintain a 30-week 1:1 streak", longestStreak, 30),
+        )
     }
 
     internal fun computeActivityHeatmap(userId: UserId, days: Int): List<ActivityDay> {

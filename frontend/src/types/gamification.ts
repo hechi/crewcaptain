@@ -21,9 +21,11 @@ export type AchievementType =
 
 export interface Achievement {
   type: AchievementType;
-  unlockedAt: string;
+  unlocked: boolean;
   label: string;
   description: string;
+  current: number;
+  target: number;
 }
 
 export interface ActivityDay {
