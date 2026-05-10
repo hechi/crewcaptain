@@ -1,6 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
+import com.peoplemanager.application.ports.ActionItemRepository
 import com.peoplemanager.application.ports.OneOnOneEntryRepository
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.ports.QuickNoteRepository
@@ -22,8 +23,9 @@ class QuickNoteServiceTest {
     private val quickNoteRepository = mockk<QuickNoteRepository>()
     private val personRepository = mockk<PersonRepository>()
     private val oneOnOneEntryRepository = mockk<OneOnOneEntryRepository>()
+    private val actionItemRepository = mockk<ActionItemRepository>()
 
-    private val service = QuickNoteService(quickNoteRepository, personRepository, oneOnOneEntryRepository)
+    private val service = QuickNoteService(quickNoteRepository, personRepository, oneOnOneEntryRepository, actionItemRepository)
 
     private val userId = UserId.generate()
     private val personId = PersonId.generate()
@@ -223,10 +225,17 @@ class QuickNoteServiceTest {
         )
 
         @Test
-        fun `should attach quick note to entry`() {
-            val mockEntry = mockk<OneOnOneEntry>()
+        fun `should attach quick note to entry and add agenda item`() {
+            val entry = OneOnOneEntry(
+                id = OneOnOneEntryId(entryId.value),
+                userId = userId,
+                personId = personId,
+                meetingDate = java.time.Instant.now(),
+                agendaItems = emptyList()
+            )
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
-            every { oneOnOneEntryRepository.findByIdAndUserId(entryId, userId) } returns mockEntry
+            every { oneOnOneEntryRepository.findByIdAndUserId(entryId, userId) } returns entry
+            every { oneOnOneEntryRepository.save(any()) } answers { firstArg() }
             every { quickNoteRepository.save(any()) } answers { firstArg() }
 
             val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, entryId = entryId)
@@ -234,6 +243,8 @@ class QuickNoteServiceTest {
 
             result.status shouldBe QuickNoteStatus.ATTACHED
             result.attachedEntryId shouldBe entryId
+            result.personId shouldBe personId
+            verify { oneOnOneEntryRepository.save(match { it.agendaItems.size == 1 && it.agendaItems[0].text == "Inbox note" }) }
         }
 
         @Test
@@ -249,14 +260,18 @@ class QuickNoteServiceTest {
         }
 
         @Test
-        fun `should convert quick note`() {
+        fun `should convert quick note to action item`() {
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
+            every { actionItemRepository.save(any()) } answers { firstArg() }
             every { quickNoteRepository.save(any()) } answers { firstArg() }
 
-            val command = ConvertQuickNoteCommand(userId = userId, quickNoteId = quickNoteId)
+            val command = ConvertQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, personId = personId)
             val result = service.convertQuickNote(command)
 
             result.status shouldBe QuickNoteStatus.CONVERTED
+            result.personId shouldBe personId
+            verify { actionItemRepository.save(match { it.title == "Inbox note" && it.personId == personId }) }
         }
 
         @Test
@@ -274,7 +289,6 @@ class QuickNoteServiceTest {
         fun `should throw when attaching non-INBOX note`() {
             val attachedNote = inboxNote.copy(status = QuickNoteStatus.ATTACHED)
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns attachedNote
-            every { oneOnOneEntryRepository.findByIdAndUserId(entryId, userId) } returns mockk()
 
             val command = AttachQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, entryId = entryId)
 

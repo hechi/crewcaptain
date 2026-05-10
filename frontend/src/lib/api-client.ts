@@ -511,9 +511,10 @@ export async function attachQuickNote(token: string, quickNoteId: string, data: 
   return response.json();
 }
 
-export async function convertQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+export async function convertQuickNote(token: string, quickNoteId: string, data: { personId: string }): Promise<QuickNote> {
   const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/convert`, {
     method: 'POST',
+    body: JSON.stringify(data),
   }, token);
   return response.json();
 }

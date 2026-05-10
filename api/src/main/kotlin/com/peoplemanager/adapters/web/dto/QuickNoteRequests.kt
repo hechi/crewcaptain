@@ -23,3 +23,7 @@ data class AssignQuickNoteToPersonRequest(
 data class AttachQuickNoteToEntryRequest(
     val entryId: UUID
 )
+
+data class ConvertQuickNoteRequest(
+    val personId: UUID
+)

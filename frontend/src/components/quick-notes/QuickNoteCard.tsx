@@ -9,7 +9,7 @@ interface QuickNoteCardProps {
   quickNote: QuickNote;
   persons: Person[];
   onArchive: (id: string) => void;
-  onConvert: (id: string) => void;
+  onConvert: (id: string, personId: string) => void;
   onAttach: (id: string, entryId: string) => void;
   onAssignPerson: (id: string, personId: string) => void;
   onDelete: (id: string) => void;
@@ -31,6 +31,7 @@ export default function QuickNoteCard({
   onFetchEntries,
 }: QuickNoteCardProps) {
   const [showPersonPicker, setShowPersonPicker] = useState(false);
+  const [showConvertPersonPicker, setShowConvertPersonPicker] = useState(false);
   const [showEntryPicker, setShowEntryPicker] = useState(false);
   const [entries, setEntries] = useState<OneOnOneEntry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
@@ -50,6 +51,19 @@ export default function QuickNoteCard({
   const handleAssignPerson = (personId: string) => {
     onAssignPerson(quickNote.id, personId);
     setShowPersonPicker(false);
+  };
+
+  const handleConvertWithPerson = (personId: string) => {
+    onConvert(quickNote.id, personId);
+    setShowConvertPersonPicker(false);
+  };
+
+  const handleConvertClick = () => {
+    if (quickNote.personId) {
+      onConvert(quickNote.id, quickNote.personId);
+    } else {
+      setShowConvertPersonPicker(true);
+    }
   };
 
   const handleShowEntryPicker = async () => {
@@ -246,6 +260,41 @@ export default function QuickNoteCard({
         </div>
       )}
 
+      {/* Convert Person Picker */}
+      {showConvertPersonPicker && (
+        <div data-testid="convert-person-picker" style={{ marginBottom: '12px', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-elevated)' }}>
+          <label style={{ display: 'block', fontSize: 'var(--text-caption)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>
+            Create action item for:
+          </label>
+          <select
+            data-testid="convert-person-picker-select"
+            onChange={(e) => { if (e.target.value) handleConvertWithPerson(e.target.value); }}
+            defaultValue=""
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              fontSize: 'var(--text-body)',
+            }}
+          >
+            <option value="" disabled>Select a person...</option>
+            {persons.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}{p.roleTitle ? ` — ${p.roleTitle}` : ''}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setShowConvertPersonPicker(false)}
+            style={{ marginTop: '6px', padding: '4px 8px', fontSize: 'var(--text-caption)', border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       {/* Actions — only show for INBOX notes */}
       {isInbox && (
         <div data-testid="quick-note-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -269,7 +318,7 @@ export default function QuickNoteCard({
           </button>
           <button
             type="button"
-            onClick={() => onConvert(quickNote.id)}
+            onClick={handleConvertClick}
             data-testid="quick-note-convert-btn"
             aria-label="Convert to action item"
             style={{

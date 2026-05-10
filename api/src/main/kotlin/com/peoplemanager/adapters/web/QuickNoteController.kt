@@ -116,10 +116,15 @@ class QuickNoteController(
 
     @PostMapping("/quick-notes/{quickNoteId}/convert")
     fun convertQuickNote(
-        @PathVariable quickNoteId: UUID
+        @PathVariable quickNoteId: UUID,
+        @Valid @RequestBody request: ConvertQuickNoteRequest
     ): ResponseEntity<QuickNoteResponse> {
         val userId = AuthenticatedUser.getUserId()
-        val command = ConvertQuickNoteCommand(userId = userId, quickNoteId = QuickNoteId(quickNoteId))
+        val command = ConvertQuickNoteCommand(
+            userId = userId,
+            quickNoteId = QuickNoteId(quickNoteId),
+            personId = PersonId(request.personId)
+        )
         val quickNote = quickNoteCommandPort.convertQuickNote(command)
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
     }

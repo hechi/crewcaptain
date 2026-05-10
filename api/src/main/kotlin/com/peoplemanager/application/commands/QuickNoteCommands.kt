@@ -34,7 +34,8 @@ data class AttachQuickNoteCommand(
 
 data class ConvertQuickNoteCommand(
     val userId: UserId,
-    val quickNoteId: QuickNoteId
+    val quickNoteId: QuickNoteId,
+    val personId: PersonId
 )
 
 data class ArchiveQuickNoteCommand(

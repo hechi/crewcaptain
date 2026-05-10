@@ -297,16 +297,17 @@ describe('attachQuickNote', () => {
 });
 
 describe('convertQuickNote', () => {
-  it('should send POST request to convert endpoint', async () => {
+  it('should send POST request to convert endpoint with personId', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ ...mockQuickNote, status: 'CONVERTED' }),
+      json: () => Promise.resolve({ ...mockQuickNote, status: 'CONVERTED', personId }),
     });
 
-    await convertQuickNote(mockToken, quickNoteId);
+    await convertQuickNote(mockToken, quickNoteId, { personId });
 
     expect(mockFetch).toHaveBeenCalledWith(`/api/v1/quick-notes/${quickNoteId}/convert`, {
       method: 'POST',
+      body: JSON.stringify({ personId }),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${mockToken}`,

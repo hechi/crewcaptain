@@ -122,10 +122,17 @@ describe('QuickNoteCard', () => {
     expect(mockOnAssignPerson).toHaveBeenCalledWith('note-1', 'person-1');
   });
 
-  it('should call onConvert when convert button is clicked', () => {
+  it('should call onConvert when convert button is clicked and person is assigned', () => {
+    const assignedNote: QuickNote = { ...mockNote, personId: 'person-1' };
+    renderCard(assignedNote);
+    fireEvent.click(screen.getByTestId('quick-note-convert-btn'));
+    expect(mockOnConvert).toHaveBeenCalledWith('note-1', 'person-1');
+  });
+
+  it('should show convert person picker when no person assigned and convert clicked', () => {
     renderCard();
     fireEvent.click(screen.getByTestId('quick-note-convert-btn'));
-    expect(mockOnConvert).toHaveBeenCalledWith('note-1');
+    expect(screen.getByTestId('convert-person-picker')).toBeInTheDocument();
   });
 
   it('should call onArchive when archive button is clicked', () => {

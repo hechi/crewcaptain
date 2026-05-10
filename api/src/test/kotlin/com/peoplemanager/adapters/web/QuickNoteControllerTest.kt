@@ -351,6 +351,8 @@ class QuickNoteControllerTest {
         mockMvc.perform(
             post("/api/v1/quick-notes/${quickNoteId.value}/convert")
                 .with(authentication(authenticatedJwt(userId)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"personId": "${personId.value}"}""")
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.status").value("CONVERTED"))

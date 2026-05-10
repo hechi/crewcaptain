@@ -337,7 +337,7 @@ class QuickNoteIntegrationTest {
         }
 
         @Test
-        fun `should convert a quick note`() {
+        fun `should convert a quick note to action item`() {
             val createResult = mockMvc.perform(
                 post("/api/v1/quick-notes")
                     .with(authentication(authenticatedJwt(userA.id)))
@@ -350,9 +350,20 @@ class QuickNoteIntegrationTest {
             mockMvc.perform(
                 post("/api/v1/quick-notes/$noteId/convert")
                     .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"personId": "$personAId"}""")
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.status").value("CONVERTED"))
+                .andExpect(jsonPath("$.personId").value(personAId))
+
+            // Verify the action item was actually created for the person
+            mockMvc.perform(
+                get("/api/v1/persons/$personAId/action-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.content[0].title").value("Convert to action item"))
         }
 
         @Test

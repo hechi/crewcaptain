@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-10T10:30:00Z — Quick Notes enhanced with person picker, 1:1 entry attachment, and full UI wiring
+2026-05-10T10:45:00Z — Quick Notes: real conversion to action items and real attachment to 1:1 agenda
 
 ## Current Status
-The Quick Notes ("Inbox") feature is fully implemented with interactive person assignment and 1:1 entry attachment. The "Attach to 1:1" action now opens a 1:1 entry picker (after selecting a person) and stores the linked entry ID. The "Assign Person" action shows a person dropdown picker. The backend stores `attached_entry_id` as a foreign key to the 1:1 entries table. All 459 frontend tests and all backend tests pass.
+The Quick Notes feature now performs real data operations: "Attach to 1:1" adds the note text as an agenda item to the selected 1:1 entry, and "→ Action Item" creates an actual action item for the selected person. Both flows include person pickers when needed. All 460 frontend tests and all backend tests pass (except the pre-existing intermittent Property 14 edge case).
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -51,7 +51,8 @@ The Quick Notes ("Inbox") feature is fully implemented with interactive person a
 - [x] Quick Notes Backend tests — Domain unit tests (16 tests), application service tests (18 tests), controller slice tests (17 tests), integration tests with data isolation verification (15 tests) (2026-05-10)
 - [x] Quick Notes Frontend — TypeScript types, API client (9 functions), components (QuickNoteCard with person picker + 1:1 entry picker, QuickNoteForm, QuickNoteList), dedicated Quick Notes page with status filter, pagination, person assignment, and 1:1 attachment, Navigation link (2026-05-10)
 - [x] Quick Notes Frontend tests — Component tests (QuickNoteCard 16, QuickNoteForm 11, QuickNoteList 9), API client tests (17) (2026-05-10)
-- [x] Quick Notes 1:1 Attachment — Backend schema migration (attached_entry_id FK), domain model updated, attach endpoint requires entryId, validates entry exists and belongs to user, frontend entry picker UI (2026-05-10)
+- [x] Quick Notes 1:1 Attachment — Backend schema migration (attached_entry_id FK), domain model updated, attach endpoint requires entryId, validates entry exists and belongs to user, adds note text as agenda item to the 1:1 entry, frontend entry picker UI (2026-05-10)
+- [x] Quick Notes Action Item Conversion — Convert endpoint requires personId, creates actual action item with note text as title, assigns to person's action item list, frontend person picker for conversion (2026-05-10)
 
 ## In Progress
 - (none)
@@ -91,8 +92,8 @@ The Quick Notes ("Inbox") feature is fully implemented with interactive person a
 ## Test Coverage Summary
 - Backend: All tests pass — domain (including QuickNote 16 tests), application (including QuickNoteService 18 tests), controller slice (including QuickNoteController 17 tests), property, integration (including QuickNote data isolation 15 tests) (last run: 2026-05-10)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 459 total — component tests (including QuickNote components), page tests (including auth pages), API client tests (including quick-notes) (last run: 2026-05-10)
-  - Includes QuickNote components (QuickNoteCard 16, QuickNoteForm 11, QuickNoteList 9)
+- Frontend: 460 total — component tests (including QuickNote components), page tests (including auth pages), API client tests (including quick-notes) (last run: 2026-05-10)
+  - Includes QuickNote components (QuickNoteCard 17, QuickNoteForm 11, QuickNoteList 9)
   - Includes QuickNote API client tests (17)
   - Includes Kudos components (KudosCard 8, KudosForm 9, KudosList 9)
   - Includes Kudos API client tests (14)
@@ -109,4 +110,3 @@ The Quick Notes ("Inbox") feature is fully implemented with interactive person a
 ## Open Questions / Flags for Human Review
 - Property 14 test (invalid morale status) has an intermittent failure with certain generated strings — may need tighter string filtering or a different approach to testing invalid enum values
 - Light mode toggle not yet implemented — currently dark-only. Should this be added as a user preference?
-- Quick Notes "convert to action item" currently only changes the status — the actual conversion logic (creating an action item from the note text) could be implemented as a follow-up enhancement

@@ -6,10 +6,10 @@ import com.peoplemanager.application.ports.QuickNoteQueryPort
 import com.peoplemanager.application.ports.QuickNoteRepository
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.ports.OneOnOneEntryRepository
+import com.peoplemanager.application.ports.ActionItemRepository
 import com.peoplemanager.application.queries.GetQuickNoteQuery
 import com.peoplemanager.application.queries.ListQuickNotesQuery
-import com.peoplemanager.domain.QuickNote
-import com.peoplemanager.domain.QuickNoteId
+import com.peoplemanager.domain.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -21,11 +21,11 @@ import org.springframework.transaction.annotation.Transactional
 class QuickNoteService(
     private val quickNoteRepository: QuickNoteRepository,
     private val personRepository: PersonRepository,
-    private val oneOnOneEntryRepository: OneOnOneEntryRepository
+    private val oneOnOneEntryRepository: OneOnOneEntryRepository,
+    private val actionItemRepository: ActionItemRepository
 ) : QuickNoteCommandPort, QuickNoteQueryPort {
 
     override fun createQuickNote(command: CreateQuickNoteCommand): QuickNote {
-        // If personId is provided, verify it belongs to the user
         if (command.personId != null) {
             personRepository.findByIdAndUserId(command.personId, command.userId)
                 ?: throw PersonNotFoundException(command.personId)
@@ -46,10 +46,13 @@ class QuickNoteService(
         val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
             ?: throw QuickNoteNotFoundException(command.quickNoteId)
 
-        // If assigning to a new person, verify ownership
         if (command.personId != null) {
             personRepository.findByIdAndUserId(command.personId, command.userId)
                 ?: throw PersonNotFoundException(command.personId)
+        }
+
+        if (command.text != null) {
+            require(command.text.isNotBlank()) { "Quick note text must not be blank" }
         }
 
         val updated = existing.copy(
@@ -58,11 +61,6 @@ class QuickNoteService(
             sensitive = command.sensitive ?: existing.sensitive,
             updatedAt = java.time.Instant.now()
         )
-
-        // Validate text is not blank if provided
-        if (command.text != null) {
-            require(command.text.isNotBlank()) { "Quick note text must not be blank" }
-        }
 
         return quickNoteRepository.save(updated)
     }
@@ -82,11 +80,33 @@ class QuickNoteService(
         val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
             ?: throw QuickNoteNotFoundException(command.quickNoteId)
 
+        // Validate status first — fail fast before doing any work
+        require(existing.status == QuickNoteStatus.INBOX) {
+            "Can only attach a quick note with status INBOX, current status is ${existing.status}"
+        }
+
         // Validate the 1:1 entry exists and belongs to the user
-        oneOnOneEntryRepository.findByIdAndUserId(command.entryId, command.userId)
+        val entry = oneOnOneEntryRepository.findByIdAndUserId(command.entryId, command.userId)
             ?: throw OneOnOneEntryNotFoundException(command.entryId)
 
-        val updated = existing.markAttached(command.entryId)
+        // Add the quick note text as an agenda item to the 1:1 entry
+        val newAgendaItem = AgendaItem(
+            id = AgendaItemId.generate(),
+            text = existing.text,
+            checked = false,
+            displayOrder = entry.agendaItems.size
+        )
+        val updatedEntry = entry.updateAgendaItems(entry.agendaItems + newAgendaItem)
+        oneOnOneEntryRepository.save(updatedEntry)
+
+        // Also assign the person from the entry if not already assigned
+        val noteWithPerson = if (existing.personId == null) {
+            existing.assignToPerson(entry.personId)
+        } else {
+            existing
+        }
+
+        val updated = noteWithPerson.markAttached(command.entryId)
         return quickNoteRepository.save(updated)
     }
 
@@ -94,7 +114,29 @@ class QuickNoteService(
         val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
             ?: throw QuickNoteNotFoundException(command.quickNoteId)
 
-        val updated = existing.markConverted()
+        // Validate the person belongs to the user
+        personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
+
+        // Create an action item from the quick note text
+        val actionItem = ActionItem(
+            id = ActionItemId.generate(),
+            userId = command.userId,
+            personId = command.personId,
+            title = existing.text.take(500), // Action item title max 500 chars
+            description = if (existing.text.length > 500) existing.text else null,
+            ownerType = ActionItemOwnerType.MANAGER
+        )
+        actionItemRepository.save(actionItem)
+
+        // Assign person if not already assigned, then mark as converted
+        val noteWithPerson = if (existing.personId == null) {
+            existing.assignToPerson(command.personId)
+        } else {
+            existing
+        }
+
+        val updated = noteWithPerson.markConverted()
         return quickNoteRepository.save(updated)
     }
 

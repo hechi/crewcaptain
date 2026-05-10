@@ -12,7 +12,7 @@ interface QuickNoteListProps {
   persons: Person[];
   onCreateNote: (data: CreateQuickNoteRequest) => void;
   onArchive: (id: string) => void;
-  onConvert: (id: string) => void;
+  onConvert: (id: string, personId: string) => void;
   onAttach: (id: string, entryId: string) => void;
   onAssignPerson: (id: string, personId: string) => void;
   onDelete: (id: string) => void;

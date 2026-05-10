@@ -90,9 +90,9 @@ export default function QuickNotesPage() {
     }
   };
 
-  const handleConvert = async (id: string) => {
+  const handleConvert = async (id: string, personId: string) => {
     try {
-      await convertQuickNote(token, id);
+      await convertQuickNote(token, id, { personId });
       fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to convert quick note');
