@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Person, MoraleStatus, PaginatedResponse } from '@/types/person';
 import { OneOnOneEntry, OneOnOneSeries } from '@/types/one-on-one';
@@ -54,7 +54,12 @@ export default function PersonDetailPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const personId = params.id as string;
+
+  const validTabs: Tab[] = ['details', 'one-on-ones', 'action-items', 'pdp-goals', 'kudos'];
+  const tabParam = searchParams.get('tab') as Tab | null;
+  const initialTab: Tab = tabParam && validTabs.includes(tabParam) ? tabParam : 'details';
 
   const [person, setPerson] = useState<Person | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +70,7 @@ export default function PersonDetailPage() {
   const [moraleNote, setMoraleNote] = useState('');
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<Tab>('details');
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   // 1:1 state
   const [entries, setEntries] = useState<PaginatedResponse<OneOnOneEntry> | null>(null);

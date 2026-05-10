@@ -70,7 +70,20 @@ describe('SearchResultCard', () => {
     expect(link).toHaveAttribute('href', `/people/${baseResult.id}`);
   });
 
-  it('should link to person page for ACTION_ITEM type', () => {
+  it('should link to 1:1 entry page for ONE_ON_ONE_ENTRY type', () => {
+    const entryResult: SearchResultItem = {
+      ...baseResult,
+      type: 'ONE_ON_ONE_ENTRY',
+      title: '1:1 on 2026-05-10',
+      id: 'entry-123',
+      personId: 'person-123',
+    };
+    render(<SearchResultCard result={entryResult} />);
+    const link = screen.getByTestId(`search-result-${entryResult.id}`);
+    expect(link).toHaveAttribute('href', '/people/person-123/one-on-ones/entry-123');
+  });
+
+  it('should link to person page action-items tab for ACTION_ITEM type', () => {
     const actionItemResult: SearchResultItem = {
       ...baseResult,
       type: 'ACTION_ITEM',
@@ -79,7 +92,7 @@ describe('SearchResultCard', () => {
     };
     render(<SearchResultCard result={actionItemResult} />);
     const link = screen.getByTestId(`search-result-${actionItemResult.id}`);
-    expect(link).toHaveAttribute('href', '/people/person-123');
+    expect(link).toHaveAttribute('href', '/people/person-123?tab=action-items');
   });
 
   it('should link to quick-notes page for QUICK_NOTE type', () => {
@@ -149,7 +162,7 @@ describe('SearchResultCard', () => {
     expect(screen.queryByTestId('search-result-snippet')).not.toBeInTheDocument();
   });
 
-  it('should link to person page for PDP_GOAL type', () => {
+  it('should link to person page pdp-goals tab for PDP_GOAL type', () => {
     const goalResult: SearchResultItem = {
       ...baseResult,
       type: 'PDP_GOAL',
@@ -157,10 +170,10 @@ describe('SearchResultCard', () => {
     };
     render(<SearchResultCard result={goalResult} />);
     const link = screen.getByTestId(`search-result-${goalResult.id}`);
-    expect(link).toHaveAttribute('href', '/people/person-456');
+    expect(link).toHaveAttribute('href', '/people/person-456?tab=pdp-goals');
   });
 
-  it('should link to person page for KUDOS type', () => {
+  it('should link to person page kudos tab for KUDOS type', () => {
     const kudosResult: SearchResultItem = {
       ...baseResult,
       type: 'KUDOS',
@@ -168,6 +181,6 @@ describe('SearchResultCard', () => {
     };
     render(<SearchResultCard result={kudosResult} />);
     const link = screen.getByTestId(`search-result-${kudosResult.id}`);
-    expect(link).toHaveAttribute('href', '/people/person-789');
+    expect(link).toHaveAttribute('href', '/people/person-789?tab=kudos');
   });
 });

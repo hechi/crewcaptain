@@ -32,16 +32,16 @@ function getResultLink(result: SearchResultItem): string {
     case 'PERSON':
       return `/people/${result.id}`;
     case 'ONE_ON_ONE_ENTRY':
-      return result.personId ? `/people/${result.personId}` : '#';
+      return result.personId ? `/people/${result.personId}/one-on-ones/${result.id}` : '#';
     case 'QUICK_NOTE':
       return '/quick-notes';
     case 'ACTION_ITEM':
-      return result.personId ? `/people/${result.personId}` : '#';
+      return result.personId ? `/people/${result.personId}?tab=action-items` : '#';
     case 'PDP_GOAL':
     case 'PDP_UPDATE':
-      return result.personId ? `/people/${result.personId}` : '#';
+      return result.personId ? `/people/${result.personId}?tab=pdp-goals` : '#';
     case 'KUDOS':
-      return result.personId ? `/people/${result.personId}` : '#';
+      return result.personId ? `/people/${result.personId}?tab=kudos` : '#';
     default:
       return '#';
   }

@@ -10,6 +10,9 @@ const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   useParams: () => ({ id: 'person-uuid-123' }),
+  useSearchParams: () => ({
+    get: () => null,
+  }),
 }));
 
 jest.mock('next-auth/react', () => ({
