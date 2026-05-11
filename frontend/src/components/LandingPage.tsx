@@ -52,10 +52,10 @@ export default function LandingPage() {
               rel="noopener noreferrer"
             >
               <Server size={16} aria-hidden="true" />
-              Deploy on Docker
+              Deploy with Docker
             </a>
           </div>
-          <p className="landing-hero__tagline">
+          <p className="landing-hero__slogan">
             Lead with memory. Act with clarity.
           </p>
         </div>

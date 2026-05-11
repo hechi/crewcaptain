@@ -51,11 +51,11 @@ describe('LandingPage', () => {
     expect(mockSignIn).toHaveBeenCalledWith('oidc', { callbackUrl: '/dashboard' });
   });
 
-  it('should render the Deploy on Docker link', () => {
+  it('should render the Deploy with Docker link', () => {
     render(<LandingPage />);
     const link = screen.getByTestId('github-link');
     expect(link).toBeInTheDocument();
-    expect(link).toHaveTextContent('Deploy on Docker');
+    expect(link).toHaveTextContent('Deploy with Docker');
     expect(link).toHaveAttribute('href', 'https://github.com/your-org/crewcaptain');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
