@@ -36,7 +36,7 @@ describe('Home Page', () => {
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 
-  it('should show sign in button when unauthenticated', () => {
+  it('should show landing page when unauthenticated', () => {
     mockUseSession.mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -44,9 +44,8 @@ describe('Home Page', () => {
     });
 
     render(<Home />);
-    expect(screen.getByTestId('home-page')).toBeInTheDocument();
+    expect(screen.getByTestId('landing-page')).toBeInTheDocument();
     expect(screen.getByTestId('signin-button')).toBeInTheDocument();
-    expect(screen.getByText('CrewCaptain')).toBeInTheDocument();
   });
 
   it('should redirect to /dashboard when authenticated', async () => {
@@ -63,7 +62,7 @@ describe('Home Page', () => {
     });
   });
 
-  it('should call signIn with oidc provider when sign in button is clicked', () => {
+  it('should call signIn with oidc provider when Get Started button is clicked', () => {
     mockUseSession.mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -73,5 +72,21 @@ describe('Home Page', () => {
     render(<Home />);
     screen.getByTestId('signin-button').click();
     expect(mockSignIn).toHaveBeenCalledWith('oidc', { callbackUrl: '/dashboard' });
+  });
+
+  it('should render the full landing page with all sections when unauthenticated', () => {
+    mockUseSession.mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: jest.fn(),
+    });
+
+    render(<Home />);
+    expect(screen.getByTestId('hero-section')).toBeInTheDocument();
+    expect(screen.getByTestId('features-section')).toBeInTheDocument();
+    expect(screen.getByTestId('how-section')).toBeInTheDocument();
+    expect(screen.getByTestId('privacy-section')).toBeInTheDocument();
+    expect(screen.getByTestId('cta-section')).toBeInTheDocument();
+    expect(screen.getByTestId('footer')).toBeInTheDocument();
   });
 });
