@@ -15,6 +15,7 @@ build/
 .gradle/
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+!api/gradle/wrapper/gradle-wrapper.jar
 
 # IDE files
 .idea/

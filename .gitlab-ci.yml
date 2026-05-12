@@ -1,0 +1,77 @@
+stages:
+  - test
+  - build
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_USER_HOME: "${CI_PROJECT_DIR}/.gradle-home"
+
+# --- Test Stage (all branches) ---
+
+test-api:
+  stage: test
+  image: gradle:8-jdk21
+  services:
+    - name: docker:24-dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
+    TESTCONTAINERS_RYUK_DISABLED: "true"
+    TESTCONTAINERS_HOST_OVERRIDE: "docker"
+    DOCKER_API_VERSION: "1.43"
+  script:
+    - cd api
+    - gradle test --info
+  cache:
+    key: gradle-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .gradle-home/caches/
+      - .gradle-home/wrapper/
+      - api/build/
+    policy: pull-push
+
+test-frontend:
+  stage: test
+  image: node:20-alpine
+  script:
+    - cd frontend
+    - npm ci
+    - npm test
+  cache:
+    key: npm-${CI_COMMIT_REF_SLUG}
+    paths:
+      - frontend/node_modules/
+    policy: pull-push
+
+# --- Build Stage (main branch only) ---
+
+build-api:
+  stage: build
+  image: docker:27
+  variables:
+    IMAGE_TAG: ${CI_REGISTRY_IMAGE}/api:${CI_COMMIT_SHORT_SHA}
+    IMAGE_TAG_LATEST: ${CI_REGISTRY_IMAGE}/api:latest
+  before_script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+  script:
+    - docker build -t ${IMAGE_TAG} -t ${IMAGE_TAG_LATEST} api/
+    - docker push ${IMAGE_TAG}
+    - docker push ${IMAGE_TAG_LATEST}
+  only:
+    - main
+
+build-frontend:
+  stage: build
+  image: docker:27
+  variables:
+    IMAGE_TAG: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHORT_SHA}
+    IMAGE_TAG_LATEST: ${CI_REGISTRY_IMAGE}/frontend:latest
+  before_script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+  script:
+    - docker build -t ${IMAGE_TAG} -t ${IMAGE_TAG_LATEST} frontend/
+    - docker push ${IMAGE_TAG}
+    - docker push ${IMAGE_TAG_LATEST}
+  only:
+    - main

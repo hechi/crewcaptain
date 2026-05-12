@@ -558,6 +558,31 @@ psql -h localhost -U crewcaptain -d crewcaptain < backup_20250508.sql
 
 ---
 
+## CI/CD (GitLab)
+
+The project includes a `.gitlab-ci.yml` pipeline for the GitLab instance at `git.root-base.de`.
+
+### Pipeline Stages
+
+| Stage | Trigger | Jobs |
+|-------|---------|------|
+| **test** | All branches | `test-api` (Gradle + Testcontainers), `test-frontend` (Jest) |
+| **build** | `main` only | `build-api` (Docker image), `build-frontend` (Docker image) |
+
+### Container Registry
+
+Docker images are published to the GitLab Container Registry on every push to `main`:
+
+- `<registry>/api:latest` and `<registry>/api:<commit-sha>`
+- `<registry>/frontend:latest` and `<registry>/frontend:<commit-sha>`
+
+### Runner Requirements
+
+- GitLab runners must support Docker-in-Docker (`docker:27-dind` service)
+- Docker-in-Docker is used for both Testcontainers (backend tests) and image builds
+
+---
+
 ## Contributing
 
 1. Read `AGENTS.md` for the full development workflow and architecture rules
