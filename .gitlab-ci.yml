@@ -2,7 +2,13 @@ stages:
   - test
   - build
 
+services:
+  - name: docker:24-dind
+    command: ["--tls=false"]
+
 variables:
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "${CI_PROJECT_DIR}/.gradle-home"
 
@@ -11,12 +17,7 @@ variables:
 test-api:
   stage: test
   image: gradle:8-jdk21
-  services:
-    - name: docker:24-dind
-      command: ["--tls=false"]
   variables:
-    DOCKER_HOST: "tcp://docker:2375"
-    DOCKER_TLS_CERTDIR: ""
     TESTCONTAINERS_RYUK_DISABLED: "true"
     TESTCONTAINERS_HOST_OVERRIDE: "docker"
     DOCKER_API_VERSION: "1.43"
@@ -34,6 +35,7 @@ test-api:
 test-frontend:
   stage: test
   image: node:20-alpine
+  services: []
   script:
     - cd frontend
     - npm ci
