@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T14:00:00Z — Added GitLab CI/CD pipeline for testing and Docker image publishing
+2026-05-13T10:00:00Z — Runtime API proxy route replaces build-time rewrites
 
 ## Current Status
-GitLab CI/CD pipeline added. All branches run backend and frontend tests. The main branch additionally builds Docker images and publishes them to the GitLab Container Registry. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 904 tests pass.
+Docker Compose updated to pull pre-built images from registry. API proxy changed from build-time Next.js rewrites to a runtime route handler, allowing API_BASE_URL to be configured via environment variables at deploy time. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 912 tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -95,6 +95,8 @@ GitLab CI/CD pipeline added. All branches run backend and frontend tests. The ma
 - [x] Workspaces — Lightweight organizational containers for grouping people. Backend: Workspace domain aggregate with name (max 100), description (max 500), displayOrder. WorkspaceService with CRUD + person assignment. WorkspaceController (POST/GET/PUT/DELETE /api/v1/workspaces, PUT /api/v1/workspaces/persons/{id}/workspace). Flyway migration V20250511120002 creates workspaces table and adds workspace_id FK to persons (nullable, ON DELETE SET NULL). PersonRepository updated with workspace filter. AuditLogEntry extended with WORKSPACE entity type. Frontend: TypeScript types, API client (7 functions), WorkspaceSelector component, WorkspaceForm component, WorkspaceList component, WorkspaceAssignment component (inline dropdown on person detail page with auto-save), dedicated /workspaces page with CRUD and delete confirmation. Navigation link in user menu. Middleware auth coverage. Full test coverage: domain (18 tests), service (15 tests), controller (15 tests), frontend components (WorkspaceSelector 5, WorkspaceForm 8, WorkspaceList 6, WorkspaceAssignment 7), page (11 tests), API client (8 tests). (2026-05-11)
 - [x] Landing Page — Modern, high-converting landing page with cyberpunk-lite dark theme. Hero section with animated HUD visual motif (compass rings), badge with "Self-hosted · Privacy-first · Open Source", 6 feature cards with glassmorphism (1:1 Management, PDP Goal Tracking, Action Items, People Directory, Quick Notes Inbox, Dashboard & Insights), 3-step deployment guide (Clone & Configure, Docker Compose Up, Start Leading), privacy section with AES-256/Self-Hosted/AGPL badges, final CTA section, and footer with links. Fully responsive, accessible (WCAG AA), respects prefers-reduced-motion. Authenticated users redirect to dashboard. Jest CSS mock added for test compatibility. Frontend tests: LandingPage component (18 tests), HomePage page (5 tests). (2026-05-11)
 - [x] GitLab CI/CD Pipeline — .gitlab-ci.yml with test stage (all branches: backend ./gradlew test with DinD for Testcontainers, frontend npm test) and build stage (main only: Docker image build + push to GitLab Container Registry). Images tagged with commit SHA and latest. Gradle/npm caching. (2026-05-11)
+- [x] Docker Compose production registry — docker-compose.yml uses pre-built images from reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest. Build directives moved to docker-compose.override.yml for local dev. DB port no longer exposed in production compose. (2026-05-12)
+- [x] Runtime API proxy — Replaced build-time Next.js rewrites with a runtime API route handler (/api/v1/[...path]/route.ts). API_BASE_URL is now read at request time from environment variables, enabling runtime configuration without rebuilding the image. (2026-05-13)
 
 ## In Progress
 - (none)
@@ -109,7 +111,7 @@ GitLab CI/CD pipeline added. All branches run backend and frontend tests. The ma
 | ID  | Description                                          | Severity | Status |
 |-----|------------------------------------------------------|----------|--------|
 | 001 | Backend tests require Java 21 explicitly (system default may differ) | Low | Open |
-| 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Open |
+| 002 | docker-compose.yml exposes db port 5432 (should only be in override) | Low | Fixed |
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
@@ -175,7 +177,7 @@ GitLab CI/CD pipeline added. All branches run backend and frontend tests. The ma
 ## Test Coverage Summary
 - Backend: All 1013 tests pass — domain (including Workspace 18 tests), application (including WorkspaceService 15 tests), controller slice (including WorkspaceController 15 tests), integration, encryption adapter, property, full-text search GIN index tests (last run: 2026-05-11)
   - 1 pre-existing intermittent failure (Property 14 edge case)
-- Frontend: 904 total — component tests (including LandingPage 18, WorkspaceSelector 5, WorkspaceForm 8, WorkspaceList 6, WorkspaceAssignment 7), page tests (including HomePage 5, WorkspacesPage 11 tests, PeopleListPage workspace filter 3 tests), API client tests (including workspace 8 tests), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
+- Frontend: 912 total — component tests (including LandingPage 18, WorkspaceSelector 5, WorkspaceForm 8, WorkspaceList 6, WorkspaceAssignment 7), page tests (including HomePage 5, WorkspacesPage 11 tests, PeopleListPage workspace filter 3 tests), API client tests (including workspace 8 tests), API proxy route tests (8 tests), auth token refresh tests, middleware tests, Navigation test (last run: 2026-05-11)
 - E2E: No tests yet (Playwright configured)
 
 ## Open Questions / Flags for Human Review
