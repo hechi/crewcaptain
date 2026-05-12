@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-13T10:00:00Z — Runtime API proxy route replaces build-time rewrites
+2026-05-13T12:00:00Z — Docker Compose production registry images with dev override
 
 ## Current Status
-Docker Compose updated to pull pre-built images from registry. API proxy changed from build-time Next.js rewrites to a runtime route handler, allowing API_BASE_URL to be configured via environment variables at deploy time. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 912 tests pass.
+Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 912 tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)

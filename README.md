@@ -71,7 +71,9 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 
 ## Quick Start
 
-### Using Docker Compose (recommended)
+### Using Docker Compose (Production)
+
+The production `docker-compose.yml` pulls pre-built images from the container registry:
 
 ```bash
 # 1. Clone the repository
@@ -82,13 +84,31 @@ cd crewcaptain
 cp .env.example .env
 # Edit .env with your actual values (database credentials, OIDC settings)
 
-# 3. Start the full stack
-docker compose up --build
+# 3. Start the full stack (pulls images from registry)
+docker compose up -d
 
 # 4. Access the application
 # Frontend: http://localhost:3000
 # API:      http://localhost:8080
 ```
+
+**Images:**
+- `reg.root-base.de/poxy/crewcaptain/api:latest`
+- `reg.root-base.de/poxy/crewcaptain/frontend:latest`
+
+### Using Docker Compose (Local Development)
+
+The `docker-compose.override.yml` adds build directives and dev tooling. When present, `docker compose up` will build from source:
+
+```bash
+# Copy the example override file
+cp docker-compose.override.example.yml docker-compose.override.yml
+
+# Build and start with local source (override is auto-loaded)
+docker compose up --build
+```
+
+The override exposes the database port (5432), mounts source volumes for hot-reload, and sets development environment variables.
 
 ### Local Development
 
