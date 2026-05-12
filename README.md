@@ -411,7 +411,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | `OIDC_CLIENT_ID`    | OIDC client ID from authentik                   | Yes      |
 | `OIDC_CLIENT_SECRET`| OIDC client secret from authentik               | Yes      |
 | `OIDC_ISSUER`       | authentik OIDC issuer URL                       | Yes      |
-| `API_BASE_URL`      | Internal URL to backend API                     | Yes      |
+| `API_BASE_URL`      | Internal URL to backend API (read at runtime, e.g., `http://api:8080` for Docker or `https://api.example.com` for external) | Yes      |
 
 *`ENCRYPTION_KEY` is required when sensitive field encryption is enabled. Generate with: `openssl rand -base64 32`. Must be exactly 32 bytes when Base64-decoded (256-bit AES key). Without this key, sensitive content is stored in plaintext (the `sensitive` flag still works for UI labeling).
 
