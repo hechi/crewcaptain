@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-11T12:00:00Z — Added modern landing page with cyberpunk-lite dark theme
+2026-05-11T14:00:00Z — Added GitLab CI/CD pipeline for testing and Docker image publishing
 
 ## Current Status
-Landing page complete. CrewCaptain now has a modern, high-converting landing page with the cyberpunk-lite dark theme from DESIGN.md. The page features a hero section with HUD visual motif, 6 feature cards with glassmorphism, a 3-step deployment guide, privacy/self-hosted messaging section, and dual CTA sections. Fully responsive, accessible (WCAG AA), respects prefers-reduced-motion. Authenticated users are still redirected to the dashboard. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 904 tests pass.
+GitLab CI/CD pipeline added. All branches run backend and frontend tests. The main branch additionally builds Docker images and publishes them to the GitLab Container Registry. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 904 tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -94,9 +94,16 @@ Landing page complete. CrewCaptain now has a modern, high-converting landing pag
 - [x] Permanent Delete from Trash — DELETE /api/v1/persons/{id}/permanent endpoint removes a soft-deleted person permanently, cascading to all child tables. Migration V20250511120001 adds ON DELETE CASCADE to FK constraints on action_items, pdp_goals, kudos, and quick_notes (previously unconstrained). Audit log entry recorded. Frontend: "Delete Forever" button on Trash page with inline confirmation UI (Yes, Delete / Cancel). userId scoping enforced. Full test coverage: domain (AuditLogEntry 1 new test), service (PersonService 4 new tests), controller (PersonController 4 new tests), integration (PersonSoftDelete 3 new tests including cascade verification), frontend page (TrashPage 7 new tests), API client (2 new tests). (2026-05-11)
 - [x] Workspaces — Lightweight organizational containers for grouping people. Backend: Workspace domain aggregate with name (max 100), description (max 500), displayOrder. WorkspaceService with CRUD + person assignment. WorkspaceController (POST/GET/PUT/DELETE /api/v1/workspaces, PUT /api/v1/workspaces/persons/{id}/workspace). Flyway migration V20250511120002 creates workspaces table and adds workspace_id FK to persons (nullable, ON DELETE SET NULL). PersonRepository updated with workspace filter. AuditLogEntry extended with WORKSPACE entity type. Frontend: TypeScript types, API client (7 functions), WorkspaceSelector component, WorkspaceForm component, WorkspaceList component, WorkspaceAssignment component (inline dropdown on person detail page with auto-save), dedicated /workspaces page with CRUD and delete confirmation. Navigation link in user menu. Middleware auth coverage. Full test coverage: domain (18 tests), service (15 tests), controller (15 tests), frontend components (WorkspaceSelector 5, WorkspaceForm 8, WorkspaceList 6, WorkspaceAssignment 7), page (11 tests), API client (8 tests). (2026-05-11)
 - [x] Landing Page — Modern, high-converting landing page with cyberpunk-lite dark theme. Hero section with animated HUD visual motif (compass rings), badge with "Self-hosted · Privacy-first · Open Source", 6 feature cards with glassmorphism (1:1 Management, PDP Goal Tracking, Action Items, People Directory, Quick Notes Inbox, Dashboard & Insights), 3-step deployment guide (Clone & Configure, Docker Compose Up, Start Leading), privacy section with AES-256/Self-Hosted/AGPL badges, final CTA section, and footer with links. Fully responsive, accessible (WCAG AA), respects prefers-reduced-motion. Authenticated users redirect to dashboard. Jest CSS mock added for test compatibility. Frontend tests: LandingPage component (18 tests), HomePage page (5 tests). (2026-05-11)
+- [x] GitLab CI/CD Pipeline — .gitlab-ci.yml with test stage (all branches: backend ./gradlew test with DinD for Testcontainers, frontend npm test) and build stage (main only: Docker image build + push to GitLab Container Registry). Images tagged with commit SHA and latest. Gradle/npm caching. (2026-05-11)
 
 ## In Progress
 - (none)
+
+## Architecture Decisions Made This Session
+- GitLab CI uses Docker-in-Docker for both Testcontainers (backend tests) and image builds — avoids needing shell executors or Kaniko
+- Images tagged with both commit SHA and `latest` — SHA for traceability, latest for easy deployment references
+- `only: main` restricts build stage — feature branches only run tests, no wasted build time
+- Gradle and npm caches keyed by branch slug — balances cache freshness with reuse
 
 ## Known Issues / Bugs
 | ID  | Description                                          | Severity | Status |
