@@ -5,8 +5,6 @@ services:
       POSTGRES_DB: crewcaptain
       POSTGRES_USER: ${DB_USER:-crewcaptain}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -14,10 +12,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    # Port 5432 NOT exposed to host
 
   api:
-    build: ./api
+    image: reg.root-base.de/poxy/crewcaptain/api:latest
     ports:
       - "8080:8080"
     environment:
@@ -37,7 +34,7 @@ services:
       retries: 5
 
   frontend:
-    build: ./frontend
+    image: reg.root-base.de/poxy/crewcaptain/frontend:latest
     ports:
       - "3000:3000"
     environment:
