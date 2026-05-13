@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-13T12:00:00Z — Docker Compose production registry images with dev override
+2026-05-13T21:45:00Z — Fix actuator health endpoint for Docker healthcheck
 
 ## Current Status
-Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Backend: 1013 tests pass. Frontend: 912 tests pass.
+Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Backend: 1046 tests pass. Frontend: 912 tests pass. Health endpoint fixed — actuator dependency added so Docker healthcheck works correctly.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -115,6 +115,7 @@ Docker Compose production file (`docker-compose.yml`) now pulls pre-built images
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
+| 006 | Docker healthcheck fails — spring-boot-starter-actuator missing, /actuator/health returns 404 | High | Fixed |
 
 ## Next Steps (Prioritized)
 1. (Feature backlog complete — all PRD features implemented)
