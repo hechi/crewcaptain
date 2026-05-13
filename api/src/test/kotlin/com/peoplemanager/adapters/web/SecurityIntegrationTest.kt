@@ -84,8 +84,9 @@ class SecurityIntegrationTest {
 
     @Test
     fun `should allow unauthenticated access to actuator health endpoint`() {
-        // Health endpoint is permitted without auth; returns 404 because
-        // actuator is not configured in this test slice, but NOT 401
+        // Security config permits /actuator/health without auth.
+        // In a @WebMvcTest slice, actuator endpoints are not loaded, so we
+        // verify the security layer does not return 401 (it returns 404 instead).
         val result = mockMvc.perform(get("/actuator/health")).andReturn()
         result.response.status shouldNotBe 401
     }
