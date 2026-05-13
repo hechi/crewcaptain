@@ -9,7 +9,8 @@ RUN gradle bootJar --no-daemon
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine AS runtime
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN apk add --no-cache curl && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 USER appuser
