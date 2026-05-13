@@ -21,4 +21,6 @@ interface SpringDataOneOnOneEntryRepository : JpaRepository<OneOnOneEntryEntity,
 
     @Query("SELECT e.meetingDate FROM OneOnOneEntryEntity e WHERE e.userId = :userId ORDER BY e.meetingDate ASC")
     fun findAllMeetingDatesByUserId(@Param("userId") userId: UUID): List<Instant>
+
+    fun countByMeetingDateAfter(date: Instant): Long
 }

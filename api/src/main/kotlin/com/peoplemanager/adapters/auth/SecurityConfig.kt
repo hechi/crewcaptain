@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -14,13 +16,36 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.intercept.AuthorizationFilter
 import java.time.Instant
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig {
+class SecurityConfig(
+    @Value("\${app.metrics.token:}") private val metricsToken: String
+) {
 
     @Bean
+    @Order(1)
+    fun actuatorSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .securityMatcher("/actuator/**")
+            .csrf { it.disable() }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .authorizeHttpRequests { auth ->
+                auth.requestMatchers("/actuator/health").permitAll()
+                auth.requestMatchers("/actuator/prometheus").permitAll()
+                auth.anyRequest().denyAll()
+            }
+            .addFilterBefore(
+                MetricsTokenFilter(metricsToken),
+                AuthorizationFilter::class.java
+            )
+        return http.build()
+    }
+
+    @Bean
+    @Order(2)
     fun securityFilterChain(
         http: HttpSecurity,
         jwtConverter: UserProvisioningJwtAuthenticationConverter
@@ -29,7 +54,6 @@ class SecurityConfig {
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers("/actuator/health").permitAll()
                 auth.anyRequest().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->

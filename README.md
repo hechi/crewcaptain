@@ -38,6 +38,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Audit Log** — Records key actions (create, update, delete, restore) across all entities for the manager's own traceability. Paginated audit log page with entity type and action filters. All entries scoped by userId. Accessible via user menu in navigation.
 - **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (private, no sharing). A person belongs to one workspace (optional). Opt-in: if no workspaces exist, everything works as before. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and management page accessible via user menu.
 - **Landing Page** — Modern, high-converting landing page with cyberpunk-lite dark theme. Hero section with HUD visual motif, feature cards with glassmorphism, 3-step deployment guide, privacy/self-hosted messaging, and dual CTA sections. Fully responsive, accessible (WCAG AA), respects `prefers-reduced-motion`. Authenticated users are redirected to the dashboard.
+- **Prometheus Metrics** — Exposes application metrics at `/actuator/prometheus` for Prometheus scraping. Secured with a bearer token (`METRICS_TOKEN`). Includes JVM metrics, HTTP request metrics, HikariCP connection pool stats, and custom 1:1 metrics (total entries, entries in last 7 days). Health endpoint at `/actuator/health` remains unauthenticated for Docker healthchecks.
 
 ### Planned
 
@@ -421,6 +422,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | `NOTIFICATION_CRON` | Cron expression for notification scheduler (default: `0 0 * * * *` — every hour) | No |
 | `NOTIFICATION_DUE_SOON_DAYS` | Days before due date to trigger "due soon" notifications (default: 3) | No |
 | `NOTIFICATION_ANNIVERSARY_LOOKAHEAD_DAYS` | Days to look ahead for anniversary notifications (default: 7) | No |
+| `METRICS_TOKEN`    | Bearer token for securing the `/actuator/prometheus` metrics endpoint. If not set, the endpoint returns 403. Generate with: `openssl rand -hex 32` | No |
 
 ### Frontend
 
@@ -465,6 +467,56 @@ npm run test:e2e
 ```
 
 All backend database tests use Testcontainers with real PostgreSQL — no H2.
+
+---
+
+## Monitoring (Prometheus + Grafana)
+
+CrewCaptain exposes a Prometheus-compatible metrics endpoint for monitoring.
+
+### Endpoints
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `/actuator/health` | None | Health check (used by Docker healthcheck) |
+| `/actuator/prometheus` | Bearer token (`METRICS_TOKEN`) | Prometheus metrics scrape endpoint |
+
+### Setup
+
+1. Set `METRICS_TOKEN` in your `.env` file:
+   ```bash
+   METRICS_TOKEN=$(openssl rand -hex 32)
+   ```
+
+2. Configure your Prometheus `scrape_configs`:
+   ```yaml
+   scrape_configs:
+     - job_name: 'crewcaptain-api'
+       metrics_path: '/actuator/prometheus'
+       bearer_token: '<your-METRICS_TOKEN-value>'
+       static_configs:
+         - targets: ['api:8080']
+   ```
+
+### Available Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `crewcaptain_one_on_ones` | Gauge | Total number of 1:1 entries across all users |
+| `crewcaptain_one_on_ones_last_7_days` | Gauge | 1:1 entries with meeting date in the last 7 days |
+| `jvm_memory_*` | Various | JVM memory usage (heap, non-heap, buffers) |
+| `jvm_gc_*` | Various | Garbage collection stats |
+| `hikaricp_*` | Various | Database connection pool metrics |
+| `http_server_requests_*` | Timer | HTTP request latency and count by endpoint |
+| `application_ready_time_seconds` | Gauge | Application startup time |
+
+All metrics include the tag `application="crewcaptain"`.
+
+### Security
+
+- If `METRICS_TOKEN` is not configured, the `/actuator/prometheus` endpoint returns `403 Forbidden`.
+- All other actuator endpoints (except `/actuator/health`) are blocked.
+- The metrics endpoint does not expose any user data — only operational metrics.
 
 ---
 
