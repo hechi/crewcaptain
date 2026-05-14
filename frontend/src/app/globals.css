@@ -412,39 +412,47 @@ select option {
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  padding: 6px;
+  padding: 4px 0;
   background: var(--glass-elevated-bg);
   backdrop-filter: var(--glass-elevated-blur);
   -webkit-backdrop-filter: var(--glass-elevated-blur);
   border: 1px solid rgba(0, 240, 255, 0.15);
-  border-radius: var(--radius-large);
+  border-radius: var(--radius-small);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), var(--glow-primary);
   z-index: 50;
   animation: dropdown-enter 0.15s ease-out;
+  overflow: hidden;
 }
 
 .dropdown-panel .dropdown-item {
   display: block;
   width: 100%;
-  padding: 10px 14px;
+  padding: 10px 14px 10px 16px;
   font-family: var(--font-mono);
   font-size: var(--text-small);
   font-weight: var(--weight-medium);
   color: var(--color-text-primary);
   text-decoration: none;
-  border-radius: var(--radius-medium);
   border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
-  letter-spacing: 0.2px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  position: relative;
 }
 
 .dropdown-panel .dropdown-item:hover {
   background-color: var(--color-primary-muted);
   color: var(--color-primary);
-  box-shadow: inset 0 0 0 1px var(--color-border-glow);
+  border-left-color: var(--color-primary);
+}
+
+.dropdown-panel .dropdown-item:active {
+  background-color: rgba(0, 240, 255, 0.1);
 }
 
 .dropdown-panel .dropdown-item--danger {
@@ -454,13 +462,13 @@ select option {
 .dropdown-panel .dropdown-item--danger:hover {
   background-color: var(--color-alert-muted);
   color: var(--color-alert);
-  box-shadow: inset 0 0 0 1px rgba(255, 45, 123, 0.2);
+  border-left-color: var(--color-alert);
 }
 
 .dropdown-panel .dropdown-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-border-glow), transparent);
-  margin: 6px 8px;
+  background: linear-gradient(90deg, var(--color-primary-muted), var(--color-border-glow), transparent);
+  margin: 4px 0;
 }
 
 @keyframes dropdown-enter {
