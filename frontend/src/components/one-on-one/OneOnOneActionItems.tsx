@@ -14,14 +14,15 @@ interface OneOnOneActionItemsProps {
   token: string;
   /** The person this 1:1 is with */
   personId: string;
-  /** The current 1:1 entry ID (for linking new action items) */
-  entryId: string;
+  /** The current 1:1 entry ID (for linking new action items). Null on create page before save. */
+  entryId?: string | null;
 }
 
 /**
  * Inline action items section for the 1:1 entry page.
  * Shows open action items for the person, highlights items from this session,
  * and provides a quick-add form (title + optional due date).
+ * When entryId is null (create page), items are created without a link.
  */
 export default function OneOnOneActionItems({ token, personId, entryId }: OneOnOneActionItemsProps) {
   const [openItems, setOpenItems] = useState<ActionItem[]>([]);
@@ -42,9 +43,13 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
       const openResult = await listActionItemsByPerson(token, personId, { status: 'OPEN', size: 50 });
       setOpenItems(openResult.content);
 
-      // Fetch action items created in this session
-      const sessionResult = await listActionItemsByPerson(token, personId, { originatingEntryId: entryId, size: 50 });
-      setSessionItems(sessionResult.content);
+      // Fetch action items created in this session (only if we have an entryId)
+      if (entryId) {
+        const sessionResult = await listActionItemsByPerson(token, personId, { originatingEntryId: entryId, size: 50 });
+        setSessionItems(sessionResult.content);
+      } else {
+        setSessionItems([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load action items');
     } finally {
@@ -56,8 +61,8 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
     fetchActionItems();
   }, [fetchActionItems]);
 
-  const handleQuickAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleQuickAdd = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
     setFormError(null);
 
     if (!title.trim()) {
@@ -70,7 +75,7 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
       const request: CreateActionItemRequest = {
         title: title.trim(),
         dueDate: dueDate || null,
-        originatingEntryId: entryId,
+        originatingEntryId: entryId || null,
       };
       await createActionItem(token, personId, request);
       setTitle('');
@@ -125,8 +130,7 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
       </h3>
 
       {/* Quick-add form */}
-      <form
-        onSubmit={handleQuickAdd}
+      <div
         data-testid="quick-add-action-item-form"
         style={{
           display: 'flex',
@@ -156,6 +160,7 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
             type="text"
             value={title}
             onChange={(e) => { setTitle(e.target.value); if (formError) setFormError(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleQuickAdd(); } }}
             placeholder="What needs to be done?"
             data-testid="quick-action-title-input"
             aria-required="true"
@@ -204,7 +209,8 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
           />
         </div>
         <button
-          type="submit"
+          type="button"
+          onClick={handleQuickAdd}
           disabled={isSubmitting}
           data-testid="quick-add-submit-btn"
           style={{
@@ -223,7 +229,7 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
         >
           {isSubmitting ? 'Adding...' : '+ Add'}
         </button>
-      </form>
+      </div>
 
       {formError && (
         <p

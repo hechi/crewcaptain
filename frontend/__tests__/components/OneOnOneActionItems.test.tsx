@@ -275,4 +275,39 @@ describe('OneOnOneActionItems', () => {
       expect(mockListActionItemsByPerson).toHaveBeenCalledWith('test-token', 'person-1', { originatingEntryId: 'entry-1', size: 50 });
     });
   });
+
+  it('should not fetch session items when entryId is not provided', async () => {
+    mockListActionItemsByPerson.mockResolvedValue({ content: [], page: 0, size: 50, totalElements: 0, totalPages: 0 });
+
+    render(<OneOnOneActionItems token="test-token" personId="person-1" />);
+
+    await waitFor(() => {
+      expect(mockListActionItemsByPerson).toHaveBeenCalledWith('test-token', 'person-1', { status: 'OPEN', size: 50 });
+    });
+
+    // Should NOT have been called with originatingEntryId
+    expect(mockListActionItemsByPerson).toHaveBeenCalledTimes(1);
+  });
+
+  it('should create action item without originatingEntryId when entryId is not provided', async () => {
+    mockListActionItemsByPerson.mockResolvedValue({ content: [], page: 0, size: 50, totalElements: 0, totalPages: 0 });
+    mockCreateActionItem.mockResolvedValue(openItem);
+
+    render(<OneOnOneActionItems token="test-token" personId="person-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('quick-add-action-item-form')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByTestId('quick-action-title-input'), { target: { value: 'New task' } });
+    fireEvent.click(screen.getByTestId('quick-add-submit-btn'));
+
+    await waitFor(() => {
+      expect(mockCreateActionItem).toHaveBeenCalledWith('test-token', 'person-1', {
+        title: 'New task',
+        dueDate: null,
+        originatingEntryId: null,
+      });
+    });
+  });
 });

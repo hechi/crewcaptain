@@ -11,6 +11,7 @@ import { useStableToken } from '@/lib/useStableToken';
 import { Person } from '@/types/person';
 import { OneOnOneSeries } from '@/types/one-on-one';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
+import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
 
 export default function CreateOneOnOneEntryPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -150,6 +151,15 @@ export default function CreateOneOnOneEntryPage() {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
+        actionItemsSlot={(() => {
+          const token = getToken();
+          return token ? (
+            <OneOnOneActionItems
+              token={token}
+              personId={personId}
+            />
+          ) : null;
+        })()}
       />
     </div>
   );

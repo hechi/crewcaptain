@@ -242,19 +242,17 @@ export default function OneOnOneEntryDetailPage() {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
+        actionItemsSlot={(() => {
+          const token = getToken();
+          return token ? (
+            <OneOnOneActionItems
+              token={token}
+              personId={personId}
+              entryId={entryId}
+            />
+          ) : null;
+        })()}
       />
-
-      {/* Inline Action Items */}
-      {(() => {
-        const token = getToken();
-        return token ? (
-          <OneOnOneActionItems
-            token={token}
-            personId={personId}
-            entryId={entryId}
-          />
-        ) : null;
-      })()}
     </div>
   );
 }
