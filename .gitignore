@@ -9,6 +9,7 @@ docker-compose.override.yml
 # Node.js
 node_modules/
 .next/
+*.tsbuildinfo
 
 # Gradle / Java
 build/

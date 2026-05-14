@@ -75,12 +75,13 @@ describe('LandingPage', () => {
 
   it('should render feature titles', () => {
     render(<LandingPage />);
-    expect(screen.getByText('1:1 Management')).toBeInTheDocument();
-    expect(screen.getByText('PDP Goal Tracking')).toBeInTheDocument();
-    expect(screen.getByText('Action Items')).toBeInTheDocument();
-    expect(screen.getByText('People Directory')).toBeInTheDocument();
-    expect(screen.getByText('Quick Notes Inbox')).toBeInTheDocument();
-    expect(screen.getByText('Dashboard & Insights')).toBeInTheDocument();
+    const featuresSection = screen.getByTestId('features-section');
+    expect(featuresSection).toHaveTextContent('1:1 Management');
+    expect(featuresSection).toHaveTextContent('PDP Goal Tracking');
+    expect(featuresSection).toHaveTextContent('Action Items');
+    expect(featuresSection).toHaveTextContent('People Directory');
+    expect(featuresSection).toHaveTextContent('Quick Notes Inbox');
+    expect(featuresSection).toHaveTextContent('Dashboard & Insights');
   });
 
   it('should render the how it works section with 3 steps', () => {
@@ -150,5 +151,10 @@ describe('LandingPage', () => {
     const hiddenElements = heroSection.querySelectorAll('[aria-hidden="true"]');
     // Grid overlay + HUD visual
     expect(hiddenElements.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should render the screenshot showcase section', () => {
+    render(<LandingPage />);
+    expect(screen.getByTestId('screenshot-showcase')).toBeInTheDocument();
   });
 });

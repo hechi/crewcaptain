@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-13T23:10:00Z — Add Prometheus metrics endpoint with token auth and custom 1:1 metrics
+2026-05-14T10:30:00Z — Add screenshot showcase section to landing page
 
 ## Current Status
-Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Prometheus metrics endpoint added with bearer token security and custom 1:1 metrics. Backend: 1061 tests pass. Frontend: 912 tests pass.
+Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Prometheus metrics endpoint added with bearer token security and custom 1:1 metrics. Landing page now includes an interactive screenshot showcase section with tabbed gallery. Backend: 1061 tests pass. Frontend: 931 tests pass (including 18 new ScreenshotShowcase tests).
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -98,6 +98,7 @@ Docker Compose production file (`docker-compose.yml`) now pulls pre-built images
 - [x] Docker Compose production registry — docker-compose.yml uses pre-built images from reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest. Build directives moved to docker-compose.override.yml for local dev. DB port no longer exposed in production compose. (2026-05-12)
 - [x] Runtime API proxy — Replaced build-time Next.js rewrites with a runtime API route handler (/api/v1/[...path]/route.ts). API_BASE_URL is now read at request time from environment variables, enabling runtime configuration without rebuilding the image. (2026-05-13)
 - [x] Prometheus Metrics — /actuator/prometheus endpoint secured with bearer token (METRICS_TOKEN). Micrometer + Prometheus registry. Custom 1:1 metrics (total entries, entries last 7 days). Separate security filter chain for actuator endpoints. JVM, HTTP, HikariCP metrics included. Health endpoint remains unauthenticated. (2026-05-13)
+- [x] Landing Page Screenshot Showcase — Interactive tabbed gallery section between Features and How It Works. Four screenshots: Dashboard overview, Action Items, Person Detail, and Search. Accessible tab navigation with keyboard support (ArrowLeft/ArrowRight), ARIA roles (tablist/tab/tabpanel), glassmorphism styling consistent with cyberpunk-lite theme. ScreenshotShowcase component with 18 tests. (2026-05-14)
 
 ## In Progress
 - (none)

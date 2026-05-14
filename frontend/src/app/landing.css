@@ -314,6 +314,88 @@
   margin: 0;
 }
 
+/* ===== Screenshot Showcase Section ===== */
+.landing-showcase {
+  padding: var(--space-16) var(--space-6);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.landing-showcase__container {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-large);
+  padding: var(--space-6);
+  overflow: hidden;
+}
+
+.landing-showcase__tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: thin;
+}
+
+.landing-showcase__tab {
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-5);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.landing-showcase__tab:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  color: var(--color-text-primary);
+}
+
+.landing-showcase__tab--active {
+  background: var(--color-primary-muted);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: var(--glow-primary);
+}
+
+.landing-showcase__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.landing-showcase__image-wrapper {
+  width: 100%;
+  border-radius: var(--radius-medium);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.landing-showcase__image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.landing-showcase__caption {
+  margin-top: var(--space-5);
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
 /* ===== How It Works Section ===== */
 .landing-how {
   padding: var(--space-16) var(--space-6);
@@ -514,6 +596,14 @@
     grid-template-columns: 1fr;
   }
 
+  .landing-showcase__tabs {
+    justify-content: flex-start;
+  }
+
+  .landing-showcase__container {
+    padding: var(--space-4);
+  }
+
   .landing-footer__content {
     flex-direction: column;
     align-items: center;
@@ -536,6 +626,10 @@
   .landing-btn,
   .landing-feature-card,
   .landing-footer__links a {
+    transition: none;
+  }
+
+  .landing-showcase__tab {
     transition: none;
   }
 }

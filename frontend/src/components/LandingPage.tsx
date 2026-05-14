@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Compass,
 } from 'lucide-react';
+import ScreenshotShowcase from './ScreenshotShowcase';
 
 export default function LandingPage() {
   return (
@@ -119,6 +120,9 @@ export default function LandingPage() {
           />
         </div>
       </section>
+
+      {/* Screenshot Showcase Section */}
+      <ScreenshotShowcase />
 
       {/* How It Works Section */}
       <section className="landing-how" data-testid="how-section">
