@@ -347,6 +347,32 @@ class ActionItemServiceTest {
                 service.listActionItemsByPerson(ListActionItemsByPersonQuery(userId, personId))
             }
         }
+
+        @Test
+        fun `should filter by originatingEntryId`() {
+            val entryId = OneOnOneEntryId.generate()
+            val items = listOf(
+                ActionItem(
+                    id = ActionItemId.generate(),
+                    userId = userId,
+                    personId = personId,
+                    title = "From 1:1",
+                    originatingEntryId = entryId
+                )
+            )
+            val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "dueDate"))
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
+            every { actionItemRepository.findAllByUserIdAndPersonIdAndOriginatingEntryId(userId, personId, entryId, pageable) } returns
+                PageImpl(items, pageable, 1)
+
+            val result = service.listActionItemsByPerson(
+                ListActionItemsByPersonQuery(userId, personId, originatingEntryId = entryId)
+            )
+
+            result.totalElements shouldBe 1
+            result.content[0].originatingEntryId shouldBe entryId
+            verify { actionItemRepository.findAllByUserIdAndPersonIdAndOriginatingEntryId(userId, personId, entryId, pageable) }
+        }
     }
 
     @Nested

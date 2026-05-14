@@ -304,11 +304,13 @@ export async function listActionItemsByPerson(token: string, personId: string, p
   status?: ActionItemStatus;
   page?: number;
   size?: number;
+  originatingEntryId?: string;
 }): Promise<PaginatedActionItemResponse> {
   const searchParams = new URLSearchParams();
   if (params?.status) searchParams.set('status', params.status);
   if (params?.page !== undefined) searchParams.set('page', params.page.toString());
   if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+  if (params?.originatingEntryId) searchParams.set('originatingEntryId', params.originatingEntryId);
 
   const queryString = searchParams.toString();
   const url = `${API_BASE_URL}/persons/${personId}/action-items${queryString ? `?${queryString}` : ''}`;

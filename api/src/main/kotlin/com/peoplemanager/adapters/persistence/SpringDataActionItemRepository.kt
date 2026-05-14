@@ -22,6 +22,14 @@ interface SpringDataActionItemRepository : JpaRepository<ActionItemEntity, UUID>
         pageable: Pageable
     ): Page<ActionItemEntity>
 
+    @Query("SELECT a FROM ActionItemEntity a WHERE a.userId = :userId AND a.personId = :personId AND a.originatingEntryId = :originatingEntryId")
+    fun findAllByUserIdAndPersonIdAndOriginatingEntryId(
+        @Param("userId") userId: UUID,
+        @Param("personId") personId: UUID,
+        @Param("originatingEntryId") originatingEntryId: UUID,
+        pageable: Pageable
+    ): Page<ActionItemEntity>
+
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<ActionItemEntity>
 
     @Query("SELECT a FROM ActionItemEntity a WHERE a.userId = :userId AND a.status = :status")

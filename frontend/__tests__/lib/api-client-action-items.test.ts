@@ -244,6 +244,20 @@ describe('listActionItemsByPerson', () => {
       expect.any(Object)
     );
   });
+
+  it('should include originatingEntryId filter in query params', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockPaginatedResponse),
+    });
+
+    await listActionItemsByPerson(mockToken, personId, { originatingEntryId: 'entry-uuid-123' });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('originatingEntryId=entry-uuid-123'),
+      expect.any(Object)
+    );
+  });
 });
 
 describe('listAllActionItems', () => {
