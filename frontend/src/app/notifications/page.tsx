@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { listNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import { Notification } from '@/types/notification';
 import NotificationItem from '@/components/notifications/NotificationItem';
 import Pagination from '@/components/Pagination';
 import Navigation from '@/components/Navigation';
 
 export default function NotificationsPage() {
-  const { data: session } = useSession();
+  const { getToken } = useStableToken();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +18,8 @@ export default function NotificationsPage() {
   const [totalElements, setTotalElements] = useState(0);
   const [unreadOnly, setUnreadOnly] = useState(false);
 
-  const token = (session as { accessToken?: string } | null)?.accessToken || '';
-
   const fetchNotifications = useCallback(async () => {
+    const token = getToken();
     if (!token) return;
     try {
       setLoading(true);
@@ -33,13 +32,15 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, page, unreadOnly]);
+  }, [getToken, page, unreadOnly]);
 
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await markNotificationAsRead(token, notificationId);
       setNotifications((prev) =>
@@ -51,6 +52,8 @@ export default function NotificationsPage() {
   };
 
   const handleMarkAllAsRead = async () => {
+    const token = getToken();
+    if (!token) return;
     try {
       await markAllNotificationsAsRead(token);
       setNotifications((prev) =>

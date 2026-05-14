@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Person, MoraleStatus, PaginatedResponse } from '@/types/person';
 import { OneOnOneEntry, OneOnOneSeries } from '@/types/one-on-one';
 import { ActionItem, ActionItemStatus, PaginatedActionItemResponse, CreateActionItemRequest, UpdateActionItemRequest } from '@/types/action-item';
@@ -40,6 +39,7 @@ import {
   generateReviewPacket,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
+import { useStableToken } from '@/lib/useStableToken';
 import PersonForm from '@/components/PersonForm';
 import MoraleIndicator from '@/components/MoraleIndicator';
 import RememberItemsList from '@/components/RememberItemsList';
@@ -55,7 +55,7 @@ import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
 type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
 
 export default function PersonDetailPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -110,10 +110,9 @@ export default function PersonDetailPage() {
   const [showReviewPacketModal, setShowReviewPacketModal] = useState(false);
   const [generatingReviewPacket, setGeneratingReviewPacket] = useState(false);
 
-  const token = session?.accessToken as string;
-
   const fetchPerson = useCallback(async () => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
@@ -127,10 +126,11 @@ export default function PersonDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   const fetchEntries = useCallback(async (page: number = 0) => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setEntriesLoading(true);
     try {
@@ -141,10 +141,11 @@ export default function PersonDetailPage() {
     } finally {
       setEntriesLoading(false);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   const fetchSeries = useCallback(async () => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     try {
       const result = await getOneOnOneSeries(token, personId);
@@ -153,10 +154,11 @@ export default function PersonDetailPage() {
       // 404 means no series configured — that's fine
       setSeries(null);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   const fetchActionItems = useCallback(async (page: number = 0, statusFilter: ActionItemStatus | null = null) => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setActionItemsLoading(true);
     try {
@@ -170,10 +172,11 @@ export default function PersonDetailPage() {
     } finally {
       setActionItemsLoading(false);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   const fetchPdpGoals = useCallback(async (statusFilter: PdpGoalStatus | null = null) => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setPdpGoalsLoading(true);
     try {
@@ -186,10 +189,11 @@ export default function PersonDetailPage() {
     } finally {
       setPdpGoalsLoading(false);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   const fetchKudos = useCallback(async () => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setKudosLoading(true);
     try {
@@ -200,7 +204,7 @@ export default function PersonDetailPage() {
     } finally {
       setKudosLoading(false);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   useEffect(() => {
     fetchPerson();
@@ -240,6 +244,8 @@ export default function PersonDetailPage() {
     email?: string;
     tags?: string[];
   }) => {
+    const token = getToken();
+    if (!token) return;
     try {
       const updated = await updatePerson(token, personId, data);
       setPerson(updated);
@@ -250,6 +256,8 @@ export default function PersonDetailPage() {
   };
 
   const handleDelete = async () => {
+    const token = getToken();
+    if (!token) return;
     try {
       await deletePerson(token, personId);
       router.push('/people');
@@ -259,6 +267,8 @@ export default function PersonDetailPage() {
   };
 
   const handleMoraleUpdate = async () => {
+    const token = getToken();
+    if (!token) return;
     try {
       const updated = await setMorale(token, personId, {
         status: moraleFormStatus,
@@ -271,6 +281,8 @@ export default function PersonDetailPage() {
   };
 
   const handleAddRememberItem = async (text: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       const items = await addRememberItem(token, personId, text);
       setPerson((prev) => prev ? { ...prev, pinnedRememberItems: items } : prev);
@@ -280,6 +292,8 @@ export default function PersonDetailPage() {
   };
 
   const handleRemoveRememberItem = async (itemId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       const items = await removeRememberItem(token, personId, itemId);
       setPerson((prev) => prev ? { ...prev, pinnedRememberItems: items } : prev);
@@ -289,6 +303,8 @@ export default function PersonDetailPage() {
   };
 
   const handleReorderRememberItems = async (orderedIds: string[]) => {
+    const token = getToken();
+    if (!token) return;
     try {
       const items = await reorderRememberItems(token, personId, orderedIds);
       setPerson((prev) => prev ? { ...prev, pinnedRememberItems: items } : prev);
@@ -306,6 +322,8 @@ export default function PersonDetailPage() {
   };
 
   const handleSaveSeriesConfig = async (data: UpsertSeriesRequest) => {
+    const token = getToken();
+    if (!token) return;
     setSeriesSaving(true);
     try {
       const updated = await upsertOneOnOneSeries(token, personId, data);
@@ -319,6 +337,8 @@ export default function PersonDetailPage() {
   };
 
   const handleCreateActionItem = async (data: CreateActionItemRequest | UpdateActionItemRequest) => {
+    const token = getToken();
+    if (!token) return;
     setActionItemSubmitting(true);
     try {
       await createActionItem(token, personId, data as CreateActionItemRequest);
@@ -334,6 +354,8 @@ export default function PersonDetailPage() {
 
   const handleUpdateActionItem = async (data: CreateActionItemRequest | UpdateActionItemRequest) => {
     if (!editingActionItem) return;
+    const token = getToken();
+    if (!token) return;
     setActionItemSubmitting(true);
     try {
       await updateActionItem(token, personId, editingActionItem.id, data as UpdateActionItemRequest);
@@ -347,6 +369,8 @@ export default function PersonDetailPage() {
   };
 
   const handleCompleteActionItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await completeActionItem(token, personId, id);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
@@ -357,6 +381,8 @@ export default function PersonDetailPage() {
   };
 
   const handleCancelActionItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await cancelActionItem(token, personId, id);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
@@ -367,6 +393,8 @@ export default function PersonDetailPage() {
   };
 
   const handleDeleteActionItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await deleteActionItem(token, personId, id);
       fetchActionItems(actionItemsPage, actionItemsStatusFilter);
@@ -386,6 +414,8 @@ export default function PersonDetailPage() {
 
   // PDP Goal handlers
   const handleCreatePdpGoal = async (data: CreatePdpGoalRequest) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await createPdpGoal(token, personId, data);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -396,6 +426,8 @@ export default function PersonDetailPage() {
   };
 
   const handleUpdatePdpGoal = async (goalId: string, data: UpdatePdpGoalRequest) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await updatePdpGoal(token, personId, goalId, data);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -405,6 +437,8 @@ export default function PersonDetailPage() {
   };
 
   const handleAchievePdpGoal = async (goalId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await achievePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -415,6 +449,8 @@ export default function PersonDetailPage() {
   };
 
   const handlePausePdpGoal = async (goalId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await pausePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -425,6 +461,8 @@ export default function PersonDetailPage() {
   };
 
   const handleDropPdpGoal = async (goalId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await dropPdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -435,6 +473,8 @@ export default function PersonDetailPage() {
   };
 
   const handleResumePdpGoal = async (goalId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await resumePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -445,6 +485,8 @@ export default function PersonDetailPage() {
   };
 
   const handleDeletePdpGoal = async (goalId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await deletePdpGoal(token, personId, goalId);
       fetchPdpGoals(pdpGoalsStatusFilter);
@@ -456,6 +498,8 @@ export default function PersonDetailPage() {
 
   // Kudos handlers
   const handleCreateKudos = async (data: CreateKudosRequest) => {
+    const token = getToken();
+    if (!token) return;
     setKudosSubmitting(true);
     try {
       await createKudos(token, personId, data);
@@ -468,6 +512,8 @@ export default function PersonDetailPage() {
   };
 
   const handleDeleteKudos = async (kudosId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await deleteKudos(token, personId, kudosId);
       fetchKudos();
@@ -477,6 +523,8 @@ export default function PersonDetailPage() {
   };
 
   const handleExport = async () => {
+    const token = getToken();
+    if (!token) return;
     setExporting(true);
     try {
       const markdown = await exportPersonMarkdown(token, personId);
@@ -497,6 +545,8 @@ export default function PersonDetailPage() {
   };
 
   const handleGenerateReviewPacket = async (dateFrom: string, dateTo: string) => {
+    const token = getToken();
+    if (!token) return;
     setGeneratingReviewPacket(true);
     try {
       const markdown = await generateReviewPacket(token, personId, { dateFrom, dateTo });
@@ -585,7 +635,7 @@ export default function PersonDetailPage() {
           )}
           <div style={{ marginTop: '8px' }}>
             <WorkspaceAssignment
-              token={token}
+              token={getToken() || ''}
               personId={personId}
               currentWorkspaceId={person.workspaceId}
               onAssigned={(wsId) => setPerson(prev => prev ? { ...prev, workspaceId: wsId } : prev)}

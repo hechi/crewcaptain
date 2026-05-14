@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { DashboardResponse } from '@/types/dashboard';
 import { GamificationStats } from '@/types/gamification';
 import { getDashboard, getGamificationStats, getUserSettings } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import OverdueActionItems from '@/components/dashboard/OverdueActionItems';
 import DueSoonActionItems from '@/components/dashboard/DueSoonActionItems';
 import StaleOneOnOnes from '@/components/dashboard/StaleOneOnOnes';
@@ -13,7 +13,7 @@ import { ProgressRing, StreakCounter, AchievementBadge, ActivityHeatmap } from '
 import { UserSettings } from '@/types/settings';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
@@ -21,12 +21,12 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboard = useCallback(async () => {
-    if (status !== 'authenticated' || !session?.accessToken) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
     try {
-      const token = session.accessToken as string;
       // Fetch settings first so we can use thresholds for the dashboard query
       const settingsResult = await getUserSettings(token);
       setUserSettings(settingsResult);
@@ -45,7 +45,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, status]);
+  }, [getToken, isAuthenticated]);
 
   useEffect(() => {
     fetchDashboard();

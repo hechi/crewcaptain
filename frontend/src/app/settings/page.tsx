@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { UserSettings, UpdateUserSettingsRequest, Theme } from '@/types/settings';
 import { getUserSettings, updateUserSettings } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import { useTheme } from '@/components/ThemeProvider';
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const { setTheme } = useTheme();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,12 +27,13 @@ export default function SettingsPage() {
   const [notifyUpcomingAnniversary, setNotifyUpcomingAnniversary] = useState(true);
 
   const fetchSettings = useCallback(async () => {
-    if (status !== 'authenticated' || !session?.accessToken) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
     try {
-      const result = await getUserSettings(session.accessToken as string);
+      const result = await getUserSettings(token);
       setSettings(result);
       setDueSoonDays(result.dueSoonDays);
       setStaleOneOnOneDays(result.staleOneOnOneDays);
@@ -48,14 +49,15 @@ export default function SettingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, status]);
+  }, [getToken, isAuthenticated]);
 
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
 
   const handleSave = async () => {
-    if (!session?.accessToken) return;
+    const token = getToken();
+    if (!token) return;
 
     setSaving(true);
     setError(null);
@@ -72,7 +74,7 @@ export default function SettingsPage() {
         notifyStaleOneOnOne,
         notifyUpcomingAnniversary,
       };
-      const result = await updateUserSettings(session.accessToken as string, request);
+      const result = await updateUserSettings(token, request);
       setSettings(result);
       setTheme(result.theme);
       setSuccess(true);

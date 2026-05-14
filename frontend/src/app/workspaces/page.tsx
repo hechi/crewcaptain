@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { Workspace } from '@/types/workspace';
 import { listWorkspaces, createWorkspace, updateWorkspace, deleteWorkspace } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import WorkspaceForm from '@/components/workspace/WorkspaceForm';
 import WorkspaceList from '@/components/workspace/WorkspaceList';
 
 export default function WorkspacesPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,29 +18,31 @@ export default function WorkspacesPage() {
   const [confirmDelete, setConfirmDelete] = useState<Workspace | null>(null);
 
   const fetchWorkspaces = useCallback(async () => {
-    if (status !== 'authenticated' || !session?.accessToken) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
     try {
-      const result = await listWorkspaces(session.accessToken as string);
+      const result = await listWorkspaces(token);
       setWorkspaces(result);
     } catch (err) {
       setError('Failed to load workspaces');
     } finally {
       setLoading(false);
     }
-  }, [session, status]);
+  }, [getToken, isAuthenticated]);
 
   useEffect(() => {
     fetchWorkspaces();
   }, [fetchWorkspaces]);
 
   const handleCreate = async (data: { name: string; description?: string }) => {
-    if (!session?.accessToken) return;
+    const token = getToken();
+    if (!token) return;
     setIsSubmitting(true);
     try {
-      await createWorkspace(session.accessToken as string, data);
+      await createWorkspace(token, data);
       setShowForm(false);
       await fetchWorkspaces();
     } catch (err) {
@@ -51,10 +53,11 @@ export default function WorkspacesPage() {
   };
 
   const handleUpdate = async (data: { name: string; description?: string }) => {
-    if (!session?.accessToken || !editingWorkspace) return;
+    const token = getToken();
+    if (!token || !editingWorkspace) return;
     setIsSubmitting(true);
     try {
-      await updateWorkspace(session.accessToken as string, editingWorkspace.id, data);
+      await updateWorkspace(token, editingWorkspace.id, data);
       setEditingWorkspace(null);
       await fetchWorkspaces();
     } catch (err) {
@@ -65,9 +68,10 @@ export default function WorkspacesPage() {
   };
 
   const handleDelete = async (workspace: Workspace) => {
-    if (!session?.accessToken) return;
+    const token = getToken();
+    if (!token) return;
     try {
-      await deleteWorkspace(session.accessToken as string, workspace.id);
+      await deleteWorkspace(token, workspace.id);
       setConfirmDelete(null);
       await fetchWorkspaces();
     } catch (err) {

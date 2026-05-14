@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { getAuditLog } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import { AuditLogEntry, AuditAction, AuditEntityType } from '@/types/audit-log';
 import Pagination from '@/components/Pagination';
 
@@ -48,7 +48,7 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export default function AuditLogPage() {
-  const { data: session } = useSession();
+  const { getToken, isAuthenticated } = useStableToken();
   const [entries, setEntries] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,9 +58,8 @@ export default function AuditLogPage() {
   const [entityTypeFilter, setEntityTypeFilter] = useState<AuditEntityType | ''>('');
   const [actionFilter, setActionFilter] = useState<AuditAction | ''>('');
 
-  const token = (session as { accessToken?: string } | null)?.accessToken || '';
-
   const fetchAuditLog = useCallback(async () => {
+    const token = getToken();
     if (!token) return;
     try {
       setLoading(true);
@@ -78,7 +77,7 @@ export default function AuditLogPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, page, entityTypeFilter, actionFilter]);
+  }, [getToken, page, entityTypeFilter, actionFilter]);
 
   useEffect(() => {
     fetchAuditLog();

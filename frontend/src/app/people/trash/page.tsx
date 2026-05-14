@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { Person, PaginatedResponse } from '@/types/person';
 import { listDeletedPersons, restorePerson, permanentlyDeletePerson } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 
 export default function TrashPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
 
   const [deletedPeople, setDeletedPeople] = useState<PaginatedResponse<Person> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,12 +19,13 @@ export default function TrashPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchDeletedPeople = useCallback(async () => {
-    if (status !== 'authenticated' || !session?.accessToken) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
     try {
-      const result = await listDeletedPersons(session.accessToken as string, {
+      const result = await listDeletedPersons(token, {
         page,
         size: 20,
       });
@@ -34,18 +35,19 @@ export default function TrashPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, status, page]);
+  }, [getToken, isAuthenticated, page]);
 
   useEffect(() => {
     fetchDeletedPeople();
   }, [fetchDeletedPeople]);
 
   const handleRestore = async (personId: string) => {
-    if (!session?.accessToken) return;
+    const token = getToken();
+    if (!token) return;
 
     setRestoringId(personId);
     try {
-      await restorePerson(session.accessToken as string, personId);
+      await restorePerson(token, personId);
       await fetchDeletedPeople();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to restore person');
@@ -55,11 +57,12 @@ export default function TrashPage() {
   };
 
   const handlePermanentDelete = async (personId: string) => {
-    if (!session?.accessToken) return;
+    const token = getToken();
+    if (!token) return;
 
     setDeletingId(personId);
     try {
-      await permanentlyDeletePerson(session.accessToken as string, personId);
+      await permanentlyDeletePerson(token, personId);
       setConfirmDeleteId(null);
       await fetchDeletedPeople();
     } catch (err) {

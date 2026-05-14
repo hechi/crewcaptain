@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Person, PaginatedResponse, MoraleStatus } from '@/types/person';
 import { Workspace } from '@/types/workspace';
 import { listPersons, listWorkspaces } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import PersonCard from '@/components/PersonCard';
 import FilterBar from '@/components/FilterBar';
 import WorkspaceSelector from '@/components/workspace/WorkspaceSelector';
@@ -14,7 +14,7 @@ import EmptyState from '@/components/EmptyState';
 import CsvImportModal from '@/components/CsvImportModal';
 
 export default function PeopleListPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const router = useRouter();
 
   const [people, setPeople] = useState<PaginatedResponse<Person> | null>(null);
@@ -27,26 +27,28 @@ export default function PeopleListPage() {
   const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchWorkspaces = useCallback(async () => {
-    if (status !== 'authenticated' || !session?.accessToken) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
     try {
-      const result = await listWorkspaces(session.accessToken as string);
+      const result = await listWorkspaces(token);
       setWorkspaces(result);
     } catch {
       // Silently fail — workspace feature is opt-in
     }
-  }, [session, status]);
+  }, [getToken, isAuthenticated]);
 
   useEffect(() => {
     fetchWorkspaces();
   }, [fetchWorkspaces]);
 
   const fetchPeople = useCallback(async () => {
-    if (status !== 'authenticated' || !session?.accessToken) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
     try {
-      const result = await listPersons(session.accessToken as string, {
+      const result = await listPersons(token, {
         page,
         size: 20,
         tag: filters.tag || undefined,
@@ -59,7 +61,7 @@ export default function PeopleListPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, status, page, filters, workspaceFilter]);
+  }, [getToken, isAuthenticated, page, filters, workspaceFilter]);
 
   useEffect(() => {
     fetchPeople();
@@ -199,14 +201,14 @@ export default function PeopleListPage() {
         </>
       )}
 
-      {session?.accessToken && (
+      {isAuthenticated && (
         <CsvImportModal
           isOpen={showImportModal}
           onClose={() => setShowImportModal(false)}
           onImportComplete={() => {
             fetchPeople();
           }}
-          token={session.accessToken as string}
+          token={getToken() || ''}
         />
       )}
     </div>

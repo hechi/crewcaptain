@@ -2,8 +2,9 @@
  * Tests for SessionProvider component.
  *
  * Verifies that:
- * 1. It wraps children with NextAuth SessionProvider with refetch settings
- * 2. It includes the SessionRefreshGuard
+ * 1. It wraps children with NextAuth SessionProvider with appropriate refetch settings
+ * 2. refetchOnWindowFocus is disabled to prevent form state loss
+ * 3. refetchInterval is set to 5 minutes for background token refresh
  */
 
 import React from 'react';
@@ -25,7 +26,6 @@ jest.mock('next-auth/react', () => ({
     </div>
   ),
   useSession: () => ({ data: null, status: 'loading' }),
-  signIn: jest.fn(),
 }));
 
 import SessionProvider from '@/components/SessionProvider';
@@ -41,7 +41,7 @@ describe('SessionProvider', () => {
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
-  it('should configure refetchInterval to 4 minutes', () => {
+  it('should configure refetchInterval to 5 minutes', () => {
     render(
       <SessionProvider>
         <div>Content</div>
@@ -49,10 +49,10 @@ describe('SessionProvider', () => {
     );
 
     const provider = screen.getByTestId('next-auth-session-provider');
-    expect(provider.getAttribute('data-refetch-interval')).toBe('240');
+    expect(provider.getAttribute('data-refetch-interval')).toBe('300');
   });
 
-  it('should enable refetchOnWindowFocus', () => {
+  it('should disable refetchOnWindowFocus to prevent form state loss', () => {
     render(
       <SessionProvider>
         <div>Content</div>
@@ -60,6 +60,6 @@ describe('SessionProvider', () => {
     );
 
     const provider = screen.getByTestId('next-auth-session-provider');
-    expect(provider.getAttribute('data-refetch-on-window-focus')).toBe('true');
+    expect(provider.getAttribute('data-refetch-on-window-focus')).toBe('false');
   });
 });
