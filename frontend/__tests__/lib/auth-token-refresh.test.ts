@@ -32,7 +32,7 @@ process.env.OIDC_ISSUER = 'https://auth.example.com/application/o/app/';
 process.env.OIDC_CLIENT_ID = 'test-client-id';
 process.env.OIDC_CLIENT_SECRET = 'test-client-secret';
 
-import { authConfig } from '@/auth';
+import { authConfig, _resetTokenEndpointCache } from '@/auth';
 
 describe('Auth token refresh', () => {
   const jwtCallback = authConfig.callbacks!.jwt! as Function;
@@ -41,6 +41,7 @@ describe('Auth token refresh', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    _resetTokenEndpointCache();
   });
 
   afterEach(() => {
@@ -100,14 +101,14 @@ describe('Auth token refresh', () => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should not refresh when token expires in more than 60 seconds', async () => {
+    it('should not refresh when token expires in more than 30 seconds', async () => {
       const now = Date.now();
       jest.setSystemTime(now);
 
       const token = {
         accessToken: 'valid-access-token',
         refreshToken: 'refresh-token',
-        accessTokenExpires: now + 61 * 1000, // 61 seconds from now
+        accessTokenExpires: now + 31 * 1000, // 31 seconds from now
       };
 
       const result = await jwtCallback({ token, account: undefined });
@@ -154,14 +155,14 @@ describe('Auth token refresh', () => {
       expect(result.error).toBeUndefined();
     });
 
-    it('should refresh token when within 60 seconds of expiry', async () => {
+    it('should refresh token when within 30 seconds of expiry', async () => {
       const now = Date.now();
       jest.setSystemTime(now);
 
       const token = {
         accessToken: 'about-to-expire-token',
         refreshToken: 'valid-refresh-token',
-        accessTokenExpires: now + 30 * 1000, // 30 seconds from now (within 60s buffer)
+        accessTokenExpires: now + 20 * 1000, // 20 seconds from now (within 30s buffer)
       };
 
       // Mock OIDC discovery
@@ -331,8 +332,8 @@ describe('Auth token refresh', () => {
 
       await jwtCallback({ token, account: undefined });
 
-      // Verify discovery call
-      expect(mockFetch).toHaveBeenCalledWith(
+      // Verify discovery call (includes timeout signal)
+      expect(mockFetch.mock.calls[0][0]).toBe(
         'https://auth.example.com/application/o/app/.well-known/openid-configuration'
       );
 

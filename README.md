@@ -557,6 +557,7 @@ New migrations must follow the naming convention: `V{timestamp}__{description}.s
    - Client type: Confidential
    - Redirect URIs: `http://localhost:3000/api/auth/callback/oidc`
    - Signing key: Select or create an RSA key
+   - **Scopes**: Add the `offline_access` scope mapping (required for refresh tokens). If it doesn't exist, create a Property Mapping with scope name `offline_access` and expression `return {}`.
 
 2. Create an **Application** linked to the provider:
    - Name: `CrewCaptain`
@@ -567,6 +568,8 @@ New migrations must follow the naming convention: `V{timestamp}__{description}.s
    - `OIDC_CLIENT_SECRET` — from the provider
    - `OIDC_ISSUER_URI` / `OIDC_ISSUER` — `https://your-authentik/application/o/crewcaptain/`
    - `OIDC_JWKS_URI` — `https://your-authentik/application/o/crewcaptain/jwks/`
+
+> **Note**: Without the `offline_access` scope mapping, authentik will not issue refresh tokens and users will be forced to re-login when the access token expires (typically every 5 minutes).
 
 ---
 
