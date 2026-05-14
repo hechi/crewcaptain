@@ -243,7 +243,7 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
       {/* Add new action item */}
       <div
         data-testid="quick-add-action-item-form"
-        style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', flexWrap: 'wrap' }}
+        style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}
       >
         <div style={{ flex: 1, minWidth: '180px' }}>
           <input
@@ -353,22 +353,56 @@ function ActionItemRow({
     >
       {/* Checkbox */}
       {isOpen ? (
-        <input
-          type="checkbox"
-          checked={false}
-          onChange={() => onComplete(item.id)}
+        <button
+          type="button"
+          onClick={() => onComplete(item.id)}
           data-testid="action-item-complete-checkbox"
           aria-label={`Mark "${item.title}" as done`}
-          style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--color-morale-green)' }}
+          style={{
+            width: '18px',
+            height: '18px',
+            minWidth: '18px',
+            borderRadius: '4px',
+            border: '2px solid var(--color-morale-green)',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            boxShadow: '0 0 6px rgba(16, 185, 129, 0.3)',
+            transition: 'background-color 0.15s, box-shadow 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget;
+            el.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+            el.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget;
+            el.style.backgroundColor = 'transparent';
+            el.style.boxShadow = '0 0 6px rgba(16, 185, 129, 0.3)';
+          }}
         />
       ) : (
-        <input
-          type="checkbox"
-          checked={isDone}
-          disabled
-          aria-label={isDone ? `"${item.title}" is done` : `"${item.title}" is canceled`}
-          style={{ width: '16px', height: '16px', accentColor: 'var(--color-morale-green)' }}
-        />
+        <span
+          style={{
+            width: '18px',
+            height: '18px',
+            minWidth: '18px',
+            borderRadius: '4px',
+            border: `2px solid ${isDone ? 'var(--color-morale-green)' : 'var(--color-text-muted)'}`,
+            backgroundColor: isDone ? 'var(--color-morale-green)' : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            color: '#fff',
+            boxShadow: isDone ? '0 0 6px rgba(16, 185, 129, 0.3)' : 'none',
+          }}
+        >
+          {isDone ? '✓' : isCanceled ? '✕' : ''}
+        </span>
       )}
 
       {/* Title */}
