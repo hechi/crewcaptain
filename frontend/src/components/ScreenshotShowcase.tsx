@@ -20,6 +20,22 @@ const screenshots: Screenshot[] = [
       'Get a quick overview of your crew — overdue items, upcoming 1:1s, anniversaries, and engagement streaks at a glance.',
   },
   {
+    id: 'one-on-one-entry',
+    label: '1:1 Session',
+    src: '/screenshots/one-on-one-entry.png',
+    alt: '1:1 session entry with notes and agenda',
+    caption:
+      'Capture session notes, agenda items, and outcomes during your 1:1s. Everything stays in context for next time.',
+  },
+  {
+    id: 'one-on-one-overview',
+    label: '1:1 Overview',
+    src: '/screenshots/one-on-one-overview.png',
+    alt: '1:1 overview showing history of past sessions',
+    caption:
+      'See the full timeline of past 1:1 sessions with a team member. Never lose track of what was discussed.',
+  },
+  {
     id: 'action-item',
     label: 'Action Items',
     src: '/screenshots/action-item.png',

@@ -21,15 +21,17 @@ describe('ScreenshotShowcase', () => {
     ).toBeInTheDocument();
   });
 
-  it('should render 4 tab buttons', () => {
+  it('should render 6 tab buttons', () => {
     render(<ScreenshotShowcase />);
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(4);
+    expect(tabs).toHaveLength(6);
   });
 
   it('should render tab labels for each screenshot', () => {
     render(<ScreenshotShowcase />);
     expect(screen.getByRole('tab', { name: /Dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /1:1 Session/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /1:1 Overview/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Action Items/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Person Detail/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Search/i })).toBeInTheDocument();
@@ -46,6 +48,26 @@ describe('ScreenshotShowcase', () => {
     render(<ScreenshotShowcase />);
     const firstTab = screen.getByRole('tab', { name: /Dashboard/i });
     expect(firstTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('should switch to 1:1 Session screenshot when tab is clicked', () => {
+    render(<ScreenshotShowcase />);
+    const tab = screen.getByRole('tab', { name: /1:1 Session/i });
+    fireEvent.click(tab);
+
+    const img = screen.getByRole('img', { name: /1:1 session entry with notes/i });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/screenshots/one-on-one-entry.png');
+  });
+
+  it('should switch to 1:1 Overview screenshot when tab is clicked', () => {
+    render(<ScreenshotShowcase />);
+    const tab = screen.getByRole('tab', { name: /1:1 Overview/i });
+    fireEvent.click(tab);
+
+    const img = screen.getByRole('img', { name: /1:1 overview showing history/i });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/screenshots/one-on-one-overview.png');
   });
 
   it('should switch to Action Items screenshot when tab is clicked', () => {
@@ -127,7 +149,7 @@ describe('ScreenshotShowcase', () => {
     firstTab.focus();
     fireEvent.keyDown(tablist, { key: 'ArrowRight' });
 
-    const secondTab = screen.getByRole('tab', { name: /Action Items/i });
+    const secondTab = screen.getByRole('tab', { name: /1:1 Session/i });
     expect(secondTab).toHaveAttribute('aria-selected', 'true');
   });
 
