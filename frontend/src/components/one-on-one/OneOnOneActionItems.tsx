@@ -7,7 +7,6 @@ import {
   createActionItem,
   completeActionItem,
 } from '@/lib/api-client';
-import ActionItemStatusBadge from '@/components/action-items/ActionItemStatusBadge';
 
 interface OneOnOneActionItemsProps {
   /** Auth token for API calls */
@@ -20,8 +19,9 @@ interface OneOnOneActionItemsProps {
 
 /**
  * Inline action items section for the 1:1 entry page.
+ * Styled to match AgendaItemList — same label, input, and list patterns.
  * Shows open action items for the person, highlights items from this session,
- * and provides a quick-add form (title + optional due date).
+ * and provides a quick-add input (title + optional due date).
  * When entryId is null (create page), items are created without a link.
  */
 export default function OneOnOneActionItems({ token, personId, entryId }: OneOnOneActionItemsProps) {
@@ -114,162 +114,52 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
       day: 'numeric',
     });
 
+  const allItems = [...openSessionItems, ...completedSessionItems, ...otherOpenItems];
+
   return (
-    <div data-testid="one-on-one-action-items" style={{ marginTop: 'var(--space-6)' }}>
-      <h3
+    <div data-testid="one-on-one-action-items">
+      <label
         style={{
-          margin: '0 0 var(--space-4)',
-          fontSize: 'var(--text-body)',
-          fontWeight: 'var(--weight-semibold)',
-          fontFamily: 'var(--font-heading)',
-          color: 'var(--color-text-primary)',
-          letterSpacing: '-0.2px',
+          display: 'block',
+          fontSize: 'var(--text-caption)',
+          fontWeight: 'var(--weight-medium)',
+          fontFamily: 'var(--font-mono)',
+          marginBottom: '8px',
+          color: 'var(--color-text-secondary)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
         }}
       >
         Action Items
-      </h3>
-
-      {/* Quick-add form */}
-      <div
-        data-testid="quick-add-action-item-form"
-        style={{
-          display: 'flex',
-          gap: '8px',
-          alignItems: 'flex-end',
-          marginBottom: 'var(--space-4)',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <label
-            htmlFor="quick-action-title"
-            style={{
-              display: 'block',
-              fontSize: 'var(--text-caption)',
-              color: 'var(--color-text-muted)',
-              marginBottom: '4px',
-              fontFamily: 'var(--font-mono)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            New Action Item
-          </label>
-          <input
-            id="quick-action-title"
-            type="text"
-            value={title}
-            onChange={(e) => { setTitle(e.target.value); if (formError) setFormError(null); }}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleQuickAdd(); } }}
-            placeholder="What needs to be done?"
-            data-testid="quick-action-title-input"
-            aria-required="true"
-            aria-invalid={!!formError}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: `1px solid ${formError ? 'var(--color-alert)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-medium)',
-              fontSize: 'var(--text-body)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-            }}
-          />
-        </div>
-        <div style={{ minWidth: '140px' }}>
-          <label
-            htmlFor="quick-action-due-date"
-            style={{
-              display: 'block',
-              fontSize: 'var(--text-caption)',
-              color: 'var(--color-text-muted)',
-              marginBottom: '4px',
-              fontFamily: 'var(--font-mono)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Due Date
-          </label>
-          <input
-            id="quick-action-due-date"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            data-testid="quick-action-due-date-input"
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-medium)',
-              fontSize: 'var(--text-body)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-            }}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={handleQuickAdd}
-          disabled={isSubmitting}
-          data-testid="quick-add-submit-btn"
-          style={{
-            padding: '8px 16px',
-            backgroundColor: isSubmitting ? 'var(--color-primary-muted)' : 'var(--color-primary)',
-            color: isSubmitting ? 'var(--color-primary)' : 'var(--color-bg-base)',
-            border: 'none',
-            borderRadius: 'var(--radius-medium)',
-            fontSize: 'var(--text-body)',
-            fontWeight: 'var(--weight-semibold)',
-            fontFamily: 'var(--font-mono)',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            boxShadow: isSubmitting ? 'none' : 'var(--glow-primary)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {isSubmitting ? 'Adding...' : '+ Add'}
-        </button>
-      </div>
-
-      {formError && (
-        <p
-          data-testid="quick-add-error"
-          role="alert"
-          style={{
-            margin: '0 0 var(--space-3)',
-            fontSize: 'var(--text-caption)',
-            color: 'var(--color-alert)',
-          }}
-        >
-          {formError}
-        </p>
-      )}
+      </label>
 
       {error && (
         <p
           data-testid="action-items-error"
-          style={{
-            color: 'var(--color-alert)',
-            fontSize: 'var(--text-small)',
-            marginBottom: 'var(--space-3)',
-          }}
+          role="alert"
+          style={{ margin: '0 0 8px', fontSize: 'var(--text-caption)', color: 'var(--color-alert)' }}
         >
           {error}
         </p>
       )}
 
+      {/* Existing items list */}
       {loading ? (
-        <div data-testid="action-items-loading" style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-small)' }}>
+        <div data-testid="action-items-loading" style={{ padding: '8px 0', color: 'var(--color-text-muted)', fontSize: 'var(--text-body)' }}>
           Loading action items...
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {/* Session items (from this 1:1) */}
+      ) : allItems.length > 0 ? (
+        <ol
+          style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}
+          aria-label="Action items"
+        >
+          {/* Session items */}
           {openSessionItems.length > 0 && (
-            <div data-testid="session-action-items">
+            <li data-testid="session-action-items">
               <p
                 style={{
-                  margin: '0 0 6px',
+                  margin: '0 0 4px',
+                  padding: '4px 8px 0',
                   fontSize: 'var(--text-caption)',
                   fontFamily: 'var(--font-mono)',
                   color: 'var(--color-primary)',
@@ -286,15 +176,14 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
                   isOverdue={isOverdue(item)}
                   formatDueDate={formatDueDate}
                   onComplete={handleComplete}
-                  highlight
                 />
               ))}
-            </div>
+            </li>
           )}
 
           {/* Completed session items */}
           {completedSessionItems.length > 0 && (
-            <div data-testid="completed-session-items">
+            <li data-testid="completed-session-items">
               {completedSessionItems.map((item) => (
                 <ActionItemRow
                   key={item.id}
@@ -302,27 +191,29 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
                   isOverdue={false}
                   formatDueDate={formatDueDate}
                   onComplete={handleComplete}
-                  highlight
                 />
               ))}
-            </div>
+            </li>
           )}
 
-          {/* Other open items for this person */}
+          {/* Other open items */}
           {otherOpenItems.length > 0 && (
-            <div data-testid="other-open-action-items">
-              <p
-                style={{
-                  margin: `${openSessionItems.length > 0 || completedSessionItems.length > 0 ? 'var(--space-3)' : '0'} 0 6px`,
-                  fontSize: 'var(--text-caption)',
-                  fontFamily: 'var(--font-mono)',
-                  color: 'var(--color-text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                Open items for this person
-              </p>
+            <li data-testid="other-open-action-items">
+              {(openSessionItems.length > 0 || completedSessionItems.length > 0) && (
+                <p
+                  style={{
+                    margin: '8px 0 4px',
+                    padding: '4px 8px 0',
+                    fontSize: 'var(--text-caption)',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--color-text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Open items
+                </p>
+              )}
               {otherOpenItems.map((item) => (
                 <ActionItemRow
                   key={item.id}
@@ -330,45 +221,120 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
                   isOverdue={isOverdue(item)}
                   formatDueDate={formatDueDate}
                   onComplete={handleComplete}
-                  highlight={false}
                 />
               ))}
-            </div>
+            </li>
           )}
+        </ol>
+      ) : (
+        <p
+          data-testid="no-action-items"
+          style={{
+            margin: '0 0 12px',
+            padding: '8px 0',
+            fontSize: 'var(--text-body)',
+            color: 'var(--color-text-muted)',
+          }}
+        >
+          No action items yet.
+        </p>
+      )}
 
-          {/* Empty state */}
-          {openSessionItems.length === 0 && completedSessionItems.length === 0 && otherOpenItems.length === 0 && (
+      {/* Add new action item */}
+      <div
+        data-testid="quick-add-action-item-form"
+        style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', flexWrap: 'wrap' }}
+      >
+        <div style={{ flex: 1, minWidth: '180px' }}>
+          <input
+            id="quick-action-title"
+            type="text"
+            value={title}
+            onChange={(e) => { setTitle(e.target.value); if (formError) setFormError(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleQuickAdd(); } }}
+            placeholder="Add action item..."
+            data-testid="quick-action-title-input"
+            aria-label="New action item title"
+            aria-required="true"
+            aria-invalid={!!formError}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: `1px solid ${formError ? 'var(--color-alert)' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              boxSizing: 'border-box',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+            }}
+          />
+          {formError && (
             <p
-              data-testid="no-action-items"
-              style={{
-                margin: 0,
-                fontSize: 'var(--text-small)',
-                color: 'var(--color-text-muted)',
-                fontStyle: 'italic',
-              }}
+              data-testid="quick-add-error"
+              role="alert"
+              style={{ margin: '4px 0 0', fontSize: 'var(--text-caption)', color: 'var(--color-alert)' }}
             >
-              No action items yet — use the form above to add one.
+              {formError}
             </p>
           )}
         </div>
-      )}
+        <input
+          id="quick-action-due-date"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          data-testid="quick-action-due-date-input"
+          aria-label="Due date"
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-medium)',
+            fontSize: 'var(--text-body)',
+            boxSizing: 'border-box',
+            backgroundColor: 'var(--color-bg-elevated)',
+            color: 'var(--color-text-primary)',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleQuickAdd}
+          disabled={isSubmitting}
+          data-testid="quick-add-submit-btn"
+          style={{
+            padding: '8px 16px',
+            backgroundColor: isSubmitting ? 'var(--color-secondary-muted, rgba(168, 85, 247, 0.3))' : 'var(--color-secondary)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 'var(--radius-medium)',
+            fontSize: 'var(--text-body)',
+            fontWeight: 'var(--weight-medium)',
+            fontFamily: 'var(--font-mono)',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            whiteSpace: 'nowrap',
+            boxShadow: isSubmitting ? 'none' : '0 0 8px rgba(168, 85, 247, 0.2)',
+            transition: 'box-shadow 0.2s',
+          }}
+        >
+          {isSubmitting ? 'Adding...' : 'Add'}
+        </button>
+      </div>
     </div>
   );
 }
 
-/** Compact inline row for an action item with checkbox-style complete */
+/** Row for an action item — matches AgendaItemList row style */
 function ActionItemRow({
   item,
   isOverdue,
   formatDueDate,
   onComplete,
-  highlight,
 }: {
   item: ActionItem;
   isOverdue: boolean;
   formatDueDate: (d: string) => string;
   onComplete: (id: string) => void;
-  highlight: boolean;
 }) {
   const isDone = item.status === 'DONE';
   const isCanceled = item.status === 'CANCELED';
@@ -381,59 +347,28 @@ function ActionItemRow({
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        padding: '8px 12px',
-        borderRadius: 'var(--radius-medium)',
-        border: `1px solid ${isOverdue ? 'var(--color-alert)' : highlight ? 'var(--color-primary-muted)' : 'var(--color-border)'}`,
-        backgroundColor: highlight ? 'rgba(6, 182, 212, 0.05)' : 'var(--color-bg-surface)',
-        boxShadow: isOverdue ? 'var(--glow-alert)' : 'none',
-        marginBottom: '4px',
-        transition: 'border-color 0.2s',
+        padding: '8px',
+        borderBottom: '1px solid var(--color-border-subtle)',
       }}
     >
-      {/* Checkbox / complete button */}
+      {/* Checkbox */}
       {isOpen ? (
-        <button
-          type="button"
-          onClick={() => onComplete(item.id)}
+        <input
+          type="checkbox"
+          checked={false}
+          onChange={() => onComplete(item.id)}
           data-testid="action-item-complete-checkbox"
           aria-label={`Mark "${item.title}" as done`}
-          style={{
-            width: '20px',
-            height: '20px',
-            minWidth: '20px',
-            borderRadius: '4px',
-            border: '2px solid var(--color-morale-green)',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 0,
-            transition: 'background-color 0.15s',
-          }}
-          onMouseEnter={(e) => { (e.target as HTMLElement).style.backgroundColor = 'rgba(16, 185, 129, 0.2)'; }}
-          onMouseLeave={(e) => { (e.target as HTMLElement).style.backgroundColor = 'transparent'; }}
-        >
-          {/* Empty — shows as unchecked */}
-        </button>
+          style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--color-morale-green)' }}
+        />
       ) : (
-        <span
-          style={{
-            width: '20px',
-            height: '20px',
-            minWidth: '20px',
-            borderRadius: '4px',
-            border: `2px solid ${isDone ? 'var(--color-morale-green)' : 'var(--color-text-muted)'}`,
-            backgroundColor: isDone ? 'var(--color-morale-green)' : 'transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            color: '#fff',
-          }}
-        >
-          {isDone ? '✓' : isCanceled ? '✕' : ''}
-        </span>
+        <input
+          type="checkbox"
+          checked={isDone}
+          disabled
+          aria-label={isDone ? `"${item.title}" is done` : `"${item.title}" is canceled`}
+          style={{ width: '16px', height: '16px', accentColor: 'var(--color-morale-green)' }}
+        />
       )}
 
       {/* Title */}
@@ -442,8 +377,8 @@ function ActionItemRow({
         style={{
           flex: 1,
           fontSize: 'var(--text-body)',
-          color: isDone || isCanceled ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
           textDecoration: isDone ? 'line-through' : 'none',
+          color: isDone || isCanceled ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
         }}
       >
         {item.title}
@@ -465,8 +400,12 @@ function ActionItemRow({
         </span>
       )}
 
-      {/* Status badge for non-open items */}
-      {!isOpen && <ActionItemStatusBadge status={item.status} />}
+      {/* Status indicator for non-open items */}
+      {isCanceled && (
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
+          canceled
+        </span>
+      )}
     </div>
   );
 }
