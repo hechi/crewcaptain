@@ -92,12 +92,6 @@ export default function WorkspaceAssignment({
         disabled={saving}
         aria-label="Assign to workspace"
         style={{
-          padding: '6px 10px',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-medium)',
-          fontSize: 'var(--text-small)',
-          backgroundColor: 'var(--color-bg-elevated)',
-          color: 'var(--color-text-primary)',
           opacity: saving ? 0.6 : 1,
           cursor: saving ? 'not-allowed' : 'pointer',
           minWidth: '140px',

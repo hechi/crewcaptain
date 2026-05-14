@@ -119,20 +119,11 @@ export default function AuditLogPage() {
               setEntityTypeFilter(e.target.value as AuditEntityType | '');
               setPage(0);
             }}
-            style={{
-              padding: '6px 12px',
-              fontSize: '13px',
-              backgroundColor: 'var(--color-bg-surface)',
-              color: 'var(--color-text-primary)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              cursor: 'pointer',
-            }}
             aria-label="Filter by entity type"
           >
-            <option value="" style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}>All types</option>
+            <option value="">All types</option>
             {Object.entries(ENTITY_TYPE_LABELS).map(([value, label]) => (
-              <option key={value} value={value} style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}>
+              <option key={value} value={value}>
                 {label}
               </option>
             ))}
@@ -145,20 +136,11 @@ export default function AuditLogPage() {
               setActionFilter(e.target.value as AuditAction | '');
               setPage(0);
             }}
-            style={{
-              padding: '6px 12px',
-              fontSize: '13px',
-              backgroundColor: 'var(--color-bg-surface)',
-              color: 'var(--color-text-primary)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              cursor: 'pointer',
-            }}
             aria-label="Filter by action"
           >
-            <option value="" style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}>All actions</option>
+            <option value="">All actions</option>
             {Object.entries(ACTION_LABELS).map(([value, label]) => (
-              <option key={value} value={value} style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}>
+              <option key={value} value={value}>
                 {label}
               </option>
             ))}

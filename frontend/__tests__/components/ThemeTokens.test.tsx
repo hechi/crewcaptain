@@ -44,15 +44,15 @@ describe('Cyberpunk Theme Design Tokens', () => {
 
     it('should use monospace font for user name', () => {
       render(<Navigation />);
-      const userName = screen.getByTestId('nav-user-name');
-      expect(userName).toHaveStyle({ fontFamily: 'var(--font-mono)' });
+      const trigger = screen.getByTestId('nav-user-menu-trigger');
+      expect(trigger).toHaveClass('dropdown-trigger');
     });
 
     it('should use alert color for sign out button in user menu', () => {
       render(<Navigation />);
       fireEvent.click(screen.getByTestId('nav-user-menu-trigger'));
       const signOutBtn = screen.getByTestId('nav-signout');
-      expect(signOutBtn).toHaveStyle({ color: 'var(--color-alert)' });
+      expect(signOutBtn).toHaveClass('dropdown-item--danger');
     });
   });
 

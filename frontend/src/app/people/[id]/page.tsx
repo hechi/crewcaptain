@@ -976,7 +976,6 @@ export default function PersonDetailPage() {
                   value={moraleFormStatus}
                   onChange={(e) => setMoraleFormStatus(e.target.value as MoraleStatus)}
                   data-testid="morale-status-select"
-                  style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
                 >
                   <option value="GREEN">Green</option>
                   <option value="YELLOW">Yellow</option>
