@@ -144,26 +144,13 @@ export default function Navigation() {
         <div ref={menuRef} style={{ position: 'relative' }}>
           <button
             type="button"
+            className="dropdown-trigger"
             data-testid="nav-user-menu-trigger"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
             aria-haspopup="true"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 10px',
-              fontSize: '13px',
-              fontFamily: 'var(--font-mono)',
-              color: 'var(--color-text-secondary)',
-              backgroundColor: 'transparent',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              cursor: 'pointer',
-              transition: 'border-color 0.2s, background-color 0.2s',
-            }}
           >
-            <span data-testid="nav-user-name" style={{ fontFamily: 'var(--font-mono)' }}>{userName}</span>
+            <span data-testid="nav-user-name">{userName}</span>
             <svg
               width="12"
               height="12"
@@ -187,97 +174,44 @@ export default function Navigation() {
 
           {menuOpen && (
             <div
+              className="dropdown-panel"
               data-testid="nav-user-menu"
               role="menu"
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                right: 0,
-                minWidth: '180px',
-                padding: '4px',
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-medium)',
-                boxShadow: 'var(--shadow-lg)',
-                zIndex: 50,
-              }}
             >
               <Link
                 href="/settings"
+                className="dropdown-item"
                 data-testid="nav-settings"
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '8px 12px',
-                  fontSize: '13px',
-                  color: 'var(--color-text-primary)',
-                  textDecoration: 'none',
-                  borderRadius: 'var(--radius-small)',
-                  transition: 'background-color 0.15s',
-                }}
               >
                 Settings
               </Link>
               <Link
                 href="/audit-log"
+                className="dropdown-item"
                 data-testid="nav-audit-log"
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '8px 12px',
-                  fontSize: '13px',
-                  color: 'var(--color-text-primary)',
-                  textDecoration: 'none',
-                  borderRadius: 'var(--radius-small)',
-                  transition: 'background-color 0.15s',
-                }}
               >
                 Audit Log
               </Link>
               <Link
                 href="/workspaces"
+                className="dropdown-item"
                 data-testid="nav-workspaces"
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '8px 12px',
-                  fontSize: '13px',
-                  color: 'var(--color-text-primary)',
-                  textDecoration: 'none',
-                  borderRadius: 'var(--radius-small)',
-                  transition: 'background-color 0.15s',
-                }}
               >
                 Workspaces
               </Link>
-              <div
-                style={{
-                  height: '1px',
-                  backgroundColor: 'var(--color-border)',
-                  margin: '4px 0',
-                }}
-              />
+              <div className="dropdown-divider" />
               <button
                 type="button"
+                className="dropdown-item dropdown-item--danger"
                 data-testid="nav-signout"
                 role="menuitem"
                 onClick={() => signOut({ callbackUrl: '/' })}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '8px 12px',
-                  fontSize: '13px',
-                  color: 'var(--color-alert)',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  borderRadius: 'var(--radius-small)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'background-color 0.15s',
-                }}
               >
                 Sign out
               </button>

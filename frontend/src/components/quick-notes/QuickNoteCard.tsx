@@ -214,15 +214,7 @@ export default function QuickNoteCard({
             data-testid="person-picker-select"
             onChange={(e) => { if (e.target.value) handleAssignPerson(e.target.value); }}
             defaultValue=""
-            style={{
-              width: '100%',
-              padding: '6px 10px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              fontSize: 'var(--text-body)',
-            }}
+            style={{ width: '100%' }}
           >
             <option value="" disabled>Select a person...</option>
             {persons.map((p) => (
@@ -249,15 +241,7 @@ export default function QuickNoteCard({
             data-testid="attach-person-picker-select"
             onChange={(e) => { if (e.target.value) handleAttachPersonSelected(e.target.value); }}
             defaultValue=""
-            style={{
-              width: '100%',
-              padding: '6px 10px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              fontSize: 'var(--text-body)',
-            }}
+            style={{ width: '100%' }}
           >
             <option value="" disabled>Select a person...</option>
             {persons.map((p) => (
@@ -289,15 +273,7 @@ export default function QuickNoteCard({
               data-testid="entry-picker-select"
               onChange={(e) => { if (e.target.value) handleAttachToEntry(e.target.value); }}
               defaultValue=""
-              style={{
-                width: '100%',
-                padding: '6px 10px',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                color: 'var(--color-text-primary)',
-                fontSize: 'var(--text-body)',
-              }}
+              style={{ width: '100%' }}
             >
               <option value="" disabled>Select a 1:1 entry...</option>
               {entries.map((entry) => (
@@ -328,15 +304,7 @@ export default function QuickNoteCard({
             data-testid="convert-person-picker-select"
             onChange={(e) => { if (e.target.value) handleConvertWithPerson(e.target.value); }}
             defaultValue=""
-            style={{
-              width: '100%',
-              padding: '6px 10px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              fontSize: 'var(--text-body)',
-            }}
+            style={{ width: '100%' }}
           >
             <option value="" disabled>Select a person...</option>
             {persons.map((p) => (

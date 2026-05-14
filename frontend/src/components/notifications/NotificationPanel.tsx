@@ -65,6 +65,7 @@ export default function NotificationPanel({ token, onAllRead, onSingleRead, onCl
       data-testid="notification-panel"
       role="dialog"
       aria-label="Notifications"
+      className="dropdown-panel"
       style={{
         position: 'absolute',
         top: '100%',
@@ -73,11 +74,7 @@ export default function NotificationPanel({ token, onAllRead, onSingleRead, onCl
         width: '380px',
         maxHeight: '480px',
         overflowY: 'auto',
-        backgroundColor: 'var(--color-bg-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-medium, 8px)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 8px rgba(0, 240, 255, 0.05)',
-        zIndex: 1000,
+        padding: 0,
       }}
     >
       <div

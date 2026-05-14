@@ -157,15 +157,7 @@ export default function ActionItemForm({ mode, initialData, onSubmit, onCancel, 
             value={ownerType}
             onChange={(e) => setOwnerType(e.target.value as ActionItemOwnerType)}
             data-testid="action-item-owner-select"
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-medium)',
-              fontSize: 'var(--text-body)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-            }}
+            style={{ width: '100%' }}
           >
             <option value="MANAGER">Manager (me)</option>
             <option value="PERSON">Report</option>

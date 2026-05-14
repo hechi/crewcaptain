@@ -25,16 +25,6 @@ export default function FilterBar({ onFilterChange, initialTag = '', initialMora
     onFilterChange({ tag, morale: newMorale });
   };
 
-  const inputStyle = {
-    padding: '8px 12px',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-medium)',
-    fontSize: 'var(--text-body)',
-    backgroundColor: 'var(--color-bg-elevated)',
-    color: 'var(--color-text-primary)',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-  };
-
   return (
     <div data-testid="filter-bar" style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
       <input
@@ -43,13 +33,24 @@ export default function FilterBar({ onFilterChange, initialTag = '', initialMora
         value={tag}
         onChange={handleTagChange}
         aria-label="Filter by tag"
-        style={inputStyle}
+        style={{
+          padding: '10px 12px',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-medium)',
+          fontSize: 'var(--text-body)',
+          fontFamily: 'var(--font-mono)',
+          backgroundColor: 'var(--glass-elevated-bg)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          color: 'var(--color-text-primary)',
+          transition: 'border-color 0.2s, box-shadow 0.2s',
+          letterSpacing: '0.2px',
+        }}
       />
       <select
         value={morale}
         onChange={handleMoraleChange}
         aria-label="Filter by morale status"
-        style={inputStyle}
       >
         <option value="">All morale statuses</option>
         <option value="GREEN">Green</option>
