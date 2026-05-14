@@ -21,6 +21,9 @@ jest.mock('@/lib/api-client', () => ({
   getOneOnOneEntry: jest.fn(),
   updateOneOnOneEntry: jest.fn(),
   deleteOneOnOneEntry: jest.fn(),
+  listActionItemsByPerson: jest.fn(),
+  createActionItem: jest.fn(),
+  completeActionItem: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
@@ -29,6 +32,7 @@ import {
   getOneOnOneEntry,
   updateOneOnOneEntry,
   deleteOneOnOneEntry,
+  listActionItemsByPerson,
 } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
@@ -36,6 +40,7 @@ const mockGetPerson = getPerson as jest.MockedFunction<typeof getPerson>;
 const mockGetOneOnOneEntry = getOneOnOneEntry as jest.MockedFunction<typeof getOneOnOneEntry>;
 const mockUpdateOneOnOneEntry = updateOneOnOneEntry as jest.MockedFunction<typeof updateOneOnOneEntry>;
 const mockDeleteOneOnOneEntry = deleteOneOnOneEntry as jest.MockedFunction<typeof deleteOneOnOneEntry>;
+const mockListActionItemsByPerson = listActionItemsByPerson as jest.MockedFunction<typeof listActionItemsByPerson>;
 
 const mockPerson: Person = {
   id: 'person-uuid-123',
@@ -81,6 +86,7 @@ describe('OneOnOneEntryDetailPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     setupAuthenticatedSession();
+    mockListActionItemsByPerson.mockResolvedValue({ content: [], page: 0, size: 50, totalElements: 0, totalPages: 0 });
   });
 
   it('should show loading state initially', () => {

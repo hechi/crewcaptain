@@ -67,6 +67,7 @@ class ActionItemController(
     fun listActionItemsByPerson(
         @PathVariable personId: UUID,
         @RequestParam(required = false) status: ActionItemStatus?,
+        @RequestParam(required = false) originatingEntryId: UUID?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<PaginatedActionItemResponse> {
@@ -75,6 +76,7 @@ class ActionItemController(
             userId = userId,
             personId = PersonId(personId),
             status = status,
+            originatingEntryId = originatingEntryId?.let { OneOnOneEntryId(it) },
             page = page,
             size = size
         )

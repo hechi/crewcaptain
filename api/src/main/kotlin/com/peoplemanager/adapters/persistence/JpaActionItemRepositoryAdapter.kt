@@ -52,6 +52,17 @@ class JpaActionItemRepositoryAdapter(
         }
     }
 
+    override fun findAllByUserIdAndPersonIdAndOriginatingEntryId(
+        userId: UserId,
+        personId: PersonId,
+        originatingEntryId: OneOnOneEntryId,
+        pageable: Pageable
+    ): Page<ActionItem> {
+        return springDataRepository.findAllByUserIdAndPersonIdAndOriginatingEntryId(
+            userId.value, personId.value, originatingEntryId.value, pageable
+        ).map { it.toDomain() }
+    }
+
     override fun findAllByUserId(
         userId: UserId,
         status: ActionItemStatus?,

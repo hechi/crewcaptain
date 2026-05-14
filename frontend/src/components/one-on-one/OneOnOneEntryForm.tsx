@@ -17,6 +17,8 @@ interface OneOnOneEntryFormProps {
   onCancel?: () => void;
   /** Whether the form is currently submitting */
   isSubmitting?: boolean;
+  /** Optional slot rendered between agenda items and notes (e.g., inline action items) */
+  actionItemsSlot?: React.ReactNode;
 }
 
 export interface OneOnOneEntryFormData {
@@ -38,6 +40,7 @@ export default function OneOnOneEntryForm({
   onSubmit,
   onCancel,
   isSubmitting = false,
+  actionItemsSlot,
 }: OneOnOneEntryFormProps) {
   const isEditMode = !!entry;
 
@@ -161,6 +164,9 @@ export default function OneOnOneEntryForm({
 
       {/* Agenda Items */}
       <AgendaItemList items={agendaItems} onChange={setAgendaItems} />
+
+      {/* Action Items Slot (injected by parent page) */}
+      {actionItemsSlot}
 
       {/* Notes */}
       <div>

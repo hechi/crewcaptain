@@ -110,9 +110,16 @@ class ActionItemService(
             ?: throw PersonNotFoundException(query.personId)
 
         val pageable = PageRequest.of(query.page, query.size, Sort.by(Sort.Direction.ASC, "dueDate"))
-        return actionItemRepository.findAllByUserIdAndPersonId(
-            query.userId, query.personId, query.status, pageable
-        )
+
+        return if (query.originatingEntryId != null) {
+            actionItemRepository.findAllByUserIdAndPersonIdAndOriginatingEntryId(
+                query.userId, query.personId, query.originatingEntryId, pageable
+            )
+        } else {
+            actionItemRepository.findAllByUserIdAndPersonId(
+                query.userId, query.personId, query.status, pageable
+            )
+        }
     }
 
     override fun listAllActionItems(query: ListAllActionItemsQuery): Page<ActionItem> {

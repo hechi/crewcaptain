@@ -242,6 +242,25 @@ class ActionItemControllerTest {
             .andExpect(jsonPath("$.content.length()").value(0))
     }
 
+    @Test
+    fun `GET action-items by person - supports originatingEntryId filter`() {
+        val entryId = OneOnOneEntryId(UUID.randomUUID())
+        val item = sampleActionItem().copy(originatingEntryId = entryId)
+        val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "dueDate"))
+
+        every { actionItemQueryPort.listActionItemsByPerson(match {
+            it.originatingEntryId == entryId
+        }) } returns PageImpl(listOf(item), pageable, 1)
+
+        mockMvc.perform(
+            get("/api/v1/persons/${personId.value}/action-items?originatingEntryId=${entryId.value}")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].originatingEntryId").value(entryId.value.toString()))
+    }
+
     // ===== Update Action Item =====
 
     @Test

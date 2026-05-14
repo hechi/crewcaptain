@@ -20,15 +20,19 @@ jest.mock('@/lib/api-client', () => ({
   getPerson: jest.fn(),
   getOneOnOneSeries: jest.fn(),
   createOneOnOneEntry: jest.fn(),
+  listActionItemsByPerson: jest.fn(),
+  createActionItem: jest.fn(),
+  completeActionItem: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
-import { getPerson, getOneOnOneSeries, createOneOnOneEntry } from '@/lib/api-client';
+import { getPerson, getOneOnOneSeries, createOneOnOneEntry, listActionItemsByPerson } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 const mockGetPerson = getPerson as jest.MockedFunction<typeof getPerson>;
 const mockGetOneOnOneSeries = getOneOnOneSeries as jest.MockedFunction<typeof getOneOnOneSeries>;
 const mockCreateOneOnOneEntry = createOneOnOneEntry as jest.MockedFunction<typeof createOneOnOneEntry>;
+const mockListActionItemsByPerson = listActionItemsByPerson as jest.MockedFunction<typeof listActionItemsByPerson>;
 
 const mockPerson: Person = {
   id: 'person-uuid-123',
@@ -81,6 +85,7 @@ describe('CreateOneOnOneEntryPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     setupAuthenticatedSession();
+    mockListActionItemsByPerson.mockResolvedValue({ content: [], page: 0, size: 50, totalElements: 0, totalPages: 0 });
   });
 
   it('should show loading state initially', () => {
@@ -188,5 +193,20 @@ describe('CreateOneOnOneEntryPage', () => {
     fireEvent.click(screen.getByTestId('entry-form-cancel'));
 
     expect(mockPush).toHaveBeenCalledWith('/people/person-uuid-123');
+  });
+
+  it('should show inline action items section on create page', async () => {
+    mockGetPerson.mockResolvedValue(mockPerson);
+    mockGetOneOnOneSeries.mockRejectedValue(new Error('Not found'));
+
+    render(<CreateOneOnOneEntryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('one-on-one-action-items')).toBeInTheDocument();
+    });
+
+    // Should show the quick-add form
+    expect(screen.getByTestId('quick-add-action-item-form')).toBeInTheDocument();
+    expect(screen.getByTestId('quick-action-title-input')).toBeInTheDocument();
   });
 });
