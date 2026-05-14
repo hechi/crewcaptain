@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { QuickNoteStatus, CreateQuickNoteRequest, PaginatedQuickNoteResponse } from '@/types/quick-note';
 import { Person, PaginatedResponse } from '@/types/person';
 import { OneOnOneEntry } from '@/types/one-on-one';
@@ -16,11 +15,12 @@ import {
   listPersons,
   listOneOnOneEntries,
 } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteList from '@/components/quick-notes/QuickNoteList';
 import Pagination from '@/components/Pagination';
 
 export default function QuickNotesPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
 
   const [notes, setNotes] = useState<PaginatedQuickNoteResponse | null>(null);
   const [persons, setPersons] = useState<Person[]>([]);
@@ -30,10 +30,9 @@ export default function QuickNotesPage() {
   const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>('INBOX');
   const [page, setPage] = useState(0);
 
-  const token = session?.accessToken as string;
-
   const fetchNotes = useCallback(async () => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
@@ -49,17 +48,18 @@ export default function QuickNotesPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, status, statusFilter, page]);
+  }, [getToken, isAuthenticated, statusFilter, page]);
 
   const fetchPersons = useCallback(async () => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
     try {
       const result = await listPersons(token, { size: 100 });
       setPersons(result.content);
     } catch {
       // Non-critical — persons list is for the picker
     }
-  }, [token, status]);
+  }, [getToken, isAuthenticated]);
 
   useEffect(() => {
     fetchNotes();
@@ -70,6 +70,8 @@ export default function QuickNotesPage() {
   }, [fetchPersons]);
 
   const handleCreate = async (data: CreateQuickNoteRequest) => {
+    const token = getToken();
+    if (!token) return;
     setSubmitting(true);
     try {
       await createQuickNote(token, data);
@@ -82,6 +84,8 @@ export default function QuickNotesPage() {
   };
 
   const handleArchive = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await archiveQuickNote(token, id);
       fetchNotes();
@@ -91,6 +95,8 @@ export default function QuickNotesPage() {
   };
 
   const handleConvert = async (id: string, personId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await convertQuickNote(token, id, { personId });
       fetchNotes();
@@ -100,6 +106,8 @@ export default function QuickNotesPage() {
   };
 
   const handleAttach = async (id: string, entryId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await attachQuickNote(token, id, { entryId });
       fetchNotes();
@@ -109,6 +117,8 @@ export default function QuickNotesPage() {
   };
 
   const handleAssignPerson = async (id: string, personId: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await assignQuickNoteToPerson(token, id, { personId });
       fetchNotes();
@@ -118,6 +128,8 @@ export default function QuickNotesPage() {
   };
 
   const handleDelete = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
     try {
       await deleteQuickNote(token, id);
       fetchNotes();
@@ -127,6 +139,8 @@ export default function QuickNotesPage() {
   };
 
   const handleFetchEntries = async (personId: string): Promise<OneOnOneEntry[]> => {
+    const token = getToken();
+    if (!token) return [];
     try {
       const result = await listOneOnOneEntries(token, personId, 0, 20);
       return result.content;

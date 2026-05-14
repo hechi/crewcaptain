@@ -2,7 +2,6 @@
 
 import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react';
 import { ReactNode } from 'react';
-import SessionRefreshGuard from './SessionRefreshGuard';
 
 interface Props {
   children: ReactNode;
@@ -10,10 +9,8 @@ interface Props {
 
 export default function SessionProvider({ children }: Props) {
   return (
-    <NextAuthSessionProvider refetchInterval={4 * 60} refetchOnWindowFocus={true}>
-      <SessionRefreshGuard>
-        {children}
-      </SessionRefreshGuard>
+    <NextAuthSessionProvider refetchInterval={5 * 60} refetchOnWindowFocus={false}>
+      {children}
     </NextAuthSessionProvider>
   );
 }

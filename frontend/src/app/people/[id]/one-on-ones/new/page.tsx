@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
   createOneOnOneEntry,
   getOneOnOneSeries,
   getPerson,
 } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import { Person } from '@/types/person';
 import { OneOnOneSeries } from '@/types/one-on-one';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 
 export default function CreateOneOnOneEntryPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const router = useRouter();
   const params = useParams();
   const personId = params.id as string;
@@ -24,10 +24,9 @@ export default function CreateOneOnOneEntryPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const token = session?.accessToken as string;
-
   const fetchData = useCallback(async () => {
-    if (status !== 'authenticated' || !token) return;
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
 
     setLoading(true);
     setError(null);
@@ -48,13 +47,15 @@ export default function CreateOneOnOneEntryPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, status, personId]);
+  }, [getToken, isAuthenticated, personId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleSubmit = async (data: OneOnOneEntryFormData) => {
+    const token = getToken();
+    if (!token) return;
     setIsSubmitting(true);
     setError(null);
     try {

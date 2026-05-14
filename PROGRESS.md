@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-14T10:30:00Z — Add screenshot showcase section to landing page
+2026-05-14T14:00:00Z — Fix session refresh causing unexpected page reloads
 
 ## Current Status
-Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Prometheus metrics endpoint added with bearer token security and custom 1:1 metrics. Landing page now includes an interactive screenshot showcase section with tabbed gallery. Backend: 1061 tests pass. Frontend: 931 tests pass (including 18 new ScreenshotShowcase tests).
+Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Prometheus metrics endpoint added with bearer token security and custom 1:1 metrics. Landing page now includes an interactive screenshot showcase section with tabbed gallery. Fixed critical UX bug where pages would unexpectedly refresh during editing due to aggressive session refetch and token-dependent useCallback chains. Backend: 1061 tests pass. Frontend: 935 tests pass.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -99,6 +99,7 @@ Docker Compose production file (`docker-compose.yml`) now pulls pre-built images
 - [x] Runtime API proxy — Replaced build-time Next.js rewrites with a runtime API route handler (/api/v1/[...path]/route.ts). API_BASE_URL is now read at request time from environment variables, enabling runtime configuration without rebuilding the image. (2026-05-13)
 - [x] Prometheus Metrics — /actuator/prometheus endpoint secured with bearer token (METRICS_TOKEN). Micrometer + Prometheus registry. Custom 1:1 metrics (total entries, entries last 7 days). Separate security filter chain for actuator endpoints. JVM, HTTP, HikariCP metrics included. Health endpoint remains unauthenticated. (2026-05-13)
 - [x] Landing Page Screenshot Showcase — Interactive tabbed gallery section between Features and How It Works. Four screenshots: Dashboard overview, Action Items, Person Detail, and Search. Accessible tab navigation with keyboard support (ArrowLeft/ArrowRight), ARIA roles (tablist/tab/tabpanel), glassmorphism styling consistent with cyberpunk-lite theme. ScreenshotShowcase component with 18 tests. (2026-05-14)
+- [x] Fix Session Refresh Page Reloads — Removed SessionRefreshGuard (caused full-page redirects on transient token refresh failures). Created useStableToken hook (ref-based token access, stable getToken() reference for useCallback deps). Disabled refetchOnWindowFocus (prevented form state loss on alt-tab). Increased refetchInterval to 5 minutes. Updated all 12 pages to use useStableToken instead of token-in-deps pattern. Auth.js middleware handles expired sessions naturally on navigation. (2026-05-14)
 
 ## In Progress
 - (none)
@@ -117,6 +118,7 @@ Docker Compose production file (`docker-compose.yml`) now pulls pre-built images
 | 003 | FullStackIntegrationTest Property 14 (invalid morale status) has intermittent failure with edge-case strings | Low | Open |
 | 004 | Changing ENCRYPTION_KEY caused 500 errors on all 1:1 entries (including non-sensitive) | High | Fixed |
 | 005 | Access token expired without automatic refresh, requiring manual re-login | Medium | Fixed |
+| 007 | Pages unexpectedly refresh during editing due to session refetch cascading into data re-fetches | High | Fixed |
 | 006 | Docker healthcheck fails — spring-boot-starter-actuator missing, /actuator/health returns 404 | High | Fixed |
 
 ## Next Steps (Prioritized)

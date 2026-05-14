@@ -1,13 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { createPerson } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import PersonForm from '@/components/PersonForm';
 import { useState } from 'react';
 
 export default function CreatePersonPage() {
-  const { data: session, status } = useSession();
+  const { getToken, status } = useStableToken();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -20,11 +20,12 @@ export default function CreatePersonPage() {
     email?: string;
     tags?: string[];
   }) => {
-    if (!session?.accessToken) return;
+    const token = getToken();
+    if (!token) return;
 
     setError(null);
     try {
-      const person = await createPerson(session.accessToken as string, data);
+      const person = await createPerson(token, data);
       router.push(`/people/${person.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create person');

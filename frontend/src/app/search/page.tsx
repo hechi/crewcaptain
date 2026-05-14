@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResponse, SearchResultType } from '@/types/search';
 import { search } from '@/lib/api-client';
+import { useStableToken } from '@/lib/useStableToken';
 import SearchResultCard from '@/components/search/SearchResultCard';
 import Pagination from '@/components/Pagination';
 
@@ -19,7 +19,7 @@ const ALL_TYPES: { value: SearchResultType; label: string }[] = [
 ];
 
 export default function SearchPage() {
-  const { data: session, status } = useSession();
+  const { getToken, isAuthenticated, status } = useStableToken();
   const searchParams = useSearchParams();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +36,8 @@ export default function SearchPage() {
   const [selectedTypes, setSelectedTypes] = useState<SearchResultType[]>(initialTypes);
 
   const performSearch = useCallback(async (q: string, p: number, types: SearchResultType[]) => {
-    if (status !== 'authenticated' || !session?.accessToken || !q.trim()) {
+    const token = getToken();
+    if (!isAuthenticated || !token || !q.trim()) {
       setSearchResponse(null);
       return;
     }
@@ -44,7 +45,7 @@ export default function SearchPage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await search(session.accessToken as string, {
+      const result = await search(token, {
         q: q.trim(),
         type: types.length > 0 ? types : undefined,
         page: p,
@@ -56,7 +57,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, status]);
+  }, [getToken, isAuthenticated]);
 
   // Update URL when search params change
   const updateUrl = useCallback((q: string, p: number, types: SearchResultType[]) => {
