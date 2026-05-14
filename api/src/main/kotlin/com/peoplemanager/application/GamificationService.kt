@@ -14,6 +14,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
+import java.time.temporal.IsoFields
 
 @Service
 @Transactional(readOnly = true)
@@ -172,17 +173,35 @@ class GamificationService(
     }
 
     /**
-     * Returns a year-week key for grouping dates into weeks.
+     * Returns a year-week key for grouping dates into ISO weeks (Monday-Sunday).
+     * Encodes year and week into a single Long for easy comparison.
      */
     private fun weekKey(date: LocalDate): Long {
-        // Use epoch day / 7 for consistent week boundaries
-        return date.toEpochDay() / 7
+        val weekYear = date.get(IsoFields.WEEK_BASED_YEAR).toLong()
+        val weekOfYear = date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR).toLong()
+        return weekYear * 100 + weekOfYear
     }
 
     /**
-     * Checks if two week keys are consecutive.
+     * Checks if two week keys are consecutive ISO weeks.
      */
     private fun isConsecutiveWeek(week1: Long, week2: Long): Boolean {
-        return week2 - week1 == 1L
+        val year1 = week1 / 100
+        val w1 = week1 % 100
+        val year2 = week2 / 100
+        val w2 = week2 % 100
+
+        // Same year, consecutive weeks
+        if (year1 == year2 && w2 - w1 == 1L) return true
+
+        // Year boundary: last week of year1 → first week of year2
+        if (year2 == year1 + 1 && w2 == 1L) {
+            // ISO years can have 52 or 53 weeks
+            val maxWeeksInYear1 = LocalDate.of(year1.toInt(), 12, 28)
+                .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR).toLong()
+            if (w1 == maxWeeksInYear1) return true
+        }
+
+        return false
     }
 }

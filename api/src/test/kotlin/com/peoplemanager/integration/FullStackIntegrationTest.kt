@@ -10,6 +10,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
+import io.kotest.property.arbitrary.Codepoint
+import io.kotest.property.arbitrary.alphanumeric
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
@@ -621,10 +623,9 @@ class FullStackIntegrationTest {
             val validStatuses = setOf("GREEN", "YELLOW", "RED", "UNKNOWN")
 
             // Generate arbitrary strings that are NOT valid morale statuses
-            // Filter out strings with special JSON characters that would break the JSON payload
-            val invalidStatusArb = Arb.string(1..20)
+            // Use only alphanumeric characters to avoid JSON encoding issues
+            val invalidStatusArb = Arb.string(1..20, Codepoint.alphanumeric())
                 .filter { it.uppercase() !in validStatuses }
-                .filter { !it.contains('"') && !it.contains('\\') && !it.contains('\n') && !it.contains('\r') && !it.contains('\t') }
 
             checkAll(100, invalidStatusArb) { invalidStatus ->
                 val requestJson = """{"status": "$invalidStatus"}"""
