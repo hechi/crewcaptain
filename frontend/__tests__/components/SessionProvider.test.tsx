@@ -41,7 +41,7 @@ describe('SessionProvider', () => {
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
-  it('should configure refetchInterval to 5 minutes', () => {
+  it('should configure refetchInterval to 3 minutes', () => {
     render(
       <SessionProvider>
         <div>Content</div>
@@ -49,10 +49,10 @@ describe('SessionProvider', () => {
     );
 
     const provider = screen.getByTestId('next-auth-session-provider');
-    expect(provider.getAttribute('data-refetch-interval')).toBe('300');
+    expect(provider.getAttribute('data-refetch-interval')).toBe('180');
   });
 
-  it('should disable refetchOnWindowFocus to prevent form state loss', () => {
+  it('should enable refetchOnWindowFocus for background token refresh', () => {
     render(
       <SessionProvider>
         <div>Content</div>
@@ -60,6 +60,6 @@ describe('SessionProvider', () => {
     );
 
     const provider = screen.getByTestId('next-auth-session-provider');
-    expect(provider.getAttribute('data-refetch-on-window-focus')).toBe('false');
+    expect(provider.getAttribute('data-refetch-on-window-focus')).toBe('true');
   });
 });
