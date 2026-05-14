@@ -24,6 +24,7 @@ services:
       OIDC_ISSUER_URI: ${OIDC_ISSUER_URI:-http://localhost:9000/application/o/crewcaptain/}
       OIDC_JWKS_URI: ${OIDC_JWKS_URI:-http://localhost:9000/application/o/crewcaptain/jwks/}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy

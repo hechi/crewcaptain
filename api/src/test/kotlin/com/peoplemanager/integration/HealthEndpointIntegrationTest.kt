@@ -49,12 +49,12 @@ class HealthEndpointIntegrationTest {
     @Test
     fun `should not expose other actuator endpoints`() {
         mockMvc.perform(get("/actuator/env"))
-            .andExpect(status().isUnauthorized)
+            .andExpect(status().isForbidden)
     }
 
     @Test
     fun `should not expose actuator info endpoint`() {
         mockMvc.perform(get("/actuator/beans"))
-            .andExpect(status().isUnauthorized)
+            .andExpect(status().isForbidden)
     }
 }

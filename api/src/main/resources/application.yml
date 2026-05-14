@@ -23,14 +23,25 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: crewcaptain
 
 app:
   encryption:
     key: ${ENCRYPTION_KEY:}
+  metrics:
+    token: ${METRICS_TOKEN:}
   notifications:
     cron: ${NOTIFICATION_CRON:0 0 * * * *}
     due-soon-days: ${NOTIFICATION_DUE_SOON_DAYS:3}
