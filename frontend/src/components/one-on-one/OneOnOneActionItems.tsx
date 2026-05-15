@@ -105,8 +105,8 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
   // Session items that are done/canceled (show them too for context)
   const completedSessionItems = sessionItems.filter((i) => i.status !== 'OPEN');
 
-  const isOverdue = (item: ActionItem) =>
-    item.status === 'OPEN' && item.dueDate && new Date(item.dueDate) < new Date();
+  const isOverdue = (item: ActionItem): boolean =>
+    item.status === 'OPEN' && item.dueDate != null && new Date(item.dueDate) < new Date();
 
   const formatDueDate = (dateStr: string) =>
     new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, {
