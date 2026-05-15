@@ -410,5 +410,80 @@ class QuickNoteServiceTest {
 
             result.content.size shouldBe 1
         }
+
+        @Test
+        fun `should list self-assigned quick notes`() {
+            val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+            val selfAssignedNote = existingNote.copy(selfAssigned = true)
+            val page = PageImpl(listOf(selfAssignedNote), pageable, 1)
+            every { quickNoteRepository.findAllByUserIdAndSelfAssigned(userId, true, pageable) } returns page
+
+            val query = ListQuickNotesQuery(userId = userId, selfAssigned = true)
+            val result = service.listQuickNotes(query)
+
+            result.content.size shouldBe 1
+            result.content[0].selfAssigned shouldBe true
+        }
+
+        @Test
+        fun `should list self-assigned quick notes filtered by status`() {
+            val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+            val selfAssignedNote = existingNote.copy(selfAssigned = true)
+            val page = PageImpl(listOf(selfAssignedNote), pageable, 1)
+            every {
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, pageable)
+            } returns page
+
+            val query = ListQuickNotesQuery(userId = userId, selfAssigned = true, status = QuickNoteStatus.INBOX)
+            val result = service.listQuickNotes(query)
+
+            result.content.size shouldBe 1
+        }
+    }
+
+    @Nested
+    inner class SelfAssignedTests {
+
+        private val quickNoteId = QuickNoteId.generate()
+
+        @Test
+        fun `should create self-assigned quick note`() {
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = CreateQuickNoteCommand(
+                userId = userId,
+                text = "My personal reminder",
+                selfAssigned = true
+            )
+
+            val result = service.createQuickNote(command)
+
+            result.selfAssigned shouldBe true
+            result.personId shouldBe null
+        }
+
+        @Test
+        fun `should clear selfAssigned when assigning to person`() {
+            val selfAssignedNote = QuickNote(
+                id = quickNoteId,
+                userId = userId,
+                text = "My personal note",
+                selfAssigned = true
+            )
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns selfAssignedNote
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = AssignQuickNoteToPersonCommand(
+                userId = userId,
+                quickNoteId = quickNoteId,
+                personId = personId
+            )
+
+            val result = service.assignToPerson(command)
+
+            result.selfAssigned shouldBe false
+            result.personId shouldBe personId
+        }
     }
 }

@@ -450,6 +450,115 @@ class QuickNoteIntegrationTest {
     }
 
     @Nested
+    inner class SelfAssignedNotes {
+
+        @Test
+        fun `should create a self-assigned quick note`() {
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "My personal reminder", "selfAssigned": true}""")
+            )
+                .andExpect(status().isCreated)
+                .andExpect(jsonPath("$.text").value("My personal reminder"))
+                .andExpect(jsonPath("$.selfAssigned").value(true))
+                .andExpect(jsonPath("$.personId").isEmpty)
+        }
+
+        @Test
+        fun `should filter quick notes by selfAssigned`() {
+            // Create a self-assigned note
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Self note", "selfAssigned": true}""")
+            ).andExpect(status().isCreated)
+
+            // Create a regular note
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Regular note"}""")
+            ).andExpect(status().isCreated)
+
+            // Filter by selfAssigned=true
+            mockMvc.perform(
+                get("/api/v1/quick-notes?selfAssigned=true")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].text").value("Self note"))
+                .andExpect(jsonPath("$.content[0].selfAssigned").value(true))
+        }
+
+        @Test
+        fun `should clear selfAssigned when assigning to person`() {
+            // Create a self-assigned note
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Was self-assigned", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            // Assign to a person
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$noteId/assign")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"personId": "$personAId"}""")
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.selfAssigned").value(false))
+                .andExpect(jsonPath("$.personId").value(personAId))
+
+            // Should no longer appear in self-assigned filter
+            mockMvc.perform(
+                get("/api/v1/quick-notes?selfAssigned=true")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.totalElements").value(0))
+        }
+
+        @Test
+        fun `should not allow self-assigned and personId together on create`() {
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Invalid", "selfAssigned": true, "personId": "$personAId"}""")
+            )
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should not allow user B to see user A self-assigned notes`() {
+            // User A creates a self-assigned note
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "A's private self note", "selfAssigned": true}""")
+            ).andExpect(status().isCreated)
+
+            // User B should see nothing
+            mockMvc.perform(
+                get("/api/v1/quick-notes?selfAssigned=true")
+                    .with(authentication(authenticatedJwt(userB.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.totalElements").value(0))
+        }
+    }
+
+    @Nested
     inner class DataIsolation {
 
         @Test

@@ -8,6 +8,7 @@ export interface QuickNote {
   personId: string | null;
   text: string;
   sensitive: boolean;
+  selfAssigned: boolean;
   status: QuickNoteStatus;
   attachedEntryId: string | null;
   createdAt: string;
@@ -18,6 +19,7 @@ export interface CreateQuickNoteRequest {
   text: string;
   personId?: string;
   sensitive?: boolean;
+  selfAssigned?: boolean;
 }
 
 export interface UpdateQuickNoteRequest {

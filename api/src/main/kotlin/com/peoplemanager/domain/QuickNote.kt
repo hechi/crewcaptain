@@ -8,6 +8,7 @@ data class QuickNote(
     val personId: PersonId? = null,
     val text: String,
     val sensitive: Boolean = false,
+    val selfAssigned: Boolean = false,
     val status: QuickNoteStatus = QuickNoteStatus.INBOX,
     val attachedEntryId: OneOnOneEntryId? = null,
     val createdAt: Instant = Instant.now(),
@@ -15,10 +16,17 @@ data class QuickNote(
 ) {
     init {
         require(text.isNotBlank()) { "Quick note text must not be blank" }
+        require(!(selfAssigned && personId != null)) {
+            "A quick note cannot be both self-assigned and assigned to a person"
+        }
     }
 
     fun assignToPerson(personId: PersonId): QuickNote {
-        return copy(personId = personId, updatedAt = Instant.now())
+        return copy(personId = personId, selfAssigned = false, updatedAt = Instant.now())
+    }
+
+    fun markSelfAssigned(): QuickNote {
+        return copy(selfAssigned = true, personId = null, updatedAt = Instant.now())
     }
 
     fun markAttached(entryId: OneOnOneEntryId): QuickNote {

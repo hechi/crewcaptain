@@ -23,7 +23,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components. Inline action items section on the 1:1 entry page allows quick-adding action items during a session (auto-linked to the entry), viewing existing open items for the person, and marking items done — all without leaving the 1:1 page.
 - **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
 - **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
-- **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox) or assigned to a person. Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Full frontend with dedicated Quick Notes page, status filter, and inline create form.
+- **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox), assigned to a person, or self-assigned (personal notes for the manager). Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Self-assigned notes are accessible via "My Notes" in the user menu. Invariant: a note cannot be both self-assigned and assigned to a person — assigning to a person clears the self-assigned flag. Full frontend with dedicated Quick Notes page, My Notes page, status filter, and inline create form.
 - **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
 - **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
 - **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
@@ -371,6 +371,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `text` — Required (Markdown text)
 - `personId` — Optional UUID to assign to a person
 - `sensitive` — Optional boolean (default: false)
+- `selfAssigned` — Optional boolean (default: false). When true, the note is a personal note for the manager. Mutually exclusive with `personId`.
 
 **Quick Note status transitions:**
 - INBOX → ATTACHED (via `/attach` with `entryId` — links to a specific 1:1 entry)
@@ -383,6 +384,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `size` — Page size (default: 20)
 - `status` — Filter by status (INBOX, ATTACHED, CONVERTED, ARCHIVED)
 - `personId` — Filter by assigned person
+- `selfAssigned` — Filter by self-assigned flag (true/false)
 
 **Query parameters for entries list endpoint:**
 - `page` — Page number (default: 0)

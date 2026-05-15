@@ -520,12 +520,14 @@ export async function deleteQuickNote(token: string, quickNoteId: string): Promi
 export async function listQuickNotes(token: string, params?: {
   status?: QuickNoteStatus;
   personId?: string;
+  selfAssigned?: boolean;
   page?: number;
   size?: number;
 }): Promise<PaginatedQuickNoteResponse> {
   const searchParams = new URLSearchParams();
   if (params?.status) searchParams.set('status', params.status);
   if (params?.personId) searchParams.set('personId', params.personId);
+  if (params?.selfAssigned !== undefined) searchParams.set('selfAssigned', params.selfAssigned.toString());
   if (params?.page !== undefined) searchParams.set('page', params.page.toString());
   if (params?.size !== undefined) searchParams.set('size', params.size.toString());
 

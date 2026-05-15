@@ -17,5 +17,9 @@ interface SpringDataQuickNoteRepository : JpaRepository<QuickNoteEntity, UUID> {
 
     fun findAllByUserIdAndStatusAndPersonId(userId: UUID, status: String, personId: UUID, pageable: Pageable): Page<QuickNoteEntity>
 
+    fun findAllByUserIdAndSelfAssigned(userId: UUID, selfAssigned: Boolean, pageable: Pageable): Page<QuickNoteEntity>
+
+    fun findAllByUserIdAndSelfAssignedAndStatus(userId: UUID, selfAssigned: Boolean, status: String, pageable: Pageable): Page<QuickNoteEntity>
+
     fun deleteByIdAndUserId(id: UUID, userId: UUID): Long
 }

@@ -37,7 +37,8 @@ class QuickNoteService(
             userId = command.userId,
             personId = command.personId,
             text = command.text,
-            sensitive = command.sensitive
+            sensitive = command.sensitive,
+            selfAssigned = command.selfAssigned
         )
 
         val saved = quickNoteRepository.save(quickNote)
@@ -75,6 +76,7 @@ class QuickNoteService(
         personRepository.findByIdAndUserId(command.personId, command.userId)
             ?: throw PersonNotFoundException(command.personId)
 
+        // assignToPerson on the domain model clears selfAssigned automatically
         val updated = existing.assignToPerson(command.personId)
         return quickNoteRepository.save(updated)
     }
@@ -166,6 +168,12 @@ class QuickNoteService(
         val pageable = PageRequest.of(query.page, query.size, Sort.by(Sort.Direction.DESC, "createdAt"))
 
         return when {
+            query.selfAssigned != null && query.status != null ->
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(
+                    query.userId, query.selfAssigned, query.status, pageable
+                )
+            query.selfAssigned != null ->
+                quickNoteRepository.findAllByUserIdAndSelfAssigned(query.userId, query.selfAssigned, pageable)
             query.status != null && query.personId != null ->
                 quickNoteRepository.findAllByUserIdAndStatusAndPersonId(
                     query.userId, query.status, query.personId, pageable

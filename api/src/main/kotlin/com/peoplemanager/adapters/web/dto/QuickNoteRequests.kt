@@ -7,7 +7,8 @@ data class CreateQuickNoteRequest(
     @field:NotBlank(message = "Text must not be blank")
     val text: String?,
     val personId: UUID? = null,
-    val sensitive: Boolean? = null
+    val sensitive: Boolean? = null,
+    val selfAssigned: Boolean? = null
 )
 
 data class UpdateQuickNoteRequest(

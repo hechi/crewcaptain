@@ -32,7 +32,8 @@ class QuickNoteController(
             userId = userId,
             personId = request.personId?.let { PersonId(it) },
             text = request.text!!,
-            sensitive = request.sensitive ?: false
+            sensitive = request.sensitive ?: false,
+            selfAssigned = request.selfAssigned ?: false
         )
         val quickNote = quickNoteCommandPort.createQuickNote(command)
         return ResponseEntity.status(HttpStatus.CREATED).body(QuickNoteResponse.from(quickNote))
@@ -42,6 +43,7 @@ class QuickNoteController(
     fun listQuickNotes(
         @RequestParam(required = false) status: QuickNoteStatus?,
         @RequestParam(required = false) personId: UUID?,
+        @RequestParam(required = false) selfAssigned: Boolean?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<PaginatedQuickNoteResponse> {
@@ -50,6 +52,7 @@ class QuickNoteController(
             userId = userId,
             status = status,
             personId = personId?.let { PersonId(it) },
+            selfAssigned = selfAssigned,
             page = page,
             size = size
         )

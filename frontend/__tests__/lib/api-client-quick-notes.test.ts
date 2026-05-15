@@ -244,6 +244,38 @@ describe('listQuickNotes', () => {
     });
   });
 
+  it('should send GET request with selfAssigned filter', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockPaginatedNotes),
+    });
+
+    await listQuickNotes(mockToken, { selfAssigned: true });
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v1/quick-notes?selfAssigned=true', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+  });
+
+  it('should send GET request with selfAssigned and status filter', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockPaginatedNotes),
+    });
+
+    await listQuickNotes(mockToken, { selfAssigned: true, status: 'INBOX' });
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v1/quick-notes?status=INBOX&selfAssigned=true', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+  });
+
   it('should return paginated response', async () => {
     mockFetch.mockResolvedValue({
       ok: true,

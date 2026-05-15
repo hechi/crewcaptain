@@ -9,7 +9,8 @@ data class CreateQuickNoteCommand(
     val userId: UserId,
     val personId: PersonId? = null,
     val text: String,
-    val sensitive: Boolean = false
+    val sensitive: Boolean = false,
+    val selfAssigned: Boolean = false
 )
 
 data class UpdateQuickNoteCommand(

@@ -173,6 +173,21 @@ describe('Navigation', () => {
     expect(settingsLink).toHaveAttribute('href', '/settings');
   });
 
+  it('should display My Notes link in user menu', () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+
+    render(<Navigation />);
+    fireEvent.click(screen.getByTestId('nav-user-menu-trigger'));
+
+    const myNotesLink = screen.getByTestId('nav-my-notes');
+    expect(myNotesLink).toHaveTextContent('My Notes');
+    expect(myNotesLink).toHaveAttribute('href', '/my-notes');
+  });
+
   it('should display Sign out button in user menu', () => {
     mockUseSession.mockReturnValue({
       data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },

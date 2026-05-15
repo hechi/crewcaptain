@@ -409,4 +409,60 @@ class QuickNoteControllerTest {
         )
             .andExpect(status().isNotFound)
     }
+
+    // ===== Self-Assigned Quick Notes =====
+
+    @Test
+    fun `POST quick-notes - creates self-assigned quick note`() {
+        val quickNote = sampleQuickNote().copy(selfAssigned = true)
+        val request = CreateQuickNoteRequest(
+            text = "My personal reminder",
+            selfAssigned = true
+        )
+
+        every { quickNoteCommandPort.createQuickNote(any()) } returns quickNote
+
+        mockMvc.perform(
+            post("/api/v1/quick-notes")
+                .with(authentication(authenticatedJwt(userId)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$.selfAssigned").value(true))
+            .andExpect(jsonPath("$.personId").isEmpty)
+    }
+
+    @Test
+    fun `GET quick-notes - filters by selfAssigned`() {
+        val selfAssignedNote = sampleQuickNote().copy(selfAssigned = true)
+        val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+
+        every { quickNoteQueryPort.listQuickNotes(any()) } returns
+            PageImpl(listOf(selfAssignedNote), pageable, 1)
+
+        mockMvc.perform(
+            get("/api/v1/quick-notes?selfAssigned=true")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].selfAssigned").value(true))
+    }
+
+    @Test
+    fun `GET quick-notes - selfAssigned response field is present`() {
+        val quickNote = sampleQuickNote()
+        val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+
+        every { quickNoteQueryPort.listQuickNotes(any()) } returns
+            PageImpl(listOf(quickNote), pageable, 1)
+
+        mockMvc.perform(
+            get("/api/v1/quick-notes")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content[0].selfAssigned").value(false))
+    }
 }

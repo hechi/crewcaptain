@@ -50,6 +50,14 @@ class JpaQuickNoteRepositoryAdapter(
         ).map { it.toDomain() }
     }
 
+    override fun findAllByUserIdAndSelfAssigned(userId: UserId, selfAssigned: Boolean, pageable: Pageable): Page<QuickNote> {
+        return springDataRepository.findAllByUserIdAndSelfAssigned(userId.value, selfAssigned, pageable).map { it.toDomain() }
+    }
+
+    override fun findAllByUserIdAndSelfAssignedAndStatus(userId: UserId, selfAssigned: Boolean, status: QuickNoteStatus, pageable: Pageable): Page<QuickNote> {
+        return springDataRepository.findAllByUserIdAndSelfAssignedAndStatus(userId.value, selfAssigned, status.name, pageable).map { it.toDomain() }
+    }
+
     override fun deleteByIdAndUserId(quickNoteId: QuickNoteId, userId: UserId): Boolean {
         val deleted = springDataRepository.deleteByIdAndUserId(quickNoteId.value, userId.value)
         return deleted > 0
@@ -73,6 +81,7 @@ class JpaQuickNoteRepositoryAdapter(
             personId = this.personId?.let { PersonId(it) },
             text = decryptedText,
             sensitive = this.sensitive,
+            selfAssigned = this.selfAssigned,
             status = QuickNoteStatus.valueOf(this.status),
             attachedEntryId = this.attachedEntryId?.let { OneOnOneEntryId(it) },
             createdAt = this.createdAt,
@@ -86,6 +95,7 @@ class JpaQuickNoteRepositoryAdapter(
         personId = this.personId?.value,
         text = if (this.sensitive) encryptionPort.encrypt(this.text) ?: this.text else this.text,
         sensitive = this.sensitive,
+        selfAssigned = this.selfAssigned,
         status = this.status.name,
         attachedEntryId = this.attachedEntryId?.value,
         createdAt = this.createdAt,

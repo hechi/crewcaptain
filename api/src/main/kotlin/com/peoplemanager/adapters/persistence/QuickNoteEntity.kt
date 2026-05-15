@@ -23,6 +23,9 @@ class QuickNoteEntity(
     @Column(name = "sensitive", nullable = false)
     val sensitive: Boolean = false,
 
+    @Column(name = "self_assigned", nullable = false)
+    val selfAssigned: Boolean = false,
+
     @Column(name = "status", nullable = false)
     val status: String = "INBOX",
 

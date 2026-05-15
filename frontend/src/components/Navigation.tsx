@@ -188,6 +188,15 @@ export default function Navigation() {
                 Settings
               </Link>
               <Link
+                href="/my-notes"
+                className="dropdown-item"
+                data-testid="nav-my-notes"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+              >
+                My Notes
+              </Link>
+              <Link
                 href="/audit-log"
                 className="dropdown-item"
                 data-testid="nav-audit-log"

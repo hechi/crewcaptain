@@ -192,4 +192,67 @@ class QuickNoteTest {
             toggled.sensitive shouldBe false
         }
     }
+
+    @Nested
+    inner class SelfAssignedTests {
+
+        @Test
+        fun `should create self-assigned quick note`() {
+            val note = QuickNote(
+                id = QuickNoteId.generate(),
+                userId = userId,
+                text = "My personal reminder",
+                selfAssigned = true
+            )
+
+            note.selfAssigned shouldBe true
+            note.personId shouldBe null
+        }
+
+        @Test
+        fun `should reject self-assigned note with personId set`() {
+            shouldThrow<IllegalArgumentException> {
+                QuickNote(
+                    id = QuickNoteId.generate(),
+                    userId = userId,
+                    personId = personId,
+                    text = "Invalid note",
+                    selfAssigned = true
+                )
+            }.message shouldBe "A quick note cannot be both self-assigned and assigned to a person"
+        }
+
+        @Test
+        fun `should mark note as self-assigned`() {
+            val note = createQuickNote()
+            val selfAssigned = note.markSelfAssigned()
+
+            selfAssigned.selfAssigned shouldBe true
+            selfAssigned.personId shouldBe null
+            selfAssigned.updatedAt shouldNotBe note.updatedAt
+        }
+
+        @Test
+        fun `should clear personId when marking as self-assigned`() {
+            val note = createQuickNote(personId = personId)
+            val selfAssigned = note.markSelfAssigned()
+
+            selfAssigned.selfAssigned shouldBe true
+            selfAssigned.personId shouldBe null
+        }
+
+        @Test
+        fun `should clear selfAssigned when assigning to person`() {
+            val note = QuickNote(
+                id = QuickNoteId.generate(),
+                userId = userId,
+                text = "My personal note",
+                selfAssigned = true
+            )
+            val assigned = note.assignToPerson(personId)
+
+            assigned.selfAssigned shouldBe false
+            assigned.personId shouldBe personId
+        }
+    }
 }
