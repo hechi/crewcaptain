@@ -659,6 +659,26 @@ Docker images are published to the GitLab Container Registry on every push to `m
 
 ---
 
+## Privacy & Telemetry
+
+CrewCaptain is privacy-first. Next.js telemetry is **disabled** in the Docker image via the `NEXT_TELEMETRY_DISABLED=1` environment variable, set in both the build and runtime stages of the frontend Dockerfile. No anonymous usage data is sent to Vercel during builds or at runtime.
+
+For local development outside Docker, you can disable telemetry manually:
+
+```bash
+npx next telemetry disable
+```
+
+Or set the environment variable in your shell:
+
+```bash
+export NEXT_TELEMETRY_DISABLED=1
+```
+
+See [Next.js Telemetry](https://nextjs.org/telemetry) for details on what would be collected if enabled.
+
+---
+
 ## Contributing
 
 1. Read `AGENTS.md` for the full development workflow and architecture rules
