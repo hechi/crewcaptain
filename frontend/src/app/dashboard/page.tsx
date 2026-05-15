@@ -5,6 +5,7 @@ import { DashboardResponse } from '@/types/dashboard';
 import { GamificationStats } from '@/types/gamification';
 import { getDashboard, getGamificationStats, getUserSettings } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
+import LoadingScreen from '@/components/LoadingScreen';
 import OverdueActionItems from '@/components/dashboard/OverdueActionItems';
 import DueSoonActionItems from '@/components/dashboard/DueSoonActionItems';
 import StaleOneOnOnes from '@/components/dashboard/StaleOneOnOnes';
@@ -52,20 +53,7 @@ export default function DashboardPage() {
   }, [fetchDashboard]);
 
   if (status === 'loading' || loading) {
-    return (
-      <div
-        data-testid="dashboard-loading"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '60vh',
-          color: 'var(--color-text-muted)',
-        }}
-      >
-        Loading dashboard...
-      </div>
-    );
+    return <LoadingScreen message="Loading dashboard" />;
   }
 
   if (error) {

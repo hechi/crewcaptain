@@ -51,6 +51,7 @@ import PdpGoalList from '@/components/pdp-goals/PdpGoalList';
 import KudosList from '@/components/kudos/KudosList';
 import ReviewPacketModal from '@/components/ReviewPacketModal';
 import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
+import LoadingScreen from '@/components/LoadingScreen';
 
 type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
 
@@ -568,7 +569,7 @@ export default function PersonDetailPage() {
   };
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading person" />;
   }
 
   if (status === 'unauthenticated') {
@@ -576,7 +577,7 @@ export default function PersonDetailPage() {
   }
 
   if (loading) {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading person" />;
   }
 
   if (error && !person) {

@@ -107,7 +107,7 @@ describe('DashboardPage', () => {
     mockGetUserSettings.mockReturnValue(new Promise(() => {})); // Never resolves
 
     render(<DashboardPage />);
-    expect(screen.getByTestId('dashboard-loading')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
   it('should show loading state when session is loading', () => {
@@ -118,7 +118,7 @@ describe('DashboardPage', () => {
     });
 
     render(<DashboardPage />);
-    expect(screen.getByTestId('dashboard-loading')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
   it('should render dashboard with all sections when data loads', async () => {

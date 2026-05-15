@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import LandingPage from '@/components/LandingPage';
+import LoadingScreen from '@/components/LoadingScreen';
 import './landing.css';
 
 export default function Home() {
@@ -17,20 +18,7 @@ export default function Home() {
   }, [status, router]);
 
   if (status === 'loading') {
-    return (
-      <div
-        data-testid="loading"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          backgroundColor: 'var(--color-bg-base)',
-        }}
-      >
-        <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
-      </div>
-    );
+    return <LoadingScreen fullScreen message="Initializing cockpit" />;
   }
 
   return <LandingPage />;

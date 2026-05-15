@@ -17,6 +17,7 @@ import {
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteList from '@/components/quick-notes/QuickNoteList';
+import LoadingScreen from '@/components/LoadingScreen';
 import Pagination from '@/components/Pagination';
 
 export default function QuickNotesPage() {
@@ -155,7 +156,7 @@ export default function QuickNotesPage() {
   };
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading quick notes" />;
   }
 
   if (status === 'unauthenticated') {

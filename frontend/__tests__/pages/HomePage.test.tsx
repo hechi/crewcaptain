@@ -33,7 +33,7 @@ describe('Home Page', () => {
     });
 
     render(<Home />);
-    expect(screen.getByTestId('loading')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
   it('should show landing page when unauthenticated', () => {

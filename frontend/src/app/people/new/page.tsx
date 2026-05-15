@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { createPerson } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import PersonForm from '@/components/PersonForm';
+import LoadingScreen from '@/components/LoadingScreen';
 import { useState } from 'react';
 
 export default function CreatePersonPage() {
@@ -33,7 +34,7 @@ export default function CreatePersonPage() {
   };
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading" />;
   }
 
   if (status === 'unauthenticated') {

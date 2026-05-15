@@ -12,6 +12,7 @@ import { Person } from '@/types/person';
 import { OneOnOneSeries } from '@/types/one-on-one';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function CreateOneOnOneEntryPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -83,7 +84,7 @@ export default function CreateOneOnOneEntryPage() {
   };
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading" />;
   }
 
   if (status === 'unauthenticated') {
@@ -91,7 +92,7 @@ export default function CreateOneOnOneEntryPage() {
   }
 
   if (loading) {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading 1:1 form" />;
   }
 
   if (error && !person) {

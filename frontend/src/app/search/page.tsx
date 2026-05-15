@@ -6,6 +6,7 @@ import { SearchResponse, SearchResultType } from '@/types/search';
 import { search } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import SearchResultCard from '@/components/search/SearchResultCard';
+import LoadingScreen from '@/components/LoadingScreen';
 import Pagination from '@/components/Pagination';
 
 const ALL_TYPES: { value: SearchResultType; label: string }[] = [
@@ -109,20 +110,7 @@ export default function SearchPage() {
   };
 
   if (status === 'loading') {
-    return (
-      <div
-        data-testid="search-loading"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '60vh',
-          color: 'var(--color-text-muted)',
-        }}
-      >
-        Loading...
-      </div>
-    );
+    return <LoadingScreen message="Loading search" />;
   }
 
   return (

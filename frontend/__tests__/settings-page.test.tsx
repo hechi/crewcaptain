@@ -53,7 +53,7 @@ describe('SettingsPage', () => {
   it('should show loading state initially', () => {
     mockUseSession.mockReturnValue({ data: null, status: 'loading' });
     render(<SettingsPage />);
-    expect(screen.getByTestId('settings-loading')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
   it('should render settings page with title', async () => {

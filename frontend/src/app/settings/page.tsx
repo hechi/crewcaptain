@@ -5,6 +5,7 @@ import { UserSettings, UpdateUserSettingsRequest, Theme } from '@/types/settings
 import { getUserSettings, updateUserSettings } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { useTheme } from '@/components/ThemeProvider';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function SettingsPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -87,20 +88,7 @@ export default function SettingsPage() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div
-        data-testid="settings-loading"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '60vh',
-          color: 'var(--color-text-muted)',
-        }}
-      >
-        Loading settings...
-      </div>
-    );
+    return <LoadingScreen message="Loading settings" />;
   }
 
   if (error && !settings) {

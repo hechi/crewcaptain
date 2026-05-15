@@ -13,6 +13,7 @@ import { Person } from '@/types/person';
 import { OneOnOneEntry } from '@/types/one-on-one';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function OneOnOneEntryDetailPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -97,7 +98,7 @@ export default function OneOnOneEntryDetailPage() {
   };
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading 1:1 entry" />;
   }
 
   if (status === 'unauthenticated') {
@@ -105,7 +106,7 @@ export default function OneOnOneEntryDetailPage() {
   }
 
   if (loading) {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading 1:1 entry" />;
   }
 
   if (error && !entry) {

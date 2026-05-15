@@ -31,7 +31,7 @@ describe('CreatePersonPage', () => {
   it('should show loading state while session is loading', () => {
     mockUseSession.mockReturnValue({ data: null, status: 'loading', update: jest.fn() });
     render(<CreatePersonPage />);
-    expect(screen.getByTestId('loading')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
   it('should show unauthenticated message when not signed in', () => {

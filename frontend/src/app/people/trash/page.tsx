@@ -6,6 +6,7 @@ import { listDeletedPersons, restorePerson, permanentlyDeletePerson } from '@/li
 import { useStableToken } from '@/lib/useStableToken';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function TrashPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -74,7 +75,7 @@ export default function TrashPage() {
   };
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading trash" />;
   }
 
   if (status === 'unauthenticated') {

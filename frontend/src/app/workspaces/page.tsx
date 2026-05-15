@@ -6,6 +6,7 @@ import { listWorkspaces, createWorkspace, updateWorkspace, deleteWorkspace } fro
 import { useStableToken } from '@/lib/useStableToken';
 import WorkspaceForm from '@/components/workspace/WorkspaceForm';
 import WorkspaceList from '@/components/workspace/WorkspaceList';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function WorkspacesPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -89,11 +90,7 @@ export default function WorkspacesPage() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div style={{ padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
-        Loading workspaces...
-      </div>
-    );
+    return <LoadingScreen message="Loading workspaces" />;
   }
 
   const pageStyle = {

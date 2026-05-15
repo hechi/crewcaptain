@@ -12,6 +12,7 @@ import WorkspaceSelector from '@/components/workspace/WorkspaceSelector';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import CsvImportModal from '@/components/CsvImportModal';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function PeopleListPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -68,7 +69,7 @@ export default function PeopleListPage() {
   }, [fetchPeople]);
 
   if (status === 'loading') {
-    return <div data-testid="loading">Loading...</div>;
+    return <LoadingScreen message="Loading crew directory" />;
   }
 
   if (status === 'unauthenticated') {
