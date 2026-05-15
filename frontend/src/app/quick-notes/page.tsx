@@ -11,6 +11,7 @@ import {
   convertQuickNote,
   attachQuickNote,
   assignQuickNoteToPerson,
+  assignQuickNoteToSelf,
   deleteQuickNote,
   listPersons,
   listOneOnOneEntries,
@@ -128,6 +129,17 @@ export default function QuickNotesPage() {
     }
   };
 
+  const handleAssignSelf = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await assignQuickNoteToSelf(token, id);
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to assign quick note to self');
+    }
+  };
+
   const handleDelete = async (id: string) => {
     const token = getToken();
     if (!token) return;
@@ -198,6 +210,7 @@ export default function QuickNotesPage() {
             onConvert={handleConvert}
             onAttach={handleAttach}
             onAssignPerson={handleAssignPerson}
+            onAssignSelf={handleAssignSelf}
             onDelete={handleDelete}
             onFetchEntries={handleFetchEntries}
             isSubmitting={submitting}

@@ -11,6 +11,7 @@ describe('QuickNoteCard', () => {
     personId: null,
     text: 'Remember to follow up on project timeline',
     sensitive: false,
+    selfAssigned: false,
     status: 'INBOX',
     attachedEntryId: null,
     createdAt: '2026-05-10T10:00:00Z',
@@ -172,5 +173,100 @@ describe('QuickNoteCard', () => {
     expect(screen.getByLabelText('Convert to action item')).toBeInTheDocument();
     expect(screen.getByLabelText('Archive')).toBeInTheDocument();
     expect(screen.getByLabelText('Delete quick note')).toBeInTheDocument();
+  });
+
+  it('should show Assign to Me button when onAssignSelf is provided and note is unassigned', () => {
+    const mockOnAssignSelf = jest.fn();
+    render(
+      <QuickNoteCard
+        quickNote={mockNote}
+        persons={mockPersons}
+        onArchive={mockOnArchive}
+        onConvert={mockOnConvert}
+        onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
+        onAssignSelf={mockOnAssignSelf}
+        onDelete={mockOnDelete}
+        onFetchEntries={mockOnFetchEntries}
+      />
+    );
+    expect(screen.getByTestId('quick-note-assign-self-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('quick-note-assign-self-btn')).toHaveTextContent('Assign to Me');
+  });
+
+  it('should call onAssignSelf when Assign to Me button is clicked', () => {
+    const mockOnAssignSelf = jest.fn();
+    render(
+      <QuickNoteCard
+        quickNote={mockNote}
+        persons={mockPersons}
+        onArchive={mockOnArchive}
+        onConvert={mockOnConvert}
+        onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
+        onAssignSelf={mockOnAssignSelf}
+        onDelete={mockOnDelete}
+        onFetchEntries={mockOnFetchEntries}
+      />
+    );
+    fireEvent.click(screen.getByTestId('quick-note-assign-self-btn'));
+    expect(mockOnAssignSelf).toHaveBeenCalledWith('note-1');
+  });
+
+  it('should not show Assign to Me button when note is already self-assigned', () => {
+    const selfAssignedNote: QuickNote = { ...mockNote, selfAssigned: true };
+    const mockOnAssignSelf = jest.fn();
+    render(
+      <QuickNoteCard
+        quickNote={selfAssignedNote}
+        persons={mockPersons}
+        onArchive={mockOnArchive}
+        onConvert={mockOnConvert}
+        onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
+        onAssignSelf={mockOnAssignSelf}
+        onDelete={mockOnDelete}
+        onFetchEntries={mockOnFetchEntries}
+      />
+    );
+    expect(screen.queryByTestId('quick-note-assign-self-btn')).not.toBeInTheDocument();
+  });
+
+  it('should not show Assign to Me button when note has a person assigned', () => {
+    const personAssignedNote: QuickNote = { ...mockNote, personId: 'person-1' };
+    const mockOnAssignSelf = jest.fn();
+    render(
+      <QuickNoteCard
+        quickNote={personAssignedNote}
+        persons={mockPersons}
+        onArchive={mockOnArchive}
+        onConvert={mockOnConvert}
+        onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
+        onAssignSelf={mockOnAssignSelf}
+        onDelete={mockOnDelete}
+        onFetchEntries={mockOnFetchEntries}
+      />
+    );
+    expect(screen.queryByTestId('quick-note-assign-self-btn')).not.toBeInTheDocument();
+  });
+
+  it('should show self-assigned badge when note is self-assigned', () => {
+    const selfAssignedNote: QuickNote = { ...mockNote, selfAssigned: true };
+    const mockOnAssignSelf = jest.fn();
+    render(
+      <QuickNoteCard
+        quickNote={selfAssignedNote}
+        persons={mockPersons}
+        onArchive={mockOnArchive}
+        onConvert={mockOnConvert}
+        onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
+        onAssignSelf={mockOnAssignSelf}
+        onDelete={mockOnDelete}
+        onFetchEntries={mockOnFetchEntries}
+      />
+    );
+    expect(screen.getByTestId('quick-note-self-badge')).toHaveTextContent('Me');
   });
 });

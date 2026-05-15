@@ -545,6 +545,13 @@ export async function assignQuickNoteToPerson(token: string, quickNoteId: string
   return response.json();
 }
 
+export async function assignQuickNoteToSelf(token: string, quickNoteId: string): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/assign-self`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
 export async function attachQuickNote(token: string, quickNoteId: string, data: AttachQuickNoteToEntryRequest): Promise<QuickNote> {
   const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/attach`, {
     method: 'POST',

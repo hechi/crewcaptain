@@ -485,5 +485,62 @@ class QuickNoteServiceTest {
             result.selfAssigned shouldBe false
             result.personId shouldBe personId
         }
+
+        @Test
+        fun `should assign quick note to self`() {
+            val unassignedNote = QuickNote(
+                id = quickNoteId,
+                userId = userId,
+                text = "Unassigned note"
+            )
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns unassignedNote
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = AssignQuickNoteToSelfCommand(
+                userId = userId,
+                quickNoteId = quickNoteId
+            )
+
+            val result = service.assignToSelf(command)
+
+            result.selfAssigned shouldBe true
+            result.personId shouldBe null
+        }
+
+        @Test
+        fun `should clear personId when assigning to self`() {
+            val personAssignedNote = QuickNote(
+                id = quickNoteId,
+                userId = userId,
+                personId = personId,
+                text = "Person-assigned note"
+            )
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns personAssignedNote
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = AssignQuickNoteToSelfCommand(
+                userId = userId,
+                quickNoteId = quickNoteId
+            )
+
+            val result = service.assignToSelf(command)
+
+            result.selfAssigned shouldBe true
+            result.personId shouldBe null
+        }
+
+        @Test
+        fun `should throw when quick note not found on assign to self`() {
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns null
+
+            val command = AssignQuickNoteToSelfCommand(
+                userId = userId,
+                quickNoteId = quickNoteId
+            )
+
+            shouldThrow<QuickNoteNotFoundException> {
+                service.assignToSelf(command)
+            }
+        }
     }
 }

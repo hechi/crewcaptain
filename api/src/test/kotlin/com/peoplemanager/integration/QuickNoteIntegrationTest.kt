@@ -556,6 +556,37 @@ class QuickNoteIntegrationTest {
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.totalElements").value(0))
         }
+
+        @Test
+        fun `should assign existing note to self via endpoint`() {
+            // Create a regular note
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Assign me to myself later"}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            // Assign to self
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$noteId/assign-self")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.selfAssigned").value(true))
+                .andExpect(jsonPath("$.personId").isEmpty)
+
+            // Should now appear in self-assigned filter
+            mockMvc.perform(
+                get("/api/v1/quick-notes?selfAssigned=true")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].text").value("Assign me to myself later"))
+        }
     }
 
     @Nested

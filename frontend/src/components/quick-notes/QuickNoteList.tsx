@@ -15,6 +15,7 @@ interface QuickNoteListProps {
   onConvert: (id: string, personId: string) => void;
   onAttach: (id: string, entryId: string) => void;
   onAssignPerson: (id: string, personId: string) => void;
+  onAssignSelf?: (id: string) => void;
   onDelete: (id: string) => void;
   onFetchEntries?: (personId: string) => Promise<OneOnOneEntry[]>;
   isSubmitting?: boolean;
@@ -33,6 +34,7 @@ export default function QuickNoteList({
   onConvert,
   onAttach,
   onAssignPerson,
+  onAssignSelf,
   onDelete,
   onFetchEntries,
   isSubmitting = false,
@@ -99,6 +101,7 @@ export default function QuickNoteList({
               onConvert={onConvert}
               onAttach={onAttach}
               onAssignPerson={onAssignPerson}
+              onAssignSelf={onAssignSelf}
               onDelete={onDelete}
               onFetchEntries={onFetchEntries}
             />

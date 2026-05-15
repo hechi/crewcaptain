@@ -27,6 +27,11 @@ data class AssignQuickNoteToPersonCommand(
     val personId: PersonId
 )
 
+data class AssignQuickNoteToSelfCommand(
+    val userId: UserId,
+    val quickNoteId: QuickNoteId
+)
+
 data class AttachQuickNoteCommand(
     val userId: UserId,
     val quickNoteId: QuickNoteId,

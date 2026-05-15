@@ -465,4 +465,38 @@ class QuickNoteControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].selfAssigned").value(false))
     }
+
+    @Test
+    fun `POST assign-self - marks quick note as self-assigned`() {
+        val selfAssignedNote = sampleQuickNote().copy(selfAssigned = true)
+
+        every { quickNoteCommandPort.assignToSelf(any()) } returns selfAssignedNote
+
+        mockMvc.perform(
+            post("/api/v1/quick-notes/${quickNoteId.value}/assign-self")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.selfAssigned").value(true))
+            .andExpect(jsonPath("$.personId").isEmpty)
+    }
+
+    @Test
+    fun `POST assign-self - returns 404 when not found`() {
+        every { quickNoteCommandPort.assignToSelf(any()) } throws QuickNoteNotFoundException(quickNoteId)
+
+        mockMvc.perform(
+            post("/api/v1/quick-notes/${quickNoteId.value}/assign-self")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `POST assign-self - returns 401 without authentication`() {
+        mockMvc.perform(
+            post("/api/v1/quick-notes/${quickNoteId.value}/assign-self")
+        )
+            .andExpect(status().isUnauthorized)
+    }
 }

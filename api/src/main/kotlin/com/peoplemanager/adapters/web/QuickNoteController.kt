@@ -102,6 +102,19 @@ class QuickNoteController(
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
     }
 
+    @PostMapping("/quick-notes/{quickNoteId}/assign-self")
+    fun assignToSelf(
+        @PathVariable quickNoteId: UUID
+    ): ResponseEntity<QuickNoteResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = AssignQuickNoteToSelfCommand(
+            userId = userId,
+            quickNoteId = QuickNoteId(quickNoteId)
+        )
+        val quickNote = quickNoteCommandPort.assignToSelf(command)
+        return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
+    }
+
     @PostMapping("/quick-notes/{quickNoteId}/attach")
     fun attachQuickNote(
         @PathVariable quickNoteId: UUID,

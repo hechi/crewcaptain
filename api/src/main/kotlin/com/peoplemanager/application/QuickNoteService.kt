@@ -81,6 +81,14 @@ class QuickNoteService(
         return quickNoteRepository.save(updated)
     }
 
+    override fun assignToSelf(command: AssignQuickNoteToSelfCommand): QuickNote {
+        val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
+            ?: throw QuickNoteNotFoundException(command.quickNoteId)
+
+        val updated = existing.markSelfAssigned()
+        return quickNoteRepository.save(updated)
+    }
+
     override fun attachQuickNote(command: AttachQuickNoteCommand): QuickNote {
         val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
             ?: throw QuickNoteNotFoundException(command.quickNoteId)

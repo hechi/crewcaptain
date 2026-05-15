@@ -12,6 +12,7 @@ interface QuickNoteCardProps {
   onConvert: (id: string, personId: string) => void;
   onAttach: (id: string, entryId: string) => void;
   onAssignPerson: (id: string, personId: string) => void;
+  onAssignSelf?: (id: string) => void;
   onDelete: (id: string) => void;
   onFetchEntries?: (personId: string) => Promise<OneOnOneEntry[]>;
 }
@@ -27,6 +28,7 @@ export default function QuickNoteCard({
   onConvert,
   onAttach,
   onAssignPerson,
+  onAssignSelf,
   onDelete,
   onFetchEntries,
 }: QuickNoteCardProps) {
@@ -170,6 +172,22 @@ export default function QuickNoteCard({
               }}
             >
               {assignedPerson.name}
+            </span>
+          )}
+          {quickNote.selfAssigned && (
+            <span
+              data-testid="quick-note-self-badge"
+              style={{
+                padding: '2px 8px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-primary)',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-primary-muted)',
+                color: 'var(--color-primary)',
+              }}
+            >
+              Me
             </span>
           )}
         </div>
@@ -360,7 +378,7 @@ export default function QuickNoteCard({
           >
             → Action Item
           </button>
-          {!quickNote.personId && (
+          {!quickNote.personId && !quickNote.selfAssigned && (
             <button
               type="button"
               onClick={() => setShowPersonPicker(true)}
@@ -378,6 +396,26 @@ export default function QuickNoteCard({
               }}
             >
               Assign Person
+            </button>
+          )}
+          {!quickNote.personId && !quickNote.selfAssigned && onAssignSelf && (
+            <button
+              type="button"
+              onClick={() => onAssignSelf(quickNote.id)}
+              data-testid="quick-note-assign-self-btn"
+              aria-label="Assign to me"
+              style={{
+                padding: '4px 10px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-primary-muted)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-primary)',
+                cursor: 'pointer',
+              }}
+            >
+              Assign to Me
             </button>
           )}
           <button

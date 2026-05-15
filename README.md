@@ -291,6 +291,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | PUT    | `/api/v1/quick-notes/{quickNoteId}`                     | Update a quick note                  |
 | DELETE | `/api/v1/quick-notes/{quickNoteId}`                     | Delete a quick note                  |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/assign`              | Assign to a person                   |
+| POST   | `/api/v1/quick-notes/{quickNoteId}/assign-self`         | Assign to self (personal note)       |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/attach`              | Attach to a 1:1 entry              |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/convert`             | Mark as converted (to action item)   |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/archive`             | Archive the quick note               |

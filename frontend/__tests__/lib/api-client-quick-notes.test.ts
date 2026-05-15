@@ -307,6 +307,26 @@ describe('assignQuickNoteToPerson', () => {
   });
 });
 
+describe('assignQuickNoteToSelf', () => {
+  it('should send POST request to assign-self endpoint', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...mockQuickNote, selfAssigned: true }),
+    });
+
+    const { assignQuickNoteToSelf } = require('@/lib/api-client');
+    await assignQuickNoteToSelf(mockToken, quickNoteId);
+
+    expect(mockFetch).toHaveBeenCalledWith(`/api/v1/quick-notes/${quickNoteId}/assign-self`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+  });
+});
+
 describe('attachQuickNote', () => {
   it('should send POST request to attach endpoint with entryId', async () => {
     const entryId = '880e8400-e29b-41d4-a716-446655440002';
