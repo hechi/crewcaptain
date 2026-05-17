@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-17T14:30:00Z — AI Performance Narrative Generator feature
+2026-05-17T15:00:00Z — Redesign person detail action buttons as compact icon toolbar
 
 ## Current Status
 Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Prometheus metrics endpoint added with bearer token security and custom 1:1 metrics. Landing page now includes an interactive screenshot showcase section with tabbed gallery. Fixed critical UX bug where pages would unexpectedly refresh during editing due to aggressive session refetch and token-dependent useCallback chains. Dropdown buttons and select elements restyled with cyberpunk-lite aesthetic (glassmorphism, glow borders, monospace font, neon accents). Inline action items section on the 1:1 entry detail page. Cyberpunk HUD loading screen with animated rotating rings, neon glow core pulse, scan-line overlay, and glitch text effect. Self-assigned quick notes feature. Global Quick Note overlay. AI-Powered 1:1 Prep Assistant. New: AI Performance Narrative Generator — generates LLM-powered performance review narratives from aggregated person data (kudos, PDP goals, 1:1 outcomes, action items) within a date range. Three writing styles (Narrative, Bullet Points, Concise). Privacy mode respected. Backend: all tests pass (1140+). Frontend: 1055 tests pass.

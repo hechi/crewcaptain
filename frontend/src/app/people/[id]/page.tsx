@@ -56,6 +56,7 @@ import ReviewPacketModal from '@/components/ReviewPacketModal';
 import AiNarrativeModal from '@/components/AiNarrativeModal';
 import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
 import LoadingScreen from '@/components/LoadingScreen';
+import { Download, FileText, Sparkles } from 'lucide-react';
 
 type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
 
@@ -685,90 +686,95 @@ export default function PersonDetailPage() {
             />
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={exporting}
-            data-testid="export-button"
-            aria-label="Export person data as Markdown"
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          {/* Action toolbar — compact icon buttons */}
+          <div
+            data-testid="person-actions-toolbar"
             style={{
-              display: 'inline-flex',
+              display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px 16px',
-              height: '36px',
-              width: '160px',
+              gap: '2px',
+              padding: '4px',
+              background: 'var(--color-bg-surface)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-medium)',
-              cursor: exporting ? 'not-allowed' : 'pointer',
-              background: 'var(--color-bg-elevated)',
-              fontSize: 'var(--text-body)',
-              color: 'var(--color-text-secondary)',
-              fontFamily: 'var(--font-mono)',
-              opacity: exporting ? 0.6 : 1,
-              transition: 'border-color 0.2s',
-              boxSizing: 'border-box',
             }}
           >
-            {exporting ? 'Exporting...' : '↓ Export'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowReviewPacketModal(true)}
-            data-testid="review-packet-button"
-            aria-label="Generate review packet"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px 16px',
-              height: '36px',
-              width: '160px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-medium)',
-              cursor: 'pointer',
-              background: 'var(--color-bg-elevated)',
-              fontSize: 'var(--text-body)',
-              color: 'var(--color-text-secondary)',
-              fontFamily: 'var(--font-mono)',
-              transition: 'border-color 0.2s',
-              boxSizing: 'border-box',
-            }}
-          >
-            Review Packet
-          </button>
-          {userSettings?.aiEnabled && (
             <button
               type="button"
-              onClick={() => {
-                setNarrativeResult(null);
-                setNarrativeError(null);
-                setShowAiNarrativeModal(true);
-              }}
-              data-testid="ai-narrative-button"
-              aria-label="Generate AI narrative"
+              onClick={handleExport}
+              disabled={exporting}
+              data-testid="export-button"
+              aria-label="Export person data as Markdown"
+              title="Export as Markdown"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '8px 16px',
-                height: '36px',
-                width: '160px',
-                border: '1px solid var(--color-primary)',
-                borderRadius: 'var(--radius-medium)',
-                cursor: 'pointer',
-                background: 'var(--color-bg-elevated)',
-                fontSize: 'var(--text-body)',
-                color: 'var(--color-primary)',
-                fontFamily: 'var(--font-mono)',
-                transition: 'border-color 0.2s, background 0.2s',
-                boxSizing: 'border-box',
+                width: '34px',
+                height: '34px',
+                border: 'none',
+                borderRadius: 'var(--radius-small)',
+                cursor: exporting ? 'not-allowed' : 'pointer',
+                background: 'transparent',
+                color: 'var(--color-text-secondary)',
+                opacity: exporting ? 0.4 : 1,
+                transition: 'color 0.2s, background 0.2s',
               }}
             >
-              ✨ AI Narrative
+              <Download size={16} />
             </button>
-          )}
+            <button
+              type="button"
+              onClick={() => setShowReviewPacketModal(true)}
+              data-testid="review-packet-button"
+              aria-label="Generate review packet"
+              title="Generate Review Packet"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '34px',
+                height: '34px',
+                border: 'none',
+                borderRadius: 'var(--radius-small)',
+                cursor: 'pointer',
+                background: 'transparent',
+                color: 'var(--color-text-secondary)',
+                transition: 'color 0.2s, background 0.2s',
+              }}
+            >
+              <FileText size={16} />
+            </button>
+            {userSettings?.aiEnabled && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNarrativeResult(null);
+                  setNarrativeError(null);
+                  setShowAiNarrativeModal(true);
+                }}
+                data-testid="ai-narrative-button"
+                aria-label="Generate AI narrative"
+                title="Generate AI Narrative"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '34px',
+                  height: '34px',
+                  border: 'none',
+                  borderRadius: 'var(--radius-small)',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  color: 'var(--color-primary)',
+                  transition: 'color 0.2s, background 0.2s',
+                }}
+              >
+                <Sparkles size={16} />
+              </button>
+            )}
+          </div>
           <MoraleIndicator moraleStatus={person.moraleStatus} />
         </div>
       </div>

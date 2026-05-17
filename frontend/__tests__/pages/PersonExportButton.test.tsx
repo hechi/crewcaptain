@@ -78,7 +78,10 @@ describe('PersonDetailPage - Export Button', () => {
     render(<PersonDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('export-button')).toHaveTextContent('↓ Export');
+      expect(screen.getByTestId('export-button')).toHaveAttribute(
+        'aria-label',
+        'Export person data as Markdown'
+      );
     });
   });
 
@@ -137,14 +140,14 @@ describe('PersonDetailPage - Export Button', () => {
     fireEvent.click(screen.getByTestId('export-button'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('export-button')).toHaveTextContent('Exporting...');
+      expect(screen.getByTestId('export-button')).toBeDisabled();
     });
 
     // Resolve the export
     resolveExport!('# Export');
 
     await waitFor(() => {
-      expect(screen.getByTestId('export-button')).toHaveTextContent('↓ Export');
+      expect(screen.getByTestId('export-button')).not.toBeDisabled();
     });
   });
 
