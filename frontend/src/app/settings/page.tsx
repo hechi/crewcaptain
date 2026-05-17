@@ -504,7 +504,7 @@ export default function SettingsPage() {
                 </label>
                 <ToggleRow
                   testId="toggle-ai-privacy-mode"
-                  label="Privacy Mode (exclude sensitive content from AI)"
+                  label="Privacy Mode (exclude content marked as sensitive from AI)"
                   checked={aiPrivacyMode}
                   onChange={setAiPrivacyMode}
                 />

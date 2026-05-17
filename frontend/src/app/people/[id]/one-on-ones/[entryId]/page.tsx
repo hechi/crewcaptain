@@ -33,6 +33,7 @@ export default function OneOnOneEntryDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lastAddedSuggestion, setLastAddedSuggestion] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     const token = getToken();
@@ -93,6 +94,9 @@ export default function OneOnOneEntryDetailPage() {
       ...entry.agendaItems.map((item) => ({ text: item.text, checked: item.checked })),
       { text, checked: false },
     ];
+
+    // Update form immediately via externalAgendaItem
+    setLastAddedSuggestion(text);
 
     try {
       const updated = await updateOneOnOneEntry(token, personId, entryId, {
@@ -281,6 +285,7 @@ export default function OneOnOneEntryDetailPage() {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
+        externalAgendaItem={lastAddedSuggestion}
         actionItemsSlot={(() => {
           const formToken = getToken();
           return formToken ? (

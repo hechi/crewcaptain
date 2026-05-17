@@ -30,6 +30,12 @@ describe('AiPrepAssistant', () => {
     expect(screen.getByText(/AI Prep Assistant/)).toBeInTheDocument();
   });
 
+  it('should render a description of what the assistant does', () => {
+    render(<AiPrepAssistant {...defaultProps} />);
+    expect(screen.getByTestId('ai-description')).toBeInTheDocument();
+    expect(screen.getByText(/past 1:1 notes/)).toBeInTheDocument();
+  });
+
   it('should show loading state when generating', async () => {
     mockGenerateAiAgendaSuggestions.mockImplementation(
       () => new Promise((resolve) => setTimeout(() => resolve({ suggestions: [], error: null }), 100))

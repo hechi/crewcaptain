@@ -72,7 +72,7 @@ export default function AiPrepAssistant({ token, personId, onAddSuggestion }: Ai
       />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
           <h3
             style={{
               margin: 0,
@@ -109,6 +109,17 @@ export default function AiPrepAssistant({ token, personId, onAddSuggestion }: Ai
             {loading ? 'Generating...' : 'Generate Agenda'}
           </button>
         </div>
+        <p
+          data-testid="ai-description"
+          style={{
+            margin: '0 0 var(--space-3) 0',
+            fontSize: 'var(--text-small)',
+            color: 'var(--color-text-secondary)',
+            lineHeight: 1.4,
+          }}
+        >
+          Uses past 1:1 notes, open action items, active goals, and recent kudos to suggest agenda items for this meeting.
+        </p>
 
         {/* Loading state with pulse animation */}
         {loading && (

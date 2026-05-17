@@ -6,12 +6,15 @@ import {
   createOneOnOneEntry,
   getOneOnOneSeries,
   getPerson,
+  getUserSettings,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { Person } from '@/types/person';
 import { OneOnOneSeries } from '@/types/one-on-one';
+import { UserSettings } from '@/types/settings';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
+import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function CreateOneOnOneEntryPage() {
@@ -22,9 +25,11 @@ export default function CreateOneOnOneEntryPage() {
 
   const [person, setPerson] = useState<Person | null>(null);
   const [series, setSeries] = useState<OneOnOneSeries | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingSuggestions, setPendingSuggestions] = useState<string[]>([]);
 
   const fetchData = useCallback(async () => {
     const token = getToken();
@@ -43,6 +48,14 @@ export default function CreateOneOnOneEntryPage() {
       } catch {
         // No series configured — that's fine
         setSeries(null);
+      }
+
+      // Fetch user settings for AI assistant
+      try {
+        const settingsResult = await getUserSettings(token);
+        setSettings(settingsResult);
+      } catch {
+        setSettings(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -147,11 +160,24 @@ export default function CreateOneOnOneEntryPage() {
         </div>
       )}
 
+      {/* AI Prep Assistant — only shown when AI is enabled in settings */}
+      {settings?.aiEnabled && (() => {
+        const token = getToken();
+        return token ? (
+          <AiPrepAssistant
+            token={token}
+            personId={personId}
+            onAddSuggestion={(text) => setPendingSuggestions((prev) => [...prev, text])}
+          />
+        ) : null;
+      })()}
+
       <OneOnOneEntryForm
         templateMarkdown={series?.templateMarkdown}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
+        externalAgendaItem={pendingSuggestions[pendingSuggestions.length - 1] || null}
         actionItemsSlot={(() => {
           const token = getToken();
           return token ? (

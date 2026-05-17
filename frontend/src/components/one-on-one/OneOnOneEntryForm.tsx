@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { OneOnOneEntry } from '@/types/one-on-one';
 import AgendaItemList, { AgendaItemInput } from './AgendaItemList';
 import MarkdownEditor from './MarkdownEditor';
@@ -19,6 +19,8 @@ interface OneOnOneEntryFormProps {
   isSubmitting?: boolean;
   /** Optional slot rendered between agenda items and notes (e.g., inline action items) */
   actionItemsSlot?: React.ReactNode;
+  /** Externally added agenda item text — appended to the list when it changes */
+  externalAgendaItem?: string | null;
 }
 
 export interface OneOnOneEntryFormData {
@@ -41,6 +43,7 @@ export default function OneOnOneEntryForm({
   onCancel,
   isSubmitting = false,
   actionItemsSlot,
+  externalAgendaItem,
 }: OneOnOneEntryFormProps) {
   const isEditMode = !!entry;
 
@@ -77,6 +80,18 @@ export default function OneOnOneEntryForm({
 
   const [sensitive, setSensitive] = useState<boolean>(entry?.sensitive || false);
   const [dateError, setDateError] = useState<string | null>(null);
+
+  // Track external agenda items to append when they change
+  const lastExternalItem = useRef<string | null>(null);
+  useEffect(() => {
+    if (externalAgendaItem && externalAgendaItem !== lastExternalItem.current) {
+      lastExternalItem.current = externalAgendaItem;
+      setAgendaItems((prev) => [
+        ...prev,
+        { id: `ext-${Date.now()}`, text: externalAgendaItem, checked: false },
+      ]);
+    }
+  }, [externalAgendaItem]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
