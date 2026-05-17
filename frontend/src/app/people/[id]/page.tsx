@@ -662,8 +662,9 @@ export default function PersonDetailPage() {
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-        <div>
+      <div style={{ marginBottom: 'var(--space-6)' }}>
+        {/* Name row — name + morale indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <h1 style={{
             margin: 0,
             fontSize: 'var(--text-h2)',
@@ -674,19 +675,21 @@ export default function PersonDetailPage() {
           }}>
             {person.name}
           </h1>
-          {person.roleTitle && (
-            <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>{person.roleTitle}</p>
-          )}
-          <div style={{ marginTop: '8px' }}>
-            <WorkspaceAssignment
-              token={getToken() || ''}
-              personId={personId}
-              currentWorkspaceId={person.workspaceId}
-              onAssigned={(wsId) => setPerson(prev => prev ? { ...prev, workspaceId: wsId } : prev)}
-            />
-          </div>
+          <MoraleIndicator moraleStatus={person.moraleStatus} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        {person.roleTitle && (
+          <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>{person.roleTitle}</p>
+        )}
+
+        {/* Workspace + Actions row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'var(--space-3)' }}>
+          <WorkspaceAssignment
+            token={getToken() || ''}
+            personId={personId}
+            currentWorkspaceId={person.workspaceId}
+            onAssigned={(wsId) => setPerson(prev => prev ? { ...prev, workspaceId: wsId } : prev)}
+          />
+
           {/* Action toolbar — compact icon buttons */}
           <div
             data-testid="person-actions-toolbar"
@@ -775,7 +778,6 @@ export default function PersonDetailPage() {
               </button>
             )}
           </div>
-          <MoraleIndicator moraleStatus={person.moraleStatus} />
         </div>
       </div>
 
