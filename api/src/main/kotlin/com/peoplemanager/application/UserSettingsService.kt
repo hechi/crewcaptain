@@ -35,6 +35,11 @@ class UserSettingsService(
             notifyActionItemDueSoon = command.notifyActionItemDueSoon,
             notifyStaleOneOnOne = command.notifyStaleOneOnOne,
             notifyUpcomingAnniversary = command.notifyUpcomingAnniversary,
+            aiEnabled = command.aiEnabled,
+            aiApiBaseUrl = command.aiApiBaseUrl,
+            aiApiKey = command.aiApiKey,
+            aiModelName = command.aiModelName,
+            aiPrivacyMode = command.aiPrivacyMode,
             updatedAt = java.time.Instant.now()
         )
 
@@ -53,5 +58,10 @@ data class UpdateUserSettingsCommand(
     val notifyActionItemOverdue: Boolean,
     val notifyActionItemDueSoon: Boolean,
     val notifyStaleOneOnOne: Boolean,
-    val notifyUpcomingAnniversary: Boolean
+    val notifyUpcomingAnniversary: Boolean,
+    val aiEnabled: Boolean = false,
+    val aiApiBaseUrl: String? = null,
+    val aiApiKey: String? = null,
+    val aiModelName: String? = null,
+    val aiPrivacyMode: Boolean = true
 )

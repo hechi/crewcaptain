@@ -24,6 +24,10 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: true,
         notifyStaleOneOnOne: true,
         notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiApiBaseUrl: null,
+        aiModelName: null,
+        aiPrivacyMode: true,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -71,6 +75,10 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: true,
         notifyStaleOneOnOne: false,
         notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiApiBaseUrl: null,
+        aiModelName: null,
+        aiPrivacyMode: true,
       };
 
       mockFetch.mockResolvedValueOnce({

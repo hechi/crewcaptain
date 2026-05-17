@@ -148,4 +148,114 @@ class UserSettingsTest {
 
         assertEquals(userId, updated.userId)
     }
+
+    @Test
+    fun `should create default settings with AI disabled`() {
+        val settings = UserSettings.createDefault(userId)
+
+        assertFalse(settings.aiEnabled)
+        assertNull(settings.aiApiBaseUrl)
+        assertNull(settings.aiApiKey)
+        assertNull(settings.aiModelName)
+        assertTrue(settings.aiPrivacyMode)
+    }
+
+    @Test
+    fun `should allow AI disabled without API configuration`() {
+        val settings = UserSettings(userId = userId, aiEnabled = false)
+        assertFalse(settings.aiEnabled)
+    }
+
+    @Test
+    fun `should reject AI enabled without API base URL`() {
+        assertThrows<IllegalArgumentException> {
+            UserSettings(userId = userId, aiEnabled = true, aiApiBaseUrl = null, aiModelName = "llama3")
+        }
+    }
+
+    @Test
+    fun `should reject AI enabled without model name`() {
+        assertThrows<IllegalArgumentException> {
+            UserSettings(userId = userId, aiEnabled = true, aiApiBaseUrl = "http://localhost:11434/v1", aiModelName = null)
+        }
+    }
+
+    @Test
+    fun `should reject AI enabled with blank API base URL`() {
+        assertThrows<IllegalArgumentException> {
+            UserSettings(userId = userId, aiEnabled = true, aiApiBaseUrl = "  ", aiModelName = "llama3")
+        }
+    }
+
+    @Test
+    fun `should reject AI enabled with blank model name`() {
+        assertThrows<IllegalArgumentException> {
+            UserSettings(userId = userId, aiEnabled = true, aiApiBaseUrl = "http://localhost:11434/v1", aiModelName = "  ")
+        }
+    }
+
+    @Test
+    fun `should accept AI enabled with valid configuration`() {
+        val settings = UserSettings(
+            userId = userId,
+            aiEnabled = true,
+            aiApiBaseUrl = "http://ollama:11434/v1",
+            aiApiKey = "sk-test",
+            aiModelName = "llama3",
+            aiPrivacyMode = true
+        )
+
+        assertTrue(settings.aiEnabled)
+        assertEquals("http://ollama:11434/v1", settings.aiApiBaseUrl)
+        assertEquals("sk-test", settings.aiApiKey)
+        assertEquals("llama3", settings.aiModelName)
+        assertTrue(settings.aiPrivacyMode)
+    }
+
+    @Test
+    fun `should update AI settings`() {
+        val settings = UserSettings.createDefault(userId)
+        val updated = settings.updateAiSettings(
+            aiEnabled = true,
+            aiApiBaseUrl = "http://localhost:11434/v1",
+            aiApiKey = "test-key",
+            aiModelName = "gpt-4o",
+            aiPrivacyMode = false
+        )
+
+        assertTrue(updated.aiEnabled)
+        assertEquals("http://localhost:11434/v1", updated.aiApiBaseUrl)
+        assertEquals("test-key", updated.aiApiKey)
+        assertEquals("gpt-4o", updated.aiModelName)
+        assertFalse(updated.aiPrivacyMode)
+        assertTrue(updated.updatedAt >= settings.updatedAt)
+    }
+
+    @Test
+    fun `isAiConfigured should return true when fully configured`() {
+        val settings = UserSettings(
+            userId = userId,
+            aiEnabled = true,
+            aiApiBaseUrl = "http://ollama:11434/v1",
+            aiModelName = "llama3"
+        )
+        assertTrue(settings.isAiConfigured())
+    }
+
+    @Test
+    fun `isAiConfigured should return false when disabled`() {
+        val settings = UserSettings(
+            userId = userId,
+            aiEnabled = false,
+            aiApiBaseUrl = "http://ollama:11434/v1",
+            aiModelName = "llama3"
+        )
+        assertFalse(settings.isAiConfigured())
+    }
+
+    @Test
+    fun `isAiConfigured should return false when URL is missing`() {
+        val settings = UserSettings(userId = userId, aiEnabled = false)
+        assertFalse(settings.isAiConfigured())
+    }
 }

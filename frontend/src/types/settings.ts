@@ -10,6 +10,10 @@ export interface UserSettings {
   notifyActionItemDueSoon: boolean;
   notifyStaleOneOnOne: boolean;
   notifyUpcomingAnniversary: boolean;
+  aiEnabled: boolean;
+  aiApiBaseUrl: string | null;
+  aiModelName: string | null;
+  aiPrivacyMode: boolean;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -22,4 +26,14 @@ export interface UpdateUserSettingsRequest {
   notifyActionItemDueSoon: boolean;
   notifyStaleOneOnOne: boolean;
   notifyUpcomingAnniversary: boolean;
+  aiEnabled: boolean;
+  aiApiBaseUrl?: string | null;
+  aiApiKey?: string | null;
+  aiModelName?: string | null;
+  aiPrivacyMode: boolean;
+}
+
+export interface AiPrepResponse {
+  suggestions: string[];
+  error: string | null;
 }

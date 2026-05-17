@@ -20,5 +20,11 @@ data class UpdateUserSettingsRequest(
     val notifyActionItemOverdue: Boolean,
     val notifyActionItemDueSoon: Boolean,
     val notifyStaleOneOnOne: Boolean,
-    val notifyUpcomingAnniversary: Boolean
+    val notifyUpcomingAnniversary: Boolean,
+
+    val aiEnabled: Boolean = false,
+    val aiApiBaseUrl: String? = null,
+    val aiApiKey: String? = null,
+    val aiModelName: String? = null,
+    val aiPrivacyMode: Boolean = true
 )

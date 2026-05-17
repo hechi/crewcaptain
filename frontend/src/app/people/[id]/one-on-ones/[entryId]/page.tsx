@@ -7,12 +7,15 @@ import {
   updateOneOnOneEntry,
   deleteOneOnOneEntry,
   getPerson,
+  getUserSettings,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { Person } from '@/types/person';
 import { OneOnOneEntry } from '@/types/one-on-one';
+import { UserSettings } from '@/types/settings';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
+import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function OneOnOneEntryDetailPage() {
@@ -24,6 +27,7 @@ export default function OneOnOneEntryDetailPage() {
 
   const [person, setPerson] = useState<Person | null>(null);
   const [entry, setEntry] = useState<OneOnOneEntry | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,12 +41,14 @@ export default function OneOnOneEntryDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [personResult, entryResult] = await Promise.all([
+      const [personResult, entryResult, settingsResult] = await Promise.all([
         getPerson(token, personId),
         getOneOnOneEntry(token, personId, entryId),
+        getUserSettings(token).catch(() => null),
       ]);
       setPerson(personResult);
       setEntry(entryResult);
+      setSettings(settingsResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load entry');
     } finally {
@@ -75,6 +81,26 @@ export default function OneOnOneEntryDetailPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update 1:1 entry');
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAddAiSuggestion = async (text: string) => {
+    const token = getToken();
+    if (!token || !entry) return;
+
+    // Add the suggestion as a new agenda item to the existing entry
+    const newAgendaItems = [
+      ...entry.agendaItems.map((item) => ({ text: item.text, checked: item.checked })),
+      { text, checked: false },
+    ];
+
+    try {
+      const updated = await updateOneOnOneEntry(token, personId, entryId, {
+        agendaItems: newAgendaItems,
+      });
+      setEntry(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add suggestion');
     }
   };
 
@@ -127,6 +153,9 @@ export default function OneOnOneEntryDetailPage() {
     month: 'long',
     day: 'numeric',
   });
+
+  const showAiAssistant = settings?.aiEnabled === true;
+  const token = getToken();
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'var(--space-6)' }}>
@@ -237,6 +266,15 @@ export default function OneOnOneEntryDetailPage() {
         </div>
       )}
 
+      {/* AI Prep Assistant — only shown when AI is enabled in settings */}
+      {showAiAssistant && token && (
+        <AiPrepAssistant
+          token={token}
+          personId={personId}
+          onAddSuggestion={handleAddAiSuggestion}
+        />
+      )}
+
       {/* Entry Form in edit mode */}
       <OneOnOneEntryForm
         entry={entry}
@@ -244,10 +282,10 @@ export default function OneOnOneEntryDetailPage() {
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
         actionItemsSlot={(() => {
-          const token = getToken();
-          return token ? (
+          const formToken = getToken();
+          return formToken ? (
             <OneOnOneActionItems
-              token={token}
+              token={formToken}
               personId={personId}
               entryId={entryId}
             />

@@ -35,6 +35,10 @@ const defaultSettings = {
   notifyActionItemDueSoon: true,
   notifyStaleOneOnOne: true,
   notifyUpcomingAnniversary: true,
+  aiEnabled: false,
+  aiApiBaseUrl: null,
+  aiModelName: null,
+  aiPrivacyMode: true,
 };
 
 describe('SettingsPage', () => {
@@ -70,6 +74,7 @@ describe('SettingsPage', () => {
       expect(screen.getByTestId('settings-section-thresholds')).toBeInTheDocument();
       expect(screen.getByTestId('settings-section-notifications')).toBeInTheDocument();
       expect(screen.getByTestId('settings-section-display')).toBeInTheDocument();
+      expect(screen.getByTestId('settings-section-ai')).toBeInTheDocument();
     });
   });
 
@@ -120,7 +125,19 @@ describe('SettingsPage', () => {
     });
 
     await waitFor(() => {
-      expect(mockUpdateUserSettings).toHaveBeenCalledWith('test-token', defaultSettings);
+      expect(mockUpdateUserSettings).toHaveBeenCalledWith('test-token', expect.objectContaining({
+        dueSoonDays: 3,
+        staleOneOnOneDays: 14,
+        anniversaryLookaheadDays: 30,
+        theme: 'DARK',
+        showAchievements: true,
+        notifyActionItemOverdue: true,
+        notifyActionItemDueSoon: true,
+        notifyStaleOneOnOne: true,
+        notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiPrivacyMode: true,
+      }));
     });
   });
 

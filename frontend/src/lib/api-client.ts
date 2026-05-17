@@ -711,7 +711,7 @@ export async function getGamificationStats(
 
 // --- User Settings ---
 
-import { UserSettings, UpdateUserSettingsRequest } from '@/types/settings';
+import { UserSettings, UpdateUserSettingsRequest, AiPrepResponse } from '@/types/settings';
 
 export async function getUserSettings(token: string): Promise<UserSettings> {
   const response = await fetchWithAuth(`${API_BASE_URL}/settings`, {}, token);
@@ -722,6 +722,15 @@ export async function updateUserSettings(token: string, data: UpdateUserSettings
   const response = await fetchWithAuth(`${API_BASE_URL}/settings`, {
     method: 'PUT',
     body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+// --- AI Prep Assistant ---
+
+export async function generateAiAgendaSuggestions(token: string, personId: string): Promise<AiPrepResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/ai-prep`, {
+    method: 'POST',
   }, token);
   return response.json();
 }

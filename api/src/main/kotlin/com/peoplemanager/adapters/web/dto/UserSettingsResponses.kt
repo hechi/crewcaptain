@@ -11,7 +11,11 @@ data class UserSettingsResponse(
     val notifyActionItemOverdue: Boolean,
     val notifyActionItemDueSoon: Boolean,
     val notifyStaleOneOnOne: Boolean,
-    val notifyUpcomingAnniversary: Boolean
+    val notifyUpcomingAnniversary: Boolean,
+    val aiEnabled: Boolean,
+    val aiApiBaseUrl: String?,
+    val aiModelName: String?,
+    val aiPrivacyMode: Boolean
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -23,7 +27,11 @@ data class UserSettingsResponse(
             notifyActionItemOverdue = settings.notifyActionItemOverdue,
             notifyActionItemDueSoon = settings.notifyActionItemDueSoon,
             notifyStaleOneOnOne = settings.notifyStaleOneOnOne,
-            notifyUpcomingAnniversary = settings.notifyUpcomingAnniversary
+            notifyUpcomingAnniversary = settings.notifyUpcomingAnniversary,
+            aiEnabled = settings.aiEnabled,
+            aiApiBaseUrl = settings.aiApiBaseUrl,
+            aiModelName = settings.aiModelName,
+            aiPrivacyMode = settings.aiPrivacyMode
         )
     }
 }

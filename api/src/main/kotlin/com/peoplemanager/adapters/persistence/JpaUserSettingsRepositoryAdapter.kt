@@ -33,6 +33,11 @@ class JpaUserSettingsRepositoryAdapter(
         notifyActionItemDueSoon = this.notifyActionItemDueSoon,
         notifyStaleOneOnOne = this.notifyStaleOneOnOne,
         notifyUpcomingAnniversary = this.notifyUpcomingAnniversary,
+        aiEnabled = this.aiEnabled,
+        aiApiBaseUrl = this.aiApiBaseUrl,
+        aiApiKey = this.aiApiKey,
+        aiModelName = this.aiModelName,
+        aiPrivacyMode = this.aiPrivacyMode,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -48,6 +53,11 @@ class JpaUserSettingsRepositoryAdapter(
         notifyActionItemDueSoon = this.notifyActionItemDueSoon,
         notifyStaleOneOnOne = this.notifyStaleOneOnOne,
         notifyUpcomingAnniversary = this.notifyUpcomingAnniversary,
+        aiEnabled = this.aiEnabled,
+        aiApiBaseUrl = this.aiApiBaseUrl,
+        aiApiKey = this.aiApiKey,
+        aiModelName = this.aiModelName,
+        aiPrivacyMode = this.aiPrivacyMode,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

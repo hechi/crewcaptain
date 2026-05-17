@@ -24,6 +24,7 @@ jest.mock('@/lib/api-client', () => ({
   listActionItemsByPerson: jest.fn(),
   createActionItem: jest.fn(),
   completeActionItem: jest.fn(),
+  getUserSettings: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
@@ -33,6 +34,7 @@ import {
   updateOneOnOneEntry,
   deleteOneOnOneEntry,
   listActionItemsByPerson,
+  getUserSettings,
 } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
@@ -41,6 +43,7 @@ const mockGetOneOnOneEntry = getOneOnOneEntry as jest.MockedFunction<typeof getO
 const mockUpdateOneOnOneEntry = updateOneOnOneEntry as jest.MockedFunction<typeof updateOneOnOneEntry>;
 const mockDeleteOneOnOneEntry = deleteOneOnOneEntry as jest.MockedFunction<typeof deleteOneOnOneEntry>;
 const mockListActionItemsByPerson = listActionItemsByPerson as jest.MockedFunction<typeof listActionItemsByPerson>;
+const mockGetUserSettings = getUserSettings as jest.MockedFunction<typeof getUserSettings>;
 
 const mockPerson: Person = {
   id: 'person-uuid-123',
@@ -87,6 +90,21 @@ describe('OneOnOneEntryDetailPage', () => {
     jest.clearAllMocks();
     setupAuthenticatedSession();
     mockListActionItemsByPerson.mockResolvedValue({ content: [], page: 0, size: 50, totalElements: 0, totalPages: 0 });
+    mockGetUserSettings.mockResolvedValue({
+      dueSoonDays: 3,
+      staleOneOnOneDays: 14,
+      anniversaryLookaheadDays: 30,
+      theme: 'DARK',
+      showAchievements: true,
+      notifyActionItemOverdue: true,
+      notifyActionItemDueSoon: true,
+      notifyStaleOneOnOne: true,
+      notifyUpcomingAnniversary: true,
+      aiEnabled: false,
+      aiApiBaseUrl: null,
+      aiModelName: null,
+      aiPrivacyMode: true,
+    });
   });
 
   it('should show loading state initially', () => {

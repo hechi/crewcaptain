@@ -44,7 +44,12 @@ class UserSettingsController(
             notifyActionItemOverdue = request.notifyActionItemOverdue,
             notifyActionItemDueSoon = request.notifyActionItemDueSoon,
             notifyStaleOneOnOne = request.notifyStaleOneOnOne,
-            notifyUpcomingAnniversary = request.notifyUpcomingAnniversary
+            notifyUpcomingAnniversary = request.notifyUpcomingAnniversary,
+            aiEnabled = request.aiEnabled,
+            aiApiBaseUrl = request.aiApiBaseUrl,
+            aiApiKey = request.aiApiKey,
+            aiModelName = request.aiModelName,
+            aiPrivacyMode = request.aiPrivacyMode
         )
 
         val settings = userSettingsService.updateSettings(userId, command)

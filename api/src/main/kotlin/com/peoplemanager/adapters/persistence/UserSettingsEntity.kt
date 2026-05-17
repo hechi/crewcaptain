@@ -38,6 +38,21 @@ class UserSettingsEntity(
     @Column(name = "notify_upcoming_anniversary", nullable = false)
     val notifyUpcomingAnniversary: Boolean = true,
 
+    @Column(name = "ai_enabled", nullable = false)
+    val aiEnabled: Boolean = false,
+
+    @Column(name = "ai_api_base_url")
+    val aiApiBaseUrl: String? = null,
+
+    @Column(name = "ai_api_key")
+    val aiApiKey: String? = null,
+
+    @Column(name = "ai_model_name")
+    val aiModelName: String? = null,
+
+    @Column(name = "ai_privacy_mode", nullable = false)
+    val aiPrivacyMode: Boolean = true,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

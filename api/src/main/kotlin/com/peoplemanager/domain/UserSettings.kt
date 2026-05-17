@@ -19,6 +19,11 @@ data class UserSettings(
     val notifyActionItemDueSoon: Boolean = true,
     val notifyStaleOneOnOne: Boolean = true,
     val notifyUpcomingAnniversary: Boolean = true,
+    val aiEnabled: Boolean = false,
+    val aiApiBaseUrl: String? = null,
+    val aiApiKey: String? = null,
+    val aiModelName: String? = null,
+    val aiPrivacyMode: Boolean = true,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -26,6 +31,10 @@ data class UserSettings(
         require(dueSoonDays in 1..30) { "dueSoonDays must be between 1 and 30" }
         require(staleOneOnOneDays in 1..90) { "staleOneOnOneDays must be between 1 and 90" }
         require(anniversaryLookaheadDays in 1..90) { "anniversaryLookaheadDays must be between 1 and 90" }
+        if (aiEnabled) {
+            require(!aiApiBaseUrl.isNullOrBlank()) { "AI API base URL is required when AI is enabled" }
+            require(!aiModelName.isNullOrBlank()) { "AI model name is required when AI is enabled" }
+        }
     }
 
     fun updateThresholds(
@@ -61,6 +70,23 @@ data class UserSettings(
         notifyUpcomingAnniversary = upcomingAnniversary,
         updatedAt = Instant.now()
     )
+
+    fun updateAiSettings(
+        aiEnabled: Boolean,
+        aiApiBaseUrl: String?,
+        aiApiKey: String?,
+        aiModelName: String?,
+        aiPrivacyMode: Boolean
+    ): UserSettings = copy(
+        aiEnabled = aiEnabled,
+        aiApiBaseUrl = aiApiBaseUrl,
+        aiApiKey = aiApiKey,
+        aiModelName = aiModelName,
+        aiPrivacyMode = aiPrivacyMode,
+        updatedAt = Instant.now()
+    )
+
+    fun isAiConfigured(): Boolean = aiEnabled && !aiApiBaseUrl.isNullOrBlank() && !aiModelName.isNullOrBlank()
 
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3

@@ -26,6 +26,11 @@ export default function SettingsPage() {
   const [notifyActionItemDueSoon, setNotifyActionItemDueSoon] = useState(true);
   const [notifyStaleOneOnOne, setNotifyStaleOneOnOne] = useState(true);
   const [notifyUpcomingAnniversary, setNotifyUpcomingAnniversary] = useState(true);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [aiApiBaseUrl, setAiApiBaseUrl] = useState('');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiModelName, setAiModelName] = useState('');
+  const [aiPrivacyMode, setAiPrivacyMode] = useState(true);
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -45,6 +50,11 @@ export default function SettingsPage() {
       setNotifyActionItemDueSoon(result.notifyActionItemDueSoon);
       setNotifyStaleOneOnOne(result.notifyStaleOneOnOne);
       setNotifyUpcomingAnniversary(result.notifyUpcomingAnniversary);
+      setAiEnabled(result.aiEnabled);
+      setAiApiBaseUrl(result.aiApiBaseUrl || '');
+      setAiApiKey('');
+      setAiModelName(result.aiModelName || '');
+      setAiPrivacyMode(result.aiPrivacyMode);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -74,6 +84,11 @@ export default function SettingsPage() {
         notifyActionItemDueSoon,
         notifyStaleOneOnOne,
         notifyUpcomingAnniversary,
+        aiEnabled,
+        aiApiBaseUrl: aiApiBaseUrl || null,
+        aiApiKey: aiApiKey || null,
+        aiModelName: aiModelName || null,
+        aiPrivacyMode,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -371,6 +386,132 @@ export default function SettingsPage() {
           checked={showAchievements}
           onChange={setShowAchievements}
         />
+      </section>
+
+      {/* AI Assistant Section */}
+      <section
+        data-testid="settings-section-ai"
+        style={{
+          marginBottom: 'var(--space-6)',
+          padding: 'var(--space-5)',
+          borderRadius: 'var(--radius-large)',
+          border: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-bg-surface)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Subtle scan-line texture */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.01) 2px, rgba(0,255,255,0.01) 4px)',
+            pointerEvents: 'none',
+            borderRadius: 'var(--radius-large)',
+          }}
+        />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2
+            style={{
+              fontSize: 'var(--text-h3)',
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 'var(--weight-semibold)',
+              color: 'var(--color-primary)',
+              margin: '0 0 var(--space-2) 0',
+            }}
+          >
+            ✦ AI Assistant
+          </h2>
+          <p style={{ fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)', margin: '0 0 var(--space-4) 0' }}>
+            Configure an OpenAI-compatible API to generate 1:1 agenda suggestions.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <ToggleRow
+              testId="toggle-ai-enabled"
+              label="Enable AI Assistant"
+              checked={aiEnabled}
+              onChange={setAiEnabled}
+            />
+            {aiEnabled && (
+              <>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-text-secondary)' }}>
+                    API Base URL
+                  </span>
+                  <input
+                    type="url"
+                    data-testid="input-ai-api-base-url"
+                    placeholder="http://ollama:11434/v1"
+                    value={aiApiBaseUrl}
+                    onChange={(e) => setAiApiBaseUrl(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-small)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: 'var(--text-body)',
+                      fontFamily: 'var(--font-mono)',
+                      width: '100%',
+                    }}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-text-secondary)' }}>
+                    API Key
+                  </span>
+                  <input
+                    type="password"
+                    data-testid="input-ai-api-key"
+                    placeholder="sk-... (leave empty for local models)"
+                    value={aiApiKey}
+                    onChange={(e) => setAiApiKey(e.target.value)}
+                    autoComplete="off"
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-small)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: 'var(--text-body)',
+                      fontFamily: 'var(--font-mono)',
+                      width: '100%',
+                    }}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-text-secondary)' }}>
+                    Model Name
+                  </span>
+                  <input
+                    type="text"
+                    data-testid="input-ai-model-name"
+                    placeholder="llama3, gpt-4o, etc."
+                    value={aiModelName}
+                    onChange={(e) => setAiModelName(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-small)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: 'var(--text-body)',
+                      fontFamily: 'var(--font-mono)',
+                      width: '100%',
+                    }}
+                  />
+                </label>
+                <ToggleRow
+                  testId="toggle-ai-privacy-mode"
+                  label="Privacy Mode (exclude sensitive content from AI)"
+                  checked={aiPrivacyMode}
+                  onChange={setAiPrivacyMode}
+                />
+              </>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* Save Button & Feedback */}
