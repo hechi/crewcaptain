@@ -42,6 +42,10 @@ class UserSettingsService(
             aiModelName = command.aiModelName,
             aiPrivacyMode = command.aiPrivacyMode,
             aiWritingStyle = command.aiWritingStyle,
+            kudosRefinementPrompt = command.kudosRefinementPrompt,
+            pdpOptimizationPrompt = command.pdpOptimizationPrompt,
+            agendaPrepPrompt = command.agendaPrepPrompt,
+            narrativePrompt = command.narrativePrompt,
             updatedAt = java.time.Instant.now()
         )
 
@@ -66,5 +70,9 @@ data class UpdateUserSettingsCommand(
     val aiApiKey: String? = null,
     val aiModelName: String? = null,
     val aiPrivacyMode: Boolean = true,
-    val aiWritingStyle: AiWritingStyle = AiWritingStyle.NARRATIVE
+    val aiWritingStyle: AiWritingStyle = AiWritingStyle.NARRATIVE,
+    val kudosRefinementPrompt: String? = null,
+    val pdpOptimizationPrompt: String? = null,
+    val agendaPrepPrompt: String? = null,
+    val narrativePrompt: String? = null
 )

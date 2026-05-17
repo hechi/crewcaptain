@@ -98,6 +98,10 @@ describe('DashboardPage', () => {
       aiModelName: null,
       aiPrivacyMode: true,
       aiWritingStyle: 'NARRATIVE',
+      kudosRefinementPrompt: null,
+      pdpOptimizationPrompt: null,
+      agendaPrepPrompt: null,
+      narrativePrompt: null,
     });
   });
 
@@ -290,6 +294,10 @@ describe('DashboardPage', () => {
       aiModelName: null,
       aiPrivacyMode: true,
       aiWritingStyle: 'NARRATIVE',
+      kudosRefinementPrompt: null,
+      pdpOptimizationPrompt: null,
+      agendaPrepPrompt: null,
+      narrativePrompt: null,
     });
     mockGetDashboard.mockResolvedValue({
       overdueActionItems: [],

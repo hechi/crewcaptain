@@ -40,6 +40,10 @@ class JpaUserSettingsRepositoryAdapter(
         aiModelName = this.aiModelName,
         aiPrivacyMode = this.aiPrivacyMode,
         aiWritingStyle = AiWritingStyle.valueOf(this.aiWritingStyle),
+        kudosRefinementPrompt = this.kudosRefinementPrompt,
+        pdpOptimizationPrompt = this.pdpOptimizationPrompt,
+        agendaPrepPrompt = this.agendaPrepPrompt,
+        narrativePrompt = this.narrativePrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -61,6 +65,10 @@ class JpaUserSettingsRepositoryAdapter(
         aiModelName = this.aiModelName,
         aiPrivacyMode = this.aiPrivacyMode,
         aiWritingStyle = this.aiWritingStyle.name,
+        kudosRefinementPrompt = this.kudosRefinementPrompt,
+        pdpOptimizationPrompt = this.pdpOptimizationPrompt,
+        agendaPrepPrompt = this.agendaPrepPrompt,
+        narrativePrompt = this.narrativePrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

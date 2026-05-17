@@ -40,6 +40,10 @@ const defaultSettings = {
   aiModelName: null,
   aiPrivacyMode: true,
   aiWritingStyle: 'NARRATIVE' as const,
+  kudosRefinementPrompt: null,
+  pdpOptimizationPrompt: null,
+  agendaPrepPrompt: null,
+  narrativePrompt: null,
 };
 
 describe('SettingsPage', () => {

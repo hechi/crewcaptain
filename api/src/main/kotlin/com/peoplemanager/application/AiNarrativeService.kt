@@ -83,7 +83,7 @@ class AiNarrativeService(
             baseUrl = settings.aiApiBaseUrl!!,
             apiKey = settings.aiApiKey,
             model = settings.aiModelName!!,
-            systemPrompt = SYSTEM_PROMPT,
+            systemPrompt = settings.effectiveNarrativePrompt(),
             userMessage = userPrompt
         )
 

@@ -105,6 +105,10 @@ describe('OneOnOneEntryDetailPage', () => {
       aiModelName: null,
       aiPrivacyMode: true,
       aiWritingStyle: 'NARRATIVE',
+      kudosRefinementPrompt: null,
+      pdpOptimizationPrompt: null,
+      agendaPrepPrompt: null,
+      narrativePrompt: null,
     });
   });
 

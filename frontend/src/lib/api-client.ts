@@ -852,3 +852,27 @@ export async function assignPersonToWorkspace(token: string, personId: string, d
   }, token);
   return response.json();
 }
+
+// --- AI Coaching ---
+
+import { AiCoachingResponse } from '@/types/settings';
+
+export async function refineKudos(token: string, draft: string): Promise<AiCoachingResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/ai/refine-kudos`, {
+    method: 'POST',
+    body: JSON.stringify({ draft }),
+  }, token);
+  return response.json();
+}
+
+export async function optimizePdpGoal(
+  token: string,
+  title: string,
+  description?: string | null
+): Promise<AiCoachingResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/ai/optimize-pdp-goal`, {
+    method: 'POST',
+    body: JSON.stringify({ title, description: description || null }),
+  }, token);
+  return response.json();
+}

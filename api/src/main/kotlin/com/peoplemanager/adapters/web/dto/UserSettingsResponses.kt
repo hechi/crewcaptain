@@ -16,7 +16,11 @@ data class UserSettingsResponse(
     val aiApiBaseUrl: String?,
     val aiModelName: String?,
     val aiPrivacyMode: Boolean,
-    val aiWritingStyle: String
+    val aiWritingStyle: String,
+    val kudosRefinementPrompt: String?,
+    val pdpOptimizationPrompt: String?,
+    val agendaPrepPrompt: String?,
+    val narrativePrompt: String?
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -33,7 +37,11 @@ data class UserSettingsResponse(
             aiApiBaseUrl = settings.aiApiBaseUrl,
             aiModelName = settings.aiModelName,
             aiPrivacyMode = settings.aiPrivacyMode,
-            aiWritingStyle = settings.aiWritingStyle.name
+            aiWritingStyle = settings.aiWritingStyle.name,
+            kudosRefinementPrompt = settings.kudosRefinementPrompt,
+            pdpOptimizationPrompt = settings.pdpOptimizationPrompt,
+            agendaPrepPrompt = settings.agendaPrepPrompt,
+            narrativePrompt = settings.narrativePrompt
         )
     }
 }

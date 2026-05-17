@@ -29,6 +29,10 @@ describe('Settings API Client', () => {
         aiModelName: null,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -81,6 +85,10 @@ describe('Settings API Client', () => {
         aiModelName: null,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -109,12 +117,20 @@ describe('Settings API Client', () => {
         aiEnabled: false,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       const mockResponse: UserSettings = {
         ...request,
         aiApiBaseUrl: null,
         aiModelName: null,
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -164,6 +180,10 @@ describe('Settings API Client', () => {
         aiEnabled: false,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow();
@@ -195,6 +215,10 @@ describe('Settings API Client', () => {
         aiEnabled: false,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow();
@@ -216,6 +240,10 @@ describe('Settings API Client', () => {
         aiEnabled: false,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow('Network error');
@@ -235,6 +263,10 @@ describe('Settings API Client', () => {
         aiEnabled: false,
         aiPrivacyMode: true,
         aiWritingStyle: 'NARRATIVE',
+        kudosRefinementPrompt: null,
+        pdpOptimizationPrompt: null,
+        agendaPrepPrompt: null,
+        narrativePrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({

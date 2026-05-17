@@ -3,6 +3,18 @@ import '@testing-library/jest-dom';
 import PdpGoalForm from '@/components/pdp-goals/PdpGoalForm';
 import { PdpGoal } from '@/types/pdp-goal';
 
+jest.mock('@/lib/useStableToken', () => ({
+  useStableToken: () => ({
+    getToken: () => 'test-token',
+    isAuthenticated: true,
+    status: 'authenticated',
+  }),
+}));
+
+jest.mock('@/lib/api-client', () => ({
+  optimizePdpGoal: jest.fn(),
+}));
+
 const mockGoal: PdpGoal = {
   id: 'goal-1',
   personId: 'person-1',
@@ -92,5 +104,78 @@ describe('PdpGoalForm', () => {
       description: null,
       targetDate: '2026-12-31',
     });
+  });
+
+  it('should show SMART Check button when aiEnabled is true', () => {
+    render(<PdpGoalForm onSubmit={jest.fn()} onCancel={jest.fn()} aiEnabled={true} />);
+    expect(screen.getByTestId('pdp-goal-smart-check-btn')).toBeInTheDocument();
+  });
+
+  it('should not show SMART Check button when aiEnabled is false', () => {
+    render(<PdpGoalForm onSubmit={jest.fn()} onCancel={jest.fn()} aiEnabled={false} />);
+    expect(screen.queryByTestId('pdp-goal-smart-check-btn')).not.toBeInTheDocument();
+  });
+
+  it('should disable SMART Check button when title is empty', () => {
+    render(<PdpGoalForm onSubmit={jest.fn()} onCancel={jest.fn()} aiEnabled={true} />);
+    expect(screen.getByTestId('pdp-goal-smart-check-btn')).toBeDisabled();
+  });
+
+  it('should apply AI suggestion with structured format in edit mode', async () => {
+    const { optimizePdpGoal } = require('@/lib/api-client');
+    optimizePdpGoal.mockResolvedValue({
+      result: 'Title: Deliver 3 presentations by Q3\nDescription: Present at team all-hands monthly\nExplanation: More specific and measurable',
+      error: null,
+    });
+
+    const onSubmit = jest.fn();
+    render(<PdpGoalForm existingGoal={mockGoal} onSubmit={onSubmit} onCancel={jest.fn()} aiEnabled={true} />);
+
+    // Click SMART Check
+    fireEvent.click(screen.getByTestId('pdp-goal-smart-check-btn'));
+
+    // Wait for the AI comparison to appear
+    const { waitFor } = require('@testing-library/react');
+    await waitFor(() => {
+      expect(screen.getByTestId('pdp-goal-ai-comparison')).toBeInTheDocument();
+    });
+
+    // Click Apply
+    fireEvent.click(screen.getByTestId('pdp-goal-ai-apply-btn'));
+
+    // Verify the form fields were updated
+    expect(screen.getByTestId('pdp-goal-title-input')).toHaveValue('Deliver 3 presentations by Q3');
+    expect(screen.getByTestId('pdp-goal-description-input')).toHaveValue('Present at team all-hands monthly');
+
+    // Submit and verify the updated values are sent
+    fireEvent.submit(screen.getByTestId('pdp-goal-form'));
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Deliver 3 presentations by Q3',
+      description: 'Present at team all-hands monthly',
+    }));
+  });
+
+  it('should apply AI suggestion as description when no structured format', async () => {
+    const { optimizePdpGoal } = require('@/lib/api-client');
+    optimizePdpGoal.mockResolvedValue({
+      result: 'This goal could be improved by adding measurable outcomes and a deadline.',
+      error: null,
+    });
+
+    render(<PdpGoalForm existingGoal={mockGoal} onSubmit={jest.fn()} onCancel={jest.fn()} aiEnabled={true} />);
+
+    fireEvent.click(screen.getByTestId('pdp-goal-smart-check-btn'));
+
+    const { waitFor } = require('@testing-library/react');
+    await waitFor(() => {
+      expect(screen.getByTestId('pdp-goal-ai-comparison')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('pdp-goal-ai-apply-btn'));
+
+    // When no structured format, the whole response becomes the description
+    expect(screen.getByTestId('pdp-goal-description-input')).toHaveValue(
+      'This goal could be improved by adding measurable outcomes and a deadline.'
+    );
   });
 });

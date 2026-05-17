@@ -18,6 +18,7 @@ interface PdpGoalListProps {
   onViewUpdates?: (goalId: string) => void;
   statusFilter: PdpGoalStatus | null;
   onStatusFilterChange: (status: PdpGoalStatus | null) => void;
+  aiEnabled?: boolean;
 }
 
 /**
@@ -36,6 +37,7 @@ export default function PdpGoalList({
   onViewUpdates,
   statusFilter,
   onStatusFilterChange,
+  aiEnabled = false,
 }: PdpGoalListProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
@@ -112,6 +114,7 @@ export default function PdpGoalList({
           <PdpGoalForm
             onSubmit={handleCreate}
             onCancel={() => setShowCreateForm(false)}
+            aiEnabled={aiEnabled}
           />
         </div>
       )}
@@ -130,6 +133,7 @@ export default function PdpGoalList({
                 existingGoal={goal}
                 onSubmit={handleUpdate(goal.id)}
                 onCancel={() => setEditingGoalId(null)}
+                aiEnabled={aiEnabled}
               />
             ) : (
               <PdpGoalCard

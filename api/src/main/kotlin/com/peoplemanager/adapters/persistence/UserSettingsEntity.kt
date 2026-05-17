@@ -56,6 +56,18 @@ class UserSettingsEntity(
     @Column(name = "ai_writing_style", nullable = false)
     val aiWritingStyle: String = "NARRATIVE",
 
+    @Column(name = "kudos_refinement_prompt", columnDefinition = "TEXT")
+    val kudosRefinementPrompt: String? = null,
+
+    @Column(name = "pdp_optimization_prompt", columnDefinition = "TEXT")
+    val pdpOptimizationPrompt: String? = null,
+
+    @Column(name = "agenda_prep_prompt", columnDefinition = "TEXT")
+    val agendaPrepPrompt: String? = null,
+
+    @Column(name = "narrative_prompt", columnDefinition = "TEXT")
+    val narrativePrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

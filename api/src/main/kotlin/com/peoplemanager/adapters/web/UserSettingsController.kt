@@ -57,7 +57,11 @@ class UserSettingsController(
             aiApiKey = request.aiApiKey,
             aiModelName = request.aiModelName,
             aiPrivacyMode = request.aiPrivacyMode,
-            aiWritingStyle = writingStyle
+            aiWritingStyle = writingStyle,
+            kudosRefinementPrompt = request.kudosRefinementPrompt,
+            pdpOptimizationPrompt = request.pdpOptimizationPrompt,
+            agendaPrepPrompt = request.agendaPrepPrompt,
+            narrativePrompt = request.narrativePrompt
         )
 
         val settings = userSettingsService.updateSettings(userId, command)

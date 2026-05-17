@@ -11,6 +11,7 @@ interface KudosListProps {
   onCreateKudos: (data: CreateKudosRequest) => void;
   onDeleteKudos: (kudosId: string) => void;
   isSubmitting?: boolean;
+  aiEnabled?: boolean;
 }
 
 /**
@@ -21,6 +22,7 @@ export default function KudosList({
   onCreateKudos,
   onDeleteKudos,
   isSubmitting = false,
+  aiEnabled = false,
 }: KudosListProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -71,6 +73,7 @@ export default function KudosList({
             onSubmit={handleCreate}
             onCancel={() => setShowCreateForm(false)}
             isSubmitting={isSubmitting}
+            aiEnabled={aiEnabled}
           />
         </div>
       )}

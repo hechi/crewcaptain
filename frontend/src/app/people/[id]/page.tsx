@@ -1314,6 +1314,7 @@ export default function PersonDetailPage() {
               onDeleteGoal={handleDeletePdpGoal}
               statusFilter={pdpGoalsStatusFilter}
               onStatusFilterChange={setPdpGoalsStatusFilter}
+              aiEnabled={userSettings?.aiEnabled ?? false}
             />
           )}
         </div>
@@ -1332,6 +1333,7 @@ export default function PersonDetailPage() {
               onCreateKudos={handleCreateKudos}
               onDeleteKudos={handleDeleteKudos}
               isSubmitting={kudosSubmitting}
+              aiEnabled={userSettings?.aiEnabled ?? false}
             />
           )}
         </div>

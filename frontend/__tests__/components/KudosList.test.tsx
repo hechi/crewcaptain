@@ -4,6 +4,18 @@ import '@testing-library/jest-dom';
 import KudosList from '@/components/kudos/KudosList';
 import { Kudos } from '@/types/kudos';
 
+jest.mock('@/lib/useStableToken', () => ({
+  useStableToken: () => ({
+    getToken: () => 'test-token',
+    isAuthenticated: true,
+    status: 'authenticated',
+  }),
+}));
+
+jest.mock('@/lib/api-client', () => ({
+  refineKudos: jest.fn(),
+}));
+
 describe('KudosList', () => {
   const mockKudos: Kudos[] = [
     {

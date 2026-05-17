@@ -17,6 +17,10 @@ export interface UserSettings {
   aiModelName: string | null;
   aiPrivacyMode: boolean;
   aiWritingStyle: AiWritingStyle;
+  kudosRefinementPrompt: string | null;
+  pdpOptimizationPrompt: string | null;
+  agendaPrepPrompt: string | null;
+  narrativePrompt: string | null;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -35,6 +39,10 @@ export interface UpdateUserSettingsRequest {
   aiModelName?: string | null;
   aiPrivacyMode: boolean;
   aiWritingStyle: AiWritingStyle;
+  kudosRefinementPrompt?: string | null;
+  pdpOptimizationPrompt?: string | null;
+  agendaPrepPrompt?: string | null;
+  narrativePrompt?: string | null;
 }
 
 export interface AiPrepResponse {
@@ -44,5 +52,10 @@ export interface AiPrepResponse {
 
 export interface AiNarrativeResponse {
   narrative: string | null;
+  error: string | null;
+}
+
+export interface AiCoachingResponse {
+  result: string | null;
   error: string | null;
 }

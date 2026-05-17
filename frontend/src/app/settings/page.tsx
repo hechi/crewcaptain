@@ -32,6 +32,10 @@ export default function SettingsPage() {
   const [aiModelName, setAiModelName] = useState('');
   const [aiPrivacyMode, setAiPrivacyMode] = useState(true);
   const [aiWritingStyle, setAiWritingStyle] = useState<AiWritingStyle>('NARRATIVE');
+  const [kudosRefinementPrompt, setKudosRefinementPrompt] = useState('');
+  const [pdpOptimizationPrompt, setPdpOptimizationPrompt] = useState('');
+  const [agendaPrepPrompt, setAgendaPrepPrompt] = useState('');
+  const [narrativePrompt, setNarrativePrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -57,6 +61,10 @@ export default function SettingsPage() {
       setAiModelName(result.aiModelName || '');
       setAiPrivacyMode(result.aiPrivacyMode);
       setAiWritingStyle(result.aiWritingStyle || 'NARRATIVE');
+      setKudosRefinementPrompt(result.kudosRefinementPrompt || '');
+      setPdpOptimizationPrompt(result.pdpOptimizationPrompt || '');
+      setAgendaPrepPrompt(result.agendaPrepPrompt || '');
+      setNarrativePrompt(result.narrativePrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -92,6 +100,10 @@ export default function SettingsPage() {
         aiModelName: aiModelName || null,
         aiPrivacyMode,
         aiWritingStyle,
+        kudosRefinementPrompt: kudosRefinementPrompt || null,
+        pdpOptimizationPrompt: pdpOptimizationPrompt || null,
+        agendaPrepPrompt: agendaPrepPrompt || null,
+        narrativePrompt: narrativePrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -546,6 +558,60 @@ export default function SettingsPage() {
                     <option value="CONCISE">Concise (1 paragraph)</option>
                   </select>
                 </div>
+
+                {/* AI Prompts Section */}
+                <div style={{ marginTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                  <h3
+                    style={{
+                      fontSize: 'var(--text-body)',
+                      fontFamily: 'var(--font-heading)',
+                      fontWeight: 'var(--weight-semibold)',
+                      color: 'var(--color-primary)',
+                      margin: '0 0 var(--space-2) 0',
+                    }}
+                  >
+                    ✦ AI Prompts
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)', margin: '0 0 var(--space-3) 0' }}>
+                    Customize the system prompts used by AI features. Leave blank to use defaults.
+                  </p>
+
+                  <PromptTextarea
+                    testId="input-kudos-refinement-prompt"
+                    label="Kudos Refinement Prompt"
+                    placeholder="You are a leadership coach. Refine the following kudos draft using the SBI framework..."
+                    value={kudosRefinementPrompt}
+                    onChange={setKudosRefinementPrompt}
+                    onReset={() => setKudosRefinementPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-pdp-optimization-prompt"
+                    label="PDP Goal Optimization Prompt"
+                    placeholder="You are a career development expert. Evaluate the following goal and ensure it meets SMART criteria..."
+                    value={pdpOptimizationPrompt}
+                    onChange={setPdpOptimizationPrompt}
+                    onReset={() => setPdpOptimizationPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-agenda-prep-prompt"
+                    label="Agenda Prep Assistant Prompt"
+                    placeholder="You are a leadership coach. Based on the provided context, suggest 3-5 high-impact agenda items..."
+                    value={agendaPrepPrompt}
+                    onChange={setAgendaPrepPrompt}
+                    onReset={() => setAgendaPrepPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-narrative-prompt"
+                    label="Generate AI Narrative Prompt"
+                    placeholder="You are an expert Leadership Coach and People Manager. Draft a professional performance review narrative..."
+                    value={narrativePrompt}
+                    onChange={setNarrativePrompt}
+                    onReset={() => setNarrativePrompt('')}
+                  />
+                </div>
               </>
             )}
           </div>
@@ -632,5 +698,77 @@ function ToggleRow({
         }}
       />
     </label>
+  );
+}
+
+function PromptTextarea({
+  testId,
+  label,
+  placeholder,
+  value,
+  onChange,
+  onReset,
+}: {
+  testId: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  onReset: () => void;
+}) {
+  return (
+    <div style={{ marginBottom: 'var(--space-4)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <label
+          htmlFor={testId}
+          style={{
+            fontSize: 'var(--text-small)',
+            color: 'var(--color-text-secondary)',
+            fontFamily: 'var(--font-mono)',
+          }}
+        >
+          {label}
+        </label>
+        {value && (
+          <button
+            type="button"
+            onClick={onReset}
+            data-testid={`${testId}-reset-btn`}
+            style={{
+              padding: '2px 8px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+            }}
+          >
+            Reset to Default
+          </button>
+        )}
+      </div>
+      <textarea
+        id={testId}
+        data-testid={testId}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={3}
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          borderRadius: 'var(--radius-small)',
+          border: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-bg-elevated)',
+          color: 'var(--color-text-primary)',
+          fontSize: 'var(--text-small)',
+          fontFamily: 'var(--font-mono)',
+          resize: 'vertical',
+          boxSizing: 'border-box',
+        }}
+      />
+    </div>
   );
 }

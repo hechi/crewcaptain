@@ -3,6 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import KudosForm from '@/components/kudos/KudosForm';
 
+jest.mock('@/lib/useStableToken', () => ({
+  useStableToken: () => ({
+    getToken: () => 'test-token',
+    isAuthenticated: true,
+    status: 'authenticated',
+  }),
+}));
+
+jest.mock('@/lib/api-client', () => ({
+  refineKudos: jest.fn(),
+}));
+
 describe('KudosForm', () => {
   const mockOnSubmit = jest.fn();
   const mockOnCancel = jest.fn();
@@ -116,5 +128,20 @@ describe('KudosForm', () => {
         tags: ['impact', 'collaboration'],
       })
     );
+  });
+
+  it('should show Refine button when aiEnabled is true', () => {
+    render(<KudosForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} aiEnabled={true} />);
+    expect(screen.getByTestId('kudos-refine-btn')).toBeInTheDocument();
+  });
+
+  it('should not show Refine button when aiEnabled is false', () => {
+    render(<KudosForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} aiEnabled={false} />);
+    expect(screen.queryByTestId('kudos-refine-btn')).not.toBeInTheDocument();
+  });
+
+  it('should disable Refine button when text is empty', () => {
+    render(<KudosForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} aiEnabled={true} />);
+    expect(screen.getByTestId('kudos-refine-btn')).toBeDisabled();
   });
 });
