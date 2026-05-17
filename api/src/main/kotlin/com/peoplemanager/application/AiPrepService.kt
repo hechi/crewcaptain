@@ -32,10 +32,15 @@ class AiPrepService(
 ) {
 
     companion object {
-        const val SYSTEM_PROMPT = "Act as a leadership coach. Based on these notes and progress items, " +
+        const val SYSTEM_PROMPT = "You are a leadership coach. Based on the provided context, " +
             "suggest 3-5 high-impact agenda items for the next 1:1 meeting. " +
-            "Format each suggestion as a short, actionable bullet point. " +
-            "Focus on follow-ups, blockers, growth opportunities, and recognition."
+            "RULES: " +
+            "- Output ONLY the agenda items, one per line. " +
+            "- Do NOT include any introduction, preamble, explanation, or closing text. " +
+            "- Do NOT use markdown formatting (no bold, italic, headers, or links). " +
+            "- Start each line with a dash followed by a space. " +
+            "- Keep each item short and actionable (one sentence). " +
+            "- Focus on follow-ups, blockers, growth opportunities, and recognition."
     }
 
     fun generateAgendaSuggestions(userId: UserId, personId: PersonId): AiPrepResult {
@@ -159,20 +164,45 @@ class AiPrepService(
     }
 
     private fun parseSuggestions(content: String): List<String> {
-        // Parse bullet points from LLM response
         return content.lines()
             .map { it.trim() }
             .filter { it.isNotBlank() }
             .map { line ->
-                // Remove common bullet prefixes
+                // Remove common bullet/numbered prefixes
                 line.removePrefix("- ")
                     .removePrefix("• ")
                     .removePrefix("* ")
-                    .removePrefix("1. ")
-                    .removePrefix("2. ")
-                    .removePrefix("3. ")
-                    .removePrefix("4. ")
-                    .removePrefix("5. ")
+                    .replace(Regex("^\\d+[\\.\\)\\:]\\s*"), "") // "1. ", "1) ", "1: "
+                    .trim()
+            }
+            .filter { it.isNotBlank() }
+            // Filter out preamble/closing lines (not actual suggestions)
+            .filter { line ->
+                val lower = line.lowercase()
+                !lower.startsWith("here are") &&
+                !lower.startsWith("here's") &&
+                !lower.startsWith("based on") &&
+                !lower.startsWith("optional") &&
+                !lower.startsWith("additional") &&
+                !lower.startsWith("note:") &&
+                !lower.startsWith("these ") &&
+                !lower.startsWith("i suggest") &&
+                !lower.startsWith("i recommend") &&
+                !lower.startsWith("sure") &&
+                !lower.startsWith("certainly") &&
+                !lower.endsWith(":") &&
+                !lower.contains("agenda items") &&
+                !lower.contains("suggestions:")
+            }
+            // Strip markdown formatting
+            .map { line ->
+                line.replace(Regex("\\*\\*(.+?)\\*\\*"), "$1") // **bold**
+                    .replace(Regex("__(.+?)__"), "$1")          // __bold__
+                    .replace(Regex("\\*(.+?)\\*"), "$1")        // *italic*
+                    .replace(Regex("_(.+?)_"), "$1")            // _italic_
+                    .replace(Regex("`(.+?)`"), "$1")            // `code`
+                    .replace(Regex("\\[(.+?)\\]\\(.+?\\)"), "$1") // [text](url)
+                    .replace(Regex("^#+\\s*"), "")              // ## headers
                     .trim()
             }
             .filter { it.isNotBlank() }

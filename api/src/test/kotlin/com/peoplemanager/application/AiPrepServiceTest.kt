@@ -349,4 +349,98 @@ class AiPrepServiceTest {
         assertTrue(result is AiPrepResult.Success)
         assertEquals(5, (result as AiPrepResult.Success).suggestions.size)
     }
+
+    @Test
+    fun `should filter out preamble lines from LLM response`() {
+        val entry = OneOnOneEntry(
+            id = OneOnOneEntryId.generate(),
+            userId = userId,
+            personId = personId,
+            meetingDate = Instant.now().minusSeconds(86400),
+            notesMarkdown = "Some notes",
+            sensitive = false
+        )
+
+        every { personRepository.findByIdAndUserId(personId, userId) } returns person
+        every { userSettingsRepository.findByUserId(userId) } returns aiSettings
+        every { entryRepository.findAllByUserIdAndPersonId(userId, personId, any()) } returns PageImpl(listOf(entry))
+        every { actionItemRepository.findAllByUserIdAndPersonId(userId, personId, ActionItemStatus.OPEN, any()) } returns PageImpl(emptyList())
+        every { pdpGoalRepository.findAllByUserIdAndPersonId(userId, personId, PdpGoalStatus.ACTIVE, any()) } returns PageImpl(emptyList())
+        every { kudosRepository.findAllByUserIdAndPersonId(userId, personId, any()) } returns PageImpl(emptyList())
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns AiCompletionResult.Success(
+            "Here are 3-5 high-impact agenda items:\n\n- Follow up on project timeline\n- Discuss career growth\n- Review blockers\n\nOptional additional suggestion:\n- Celebrate recent kudos"
+        )
+
+        val result = service.generateAgendaSuggestions(userId, personId)
+
+        assertTrue(result is AiPrepResult.Success)
+        val suggestions = (result as AiPrepResult.Success).suggestions
+        assertEquals(4, suggestions.size)
+        assertEquals("Follow up on project timeline", suggestions[0])
+        assertEquals("Discuss career growth", suggestions[1])
+        assertEquals("Review blockers", suggestions[2])
+        assertEquals("Celebrate recent kudos", suggestions[3])
+    }
+
+    @Test
+    fun `should strip markdown formatting from suggestions`() {
+        val entry = OneOnOneEntry(
+            id = OneOnOneEntryId.generate(),
+            userId = userId,
+            personId = personId,
+            meetingDate = Instant.now().minusSeconds(86400),
+            notesMarkdown = "Some notes",
+            sensitive = false
+        )
+
+        every { personRepository.findByIdAndUserId(personId, userId) } returns person
+        every { userSettingsRepository.findByUserId(userId) } returns aiSettings
+        every { entryRepository.findAllByUserIdAndPersonId(userId, personId, any()) } returns PageImpl(listOf(entry))
+        every { actionItemRepository.findAllByUserIdAndPersonId(userId, personId, ActionItemStatus.OPEN, any()) } returns PageImpl(emptyList())
+        every { pdpGoalRepository.findAllByUserIdAndPersonId(userId, personId, PdpGoalStatus.ACTIVE, any()) } returns PageImpl(emptyList())
+        every { kudosRepository.findAllByUserIdAndPersonId(userId, personId, any()) } returns PageImpl(emptyList())
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns AiCompletionResult.Success(
+            "- **Follow up** on the _project timeline_\n- Check progress on `kubernetes` learning\n- Review [action items](http://example.com)"
+        )
+
+        val result = service.generateAgendaSuggestions(userId, personId)
+
+        assertTrue(result is AiPrepResult.Success)
+        val suggestions = (result as AiPrepResult.Success).suggestions
+        assertEquals(3, suggestions.size)
+        assertEquals("Follow up on the project timeline", suggestions[0])
+        assertEquals("Check progress on kubernetes learning", suggestions[1])
+        assertEquals("Review action items", suggestions[2])
+    }
+
+    @Test
+    fun `should handle numbered list format from LLM`() {
+        val entry = OneOnOneEntry(
+            id = OneOnOneEntryId.generate(),
+            userId = userId,
+            personId = personId,
+            meetingDate = Instant.now().minusSeconds(86400),
+            notesMarkdown = "Some notes",
+            sensitive = false
+        )
+
+        every { personRepository.findByIdAndUserId(personId, userId) } returns person
+        every { userSettingsRepository.findByUserId(userId) } returns aiSettings
+        every { entryRepository.findAllByUserIdAndPersonId(userId, personId, any()) } returns PageImpl(listOf(entry))
+        every { actionItemRepository.findAllByUserIdAndPersonId(userId, personId, ActionItemStatus.OPEN, any()) } returns PageImpl(emptyList())
+        every { pdpGoalRepository.findAllByUserIdAndPersonId(userId, personId, PdpGoalStatus.ACTIVE, any()) } returns PageImpl(emptyList())
+        every { kudosRepository.findAllByUserIdAndPersonId(userId, personId, any()) } returns PageImpl(emptyList())
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns AiCompletionResult.Success(
+            "1. Follow up on project\n2) Discuss blockers\n3: Review goals"
+        )
+
+        val result = service.generateAgendaSuggestions(userId, personId)
+
+        assertTrue(result is AiPrepResult.Success)
+        val suggestions = (result as AiPrepResult.Success).suggestions
+        assertEquals(3, suggestions.size)
+        assertEquals("Follow up on project", suggestions[0])
+        assertEquals("Discuss blockers", suggestions[1])
+        assertEquals("Review goals", suggestions[2])
+    }
 }
