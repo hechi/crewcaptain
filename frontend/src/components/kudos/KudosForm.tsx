@@ -13,6 +13,40 @@ interface KudosFormProps {
 }
 
 /**
+ * Strips common LLM preamble lines from a response.
+ * E.g. "Here is the refined draft:", "Sure, here you go:", "Certainly! Here's..."
+ */
+function stripPreamble(text: string): string {
+  const lines = text.split('\n');
+  // Find the first line that looks like actual content (not a preamble)
+  const preamblePatterns = [
+    /^(here\s*(is|are)|sure|certainly|of course|absolutely|i'?d be happy|no problem|great|okay)/i,
+    /^(the\s+refined|the\s+improved|the\s+updated|below\s+is|following\s+is)/i,
+    /^(refined|improved|updated)\s+(version|draft|text|kudos)/i,
+  ];
+
+  let startIndex = 0;
+  for (let i = 0; i < lines.length && i < 3; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) {
+      startIndex = i + 1;
+      continue;
+    }
+    const isPreamble = preamblePatterns.some(p => p.test(trimmed)) ||
+      (trimmed.endsWith(':') && trimmed.length < 80);
+    if (isPreamble) {
+      startIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  const result = lines.slice(startIndex).join('\n').trim();
+  // If stripping removed everything, return original
+  return result || text.trim();
+}
+
+/**
  * Form for creating a new kudos entry with date, text, optional tags,
  * and an AI-powered "Refine" button that uses the SBI framework.
  */
@@ -54,7 +88,7 @@ export default function KudosForm({ onSubmit, onCancel, isSubmitting = false, ai
     try {
       const response = await refineKudos(token, text.trim());
       if (response.result) {
-        setAiSuggestion(response.result);
+        setAiSuggestion(stripPreamble(response.result));
         setShowComparison(true);
       } else if (response.error) {
         setAiError(response.error);

@@ -125,10 +125,24 @@ data class UserSettings(
         const val DEFAULT_ANNIVERSARY_LOOKAHEAD_DAYS = 30
 
         const val DEFAULT_KUDOS_REFINEMENT_PROMPT =
-            "You are a leadership coach. Refine the following kudos draft using the Situation-Behavior-Impact (SBI) framework. Keep it professional, specific, and concise. Output ONLY the refined kudos text, no preamble or explanation."
+            "You are a leadership coach. Refine the following kudos draft using the Situation-Behavior-Impact (SBI) framework. " +
+            "Keep it professional, specific, and concise. " +
+            "RULES: " +
+            "- Output ONLY the refined kudos text. " +
+            "- Do NOT include any introduction, preamble, or explanation such as 'Here is the refined draft:' or 'Sure, here you go:'. " +
+            "- Do NOT use markdown formatting (no bold, italic, headers, or bullet points). " +
+            "- Start directly with the refined text."
 
         const val DEFAULT_PDP_OPTIMIZATION_PROMPT =
-            "You are a career development expert. Evaluate the following goal and ensure it meets SMART (Specific, Measurable, Achievable, Relevant, Time-bound) criteria. Provide an improved version of the goal title and description, and briefly explain why it is better. Format your response as:\nTitle: <improved title>\nDescription: <improved description>\nExplanation: <why it is better>"
+            "You are a career development expert. Evaluate the following goal and ensure it meets SMART (Specific, Measurable, Achievable, Relevant, Time-bound) criteria. " +
+            "Provide an improved version of the goal title and description, and briefly explain why it is better. " +
+            "RULES: " +
+            "- Do NOT use markdown formatting (no bold, italic, headers, or bullet points). " +
+            "- Do NOT include any preamble or introduction. " +
+            "- Format your response EXACTLY as three plain text lines:\n" +
+            "Title: <improved title>\n" +
+            "Description: <improved description>\n" +
+            "Explanation: <why it is better>"
 
         const val DEFAULT_AGENDA_PREP_PROMPT =
             "You are a leadership coach. Based on the provided context, " +

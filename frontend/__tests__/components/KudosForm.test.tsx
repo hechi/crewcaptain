@@ -144,4 +144,28 @@ describe('KudosForm', () => {
     render(<KudosForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} aiEnabled={true} />);
     expect(screen.getByTestId('kudos-refine-btn')).toBeDisabled();
   });
+
+  it('should strip preamble from AI response', async () => {
+    const { refineKudos } = require('@/lib/api-client');
+    refineKudos.mockResolvedValue({
+      result: 'Here is the refined draft:\nDuring the sprint demo (Situation), you clearly explained the technical trade-offs (Behavior), which helped the team make a faster decision (Impact).',
+      error: null,
+    });
+
+    const { waitFor } = require('@testing-library/react');
+    render(<KudosForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} aiEnabled={true} />);
+
+    fireEvent.change(screen.getByTestId('kudos-text-input'), {
+      target: { value: 'Good job on the demo' },
+    });
+    fireEvent.click(screen.getByTestId('kudos-refine-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('kudos-ai-comparison')).toBeInTheDocument();
+    });
+
+    // The preamble "Here is the refined draft:" should be stripped
+    expect(screen.getByTestId('kudos-ai-comparison')).not.toHaveTextContent('Here is the refined draft');
+    expect(screen.getByTestId('kudos-ai-comparison')).toHaveTextContent('During the sprint demo');
+  });
 });
