@@ -28,6 +28,7 @@ describe('Settings API Client', () => {
         aiApiBaseUrl: null,
         aiModelName: null,
         aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -79,6 +80,7 @@ describe('Settings API Client', () => {
         aiApiBaseUrl: null,
         aiModelName: null,
         aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -104,9 +106,16 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: false,
         notifyStaleOneOnOne: true,
         notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
-      const mockResponse: UserSettings = { ...request };
+      const mockResponse: UserSettings = {
+        ...request,
+        aiApiBaseUrl: null,
+        aiModelName: null,
+      };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -152,6 +161,9 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: true,
         notifyStaleOneOnOne: true,
         notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow();
@@ -180,6 +192,9 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: true,
         notifyStaleOneOnOne: true,
         notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow();
@@ -198,6 +213,9 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: true,
         notifyStaleOneOnOne: true,
         notifyUpcomingAnniversary: true,
+        aiEnabled: false,
+        aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow('Network error');
@@ -214,6 +232,9 @@ describe('Settings API Client', () => {
         notifyActionItemDueSoon: false,
         notifyStaleOneOnOne: false,
         notifyUpcomingAnniversary: false,
+        aiEnabled: false,
+        aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       };
 
       mockFetch.mockResolvedValueOnce({

@@ -735,6 +735,22 @@ export async function generateAiAgendaSuggestions(token: string, personId: strin
   return response.json();
 }
 
+// --- AI Narrative ---
+
+import { AiNarrativeResponse } from '@/types/settings';
+
+export async function generateAiNarrative(
+  token: string,
+  personId: string,
+  params: { dateFrom: string; dateTo: string }
+): Promise<AiNarrativeResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/ai-narrative`, {
+    method: 'POST',
+    body: JSON.stringify(params),
+  }, token);
+  return response.json();
+}
+
 
 // --- Bulk Import ---
 

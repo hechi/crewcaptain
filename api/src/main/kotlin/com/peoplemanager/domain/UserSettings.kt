@@ -24,6 +24,7 @@ data class UserSettings(
     val aiApiKey: String? = null,
     val aiModelName: String? = null,
     val aiPrivacyMode: Boolean = true,
+    val aiWritingStyle: AiWritingStyle = AiWritingStyle.NARRATIVE,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -76,13 +77,15 @@ data class UserSettings(
         aiApiBaseUrl: String?,
         aiApiKey: String?,
         aiModelName: String?,
-        aiPrivacyMode: Boolean
+        aiPrivacyMode: Boolean,
+        aiWritingStyle: AiWritingStyle = AiWritingStyle.NARRATIVE
     ): UserSettings = copy(
         aiEnabled = aiEnabled,
         aiApiBaseUrl = aiApiBaseUrl,
         aiApiKey = aiApiKey,
         aiModelName = aiModelName,
         aiPrivacyMode = aiPrivacyMode,
+        aiWritingStyle = aiWritingStyle,
         updatedAt = Instant.now()
     )
 
@@ -100,4 +103,10 @@ data class UserSettings(
 enum class Theme {
     DARK,
     LIGHT
+}
+
+enum class AiWritingStyle {
+    NARRATIVE,
+    BULLET_POINTS,
+    CONCISE
 }

@@ -40,6 +40,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Landing Page** — Modern, high-converting landing page with cyberpunk-lite dark theme. Hero section with HUD visual motif, feature cards with glassmorphism, interactive screenshot showcase (tabbed gallery with Dashboard, Action Items, Person Detail, and Search views), 3-step deployment guide, privacy/self-hosted messaging, and dual CTA sections. Fully responsive, accessible (WCAG AA), respects `prefers-reduced-motion`. Authenticated users are redirected to the dashboard.
 - **Prometheus Metrics** — Exposes application metrics at `/actuator/prometheus` for Prometheus scraping. Secured with a bearer token (`METRICS_TOKEN`). Includes JVM metrics, HTTP request metrics, HikariCP connection pool stats, and custom 1:1 metrics (total entries, entries in last 7 days). Health endpoint at `/actuator/health` remains unauthenticated for Docker healthchecks.
 - **AI-Powered 1:1 Prep Assistant** — Optional AI assistant that synthesizes person-specific context (recent 1:1 notes, open action items, active PDP goals, recent kudos) and generates 3-5 suggested agenda items for the next meeting. Configurable per-user in Settings: API Base URL (any OpenAI-compatible endpoint — Ollama, LiteLLM, OpenAI, etc.), API Key, Model Name, and Privacy Mode toggle. When Privacy Mode is ON, content marked `sensitive=true` is never sent to the LLM. Graceful failure: if the API is unreachable, shows an inline error without breaking the 1:1 page. One-click add suggestions to the agenda. Cyberpunk-themed UI with glow burst animation on completion and pulse loading state. Respects `prefers-reduced-motion`.
+- **AI Performance Narrative Generator** — Generate AI-powered performance review narratives from historical data. Aggregates kudos (with tags), PDP goals (with status and non-sensitive updates), 1:1 outcomes, and action item completion stats within a configurable date range. Sends context to the user's configured LLM with a leadership-coach system prompt. Three writing styles: Narrative (3 paragraphs), Bullet Points (structured sections), Concise (1 paragraph). Privacy Mode respected — sensitive content excluded unless disabled. Result displayed in an editable textarea with copy-to-clipboard. Button only visible when AI is enabled in Settings. Cyberpunk pulse animation during generation.
 
 ### Planned
 
@@ -153,6 +154,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | PUT    | `/api/v1/persons/{id}/remember-items/reorder` | Reorder remember items  |
 | GET    | `/api/v1/persons/{id}/export`           | Export person data as Markdown |
 | GET    | `/api/v1/persons/{id}/review-packet`    | Generate review packet as Markdown |
+| POST   | `/api/v1/persons/{id}/ai-narrative`     | Generate AI performance narrative  |
 | POST   | `/api/v1/persons/import`                | Bulk import persons from CSV   |
 
 **Export query parameters:**
@@ -172,6 +174,13 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - Content-Type: `text/markdown; charset=UTF-8`
 - Content-Disposition: `attachment; filename="review-packet.md"`
 - Body: Structured Markdown with executive summary (statistics), morale, 1:1 meetings, action items (grouped by status with completion rate), PDP goals with progress, and kudos with tag summary. Sensitive content is excluded.
+
+**AI Narrative (POST `/api/v1/persons/{id}/ai-narrative`):**
+- Request body: `{ "dateFrom": "2026-01-01", "dateTo": "2026-06-30" }`
+- Response: `{ "narrative": "Generated text...", "error": null }` or `{ "narrative": null, "error": "Error message" }`
+- Requires AI to be enabled and configured in user settings
+- Respects Privacy Mode (excludes sensitive content when enabled)
+- Writing style controlled by `aiWritingStyle` user setting (NARRATIVE, BULLET_POINTS, CONCISE)
 
 **Bulk import (POST `/api/v1/persons/import`):**
 - Content-Type: `multipart/form-data`

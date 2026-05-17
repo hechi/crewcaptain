@@ -1,5 +1,7 @@
 export type Theme = 'DARK' | 'LIGHT';
 
+export type AiWritingStyle = 'NARRATIVE' | 'BULLET_POINTS' | 'CONCISE';
+
 export interface UserSettings {
   dueSoonDays: number;
   staleOneOnOneDays: number;
@@ -14,6 +16,7 @@ export interface UserSettings {
   aiApiBaseUrl: string | null;
   aiModelName: string | null;
   aiPrivacyMode: boolean;
+  aiWritingStyle: AiWritingStyle;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -31,9 +34,15 @@ export interface UpdateUserSettingsRequest {
   aiApiKey?: string | null;
   aiModelName?: string | null;
   aiPrivacyMode: boolean;
+  aiWritingStyle: AiWritingStyle;
 }
 
 export interface AiPrepResponse {
   suggestions: string[];
+  error: string | null;
+}
+
+export interface AiNarrativeResponse {
+  narrative: string | null;
   error: string | null;
 }

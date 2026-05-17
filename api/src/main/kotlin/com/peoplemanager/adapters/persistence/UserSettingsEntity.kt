@@ -53,6 +53,9 @@ class UserSettingsEntity(
     @Column(name = "ai_privacy_mode", nullable = false)
     val aiPrivacyMode: Boolean = true,
 
+    @Column(name = "ai_writing_style", nullable = false)
+    val aiWritingStyle: String = "NARRATIVE",
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

@@ -15,7 +15,8 @@ data class UserSettingsResponse(
     val aiEnabled: Boolean,
     val aiApiBaseUrl: String?,
     val aiModelName: String?,
-    val aiPrivacyMode: Boolean
+    val aiPrivacyMode: Boolean,
+    val aiWritingStyle: String
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -31,7 +32,8 @@ data class UserSettingsResponse(
             aiEnabled = settings.aiEnabled,
             aiApiBaseUrl = settings.aiApiBaseUrl,
             aiModelName = settings.aiModelName,
-            aiPrivacyMode = settings.aiPrivacyMode
+            aiPrivacyMode = settings.aiPrivacyMode,
+            aiWritingStyle = settings.aiWritingStyle.name
         )
     }
 }

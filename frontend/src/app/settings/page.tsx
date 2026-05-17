@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { UserSettings, UpdateUserSettingsRequest, Theme } from '@/types/settings';
+import { UserSettings, UpdateUserSettingsRequest, Theme, AiWritingStyle } from '@/types/settings';
 import { getUserSettings, updateUserSettings } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { useTheme } from '@/components/ThemeProvider';
@@ -31,6 +31,7 @@ export default function SettingsPage() {
   const [aiApiKey, setAiApiKey] = useState('');
   const [aiModelName, setAiModelName] = useState('');
   const [aiPrivacyMode, setAiPrivacyMode] = useState(true);
+  const [aiWritingStyle, setAiWritingStyle] = useState<AiWritingStyle>('NARRATIVE');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -55,6 +56,7 @@ export default function SettingsPage() {
       setAiApiKey('');
       setAiModelName(result.aiModelName || '');
       setAiPrivacyMode(result.aiPrivacyMode);
+      setAiWritingStyle(result.aiWritingStyle || 'NARRATIVE');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -89,6 +91,7 @@ export default function SettingsPage() {
         aiApiKey: aiApiKey || null,
         aiModelName: aiModelName || null,
         aiPrivacyMode,
+        aiWritingStyle,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -508,6 +511,41 @@ export default function SettingsPage() {
                   checked={aiPrivacyMode}
                   onChange={setAiPrivacyMode}
                 />
+
+                {/* AI Writing Style */}
+                <div style={{ marginTop: 'var(--space-4)' }}>
+                  <label
+                    htmlFor="ai-writing-style"
+                    style={{
+                      display: 'block',
+                      marginBottom: 'var(--space-1)',
+                      fontSize: 'var(--text-small)',
+                      color: 'var(--color-text-secondary)',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    AI Writing Style (for performance narratives)
+                  </label>
+                  <select
+                    id="ai-writing-style"
+                    data-testid="ai-writing-style-select"
+                    value={aiWritingStyle}
+                    onChange={(e) => setAiWritingStyle(e.target.value as AiWritingStyle)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-medium)',
+                      background: 'var(--color-bg-surface)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: 'var(--text-body)',
+                    }}
+                  >
+                    <option value="NARRATIVE">Narrative (3 paragraphs)</option>
+                    <option value="BULLET_POINTS">Bullet Points (structured)</option>
+                    <option value="CONCISE">Concise (1 paragraph)</option>
+                  </select>
+                </div>
               </>
             )}
           </div>

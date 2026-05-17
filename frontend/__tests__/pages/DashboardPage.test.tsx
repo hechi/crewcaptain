@@ -93,6 +93,11 @@ describe('DashboardPage', () => {
       notifyActionItemDueSoon: true,
       notifyStaleOneOnOne: true,
       notifyUpcomingAnniversary: true,
+      aiEnabled: false,
+      aiApiBaseUrl: null,
+      aiModelName: null,
+      aiPrivacyMode: true,
+      aiWritingStyle: 'NARRATIVE',
     });
   });
 
@@ -280,6 +285,11 @@ describe('DashboardPage', () => {
       notifyActionItemDueSoon: true,
       notifyStaleOneOnOne: true,
       notifyUpcomingAnniversary: true,
+      aiEnabled: false,
+      aiApiBaseUrl: null,
+      aiModelName: null,
+      aiPrivacyMode: true,
+      aiWritingStyle: 'NARRATIVE',
     });
     mockGetDashboard.mockResolvedValue({
       overdueActionItems: [],

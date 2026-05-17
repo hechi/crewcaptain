@@ -37,8 +37,11 @@ import {
   deleteKudos,
   exportPersonMarkdown,
   generateReviewPacket,
+  getUserSettings,
+  generateAiNarrative,
 } from '@/lib/api-client';
 import { UpsertSeriesRequest } from '@/types/one-on-one';
+import { UserSettings } from '@/types/settings';
 import { useStableToken } from '@/lib/useStableToken';
 import PersonForm from '@/components/PersonForm';
 import MoraleIndicator from '@/components/MoraleIndicator';
@@ -50,6 +53,7 @@ import ActionItemForm from '@/components/action-items/ActionItemForm';
 import PdpGoalList from '@/components/pdp-goals/PdpGoalList';
 import KudosList from '@/components/kudos/KudosList';
 import ReviewPacketModal from '@/components/ReviewPacketModal';
+import AiNarrativeModal from '@/components/AiNarrativeModal';
 import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
 import LoadingScreen from '@/components/LoadingScreen';
 
@@ -110,6 +114,13 @@ export default function PersonDetailPage() {
   // Review packet state
   const [showReviewPacketModal, setShowReviewPacketModal] = useState(false);
   const [generatingReviewPacket, setGeneratingReviewPacket] = useState(false);
+
+  // AI Narrative state
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+  const [showAiNarrativeModal, setShowAiNarrativeModal] = useState(false);
+  const [generatingNarrative, setGeneratingNarrative] = useState(false);
+  const [narrativeResult, setNarrativeResult] = useState<string | null>(null);
+  const [narrativeError, setNarrativeError] = useState<string | null>(null);
 
   const fetchPerson = useCallback(async () => {
     const token = getToken();
@@ -209,6 +220,18 @@ export default function PersonDetailPage() {
 
   useEffect(() => {
     fetchPerson();
+    // Fetch user settings for AI narrative button visibility
+    const fetchSettings = async () => {
+      const token = getToken();
+      if (!token) return;
+      try {
+        const settings = await getUserSettings(token);
+        setUserSettings(settings);
+      } catch {
+        // Settings fetch failure is non-critical
+      }
+    };
+    fetchSettings();
   }, [fetchPerson]);
 
   useEffect(() => {
@@ -568,6 +591,25 @@ export default function PersonDetailPage() {
     }
   };
 
+  const handleGenerateNarrative = async (dateFrom: string, dateTo: string) => {
+    const token = getToken();
+    if (!token) return;
+    setGeneratingNarrative(true);
+    setNarrativeError(null);
+    try {
+      const result = await generateAiNarrative(token, personId, { dateFrom, dateTo });
+      if (result.narrative) {
+        setNarrativeResult(result.narrative);
+      } else if (result.error) {
+        setNarrativeError(result.error);
+      }
+    } catch (err) {
+      setNarrativeError(err instanceof Error ? err.message : 'Failed to generate narrative');
+    } finally {
+      setGeneratingNarrative(false);
+    }
+  };
+
   if (status === 'loading') {
     return <LoadingScreen message="Loading person" />;
   }
@@ -696,6 +738,37 @@ export default function PersonDetailPage() {
           >
             Review Packet
           </button>
+          {userSettings?.aiEnabled && (
+            <button
+              type="button"
+              onClick={() => {
+                setNarrativeResult(null);
+                setNarrativeError(null);
+                setShowAiNarrativeModal(true);
+              }}
+              data-testid="ai-narrative-button"
+              aria-label="Generate AI narrative"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '8px 16px',
+                height: '36px',
+                width: '160px',
+                border: '1px solid var(--color-primary)',
+                borderRadius: 'var(--radius-medium)',
+                cursor: 'pointer',
+                background: 'var(--color-bg-elevated)',
+                fontSize: 'var(--text-body)',
+                color: 'var(--color-primary)',
+                fontFamily: 'var(--font-mono)',
+                transition: 'border-color 0.2s, background 0.2s',
+                boxSizing: 'border-box',
+              }}
+            >
+              ✨ AI Narrative
+            </button>
+          )}
           <MoraleIndicator moraleStatus={person.moraleStatus} />
         </div>
       </div>
@@ -1263,6 +1336,18 @@ export default function PersonDetailPage() {
           onGenerate={handleGenerateReviewPacket}
           onClose={() => setShowReviewPacketModal(false)}
           generating={generatingReviewPacket}
+        />
+      )}
+
+      {/* AI Narrative Modal */}
+      {showAiNarrativeModal && (
+        <AiNarrativeModal
+          personName={person.name}
+          onGenerate={handleGenerateNarrative}
+          onClose={() => setShowAiNarrativeModal(false)}
+          generating={generatingNarrative}
+          narrative={narrativeResult}
+          error={narrativeError}
         />
       )}
     </div>

@@ -39,6 +39,7 @@ const defaultSettings = {
   aiApiBaseUrl: null,
   aiModelName: null,
   aiPrivacyMode: true,
+  aiWritingStyle: 'NARRATIVE' as const,
 };
 
 describe('SettingsPage', () => {
@@ -137,6 +138,7 @@ describe('SettingsPage', () => {
         notifyUpcomingAnniversary: true,
         aiEnabled: false,
         aiPrivacyMode: true,
+        aiWritingStyle: 'NARRATIVE',
       }));
     });
   });

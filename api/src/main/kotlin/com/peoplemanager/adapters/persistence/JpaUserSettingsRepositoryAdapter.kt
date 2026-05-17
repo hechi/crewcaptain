@@ -1,6 +1,7 @@
 package com.peoplemanager.adapters.persistence
 
 import com.peoplemanager.application.ports.UserSettingsRepository
+import com.peoplemanager.domain.AiWritingStyle
 import com.peoplemanager.domain.Theme
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.UserSettings
@@ -38,6 +39,7 @@ class JpaUserSettingsRepositoryAdapter(
         aiApiKey = this.aiApiKey,
         aiModelName = this.aiModelName,
         aiPrivacyMode = this.aiPrivacyMode,
+        aiWritingStyle = AiWritingStyle.valueOf(this.aiWritingStyle),
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -58,6 +60,7 @@ class JpaUserSettingsRepositoryAdapter(
         aiApiKey = this.aiApiKey,
         aiModelName = this.aiModelName,
         aiPrivacyMode = this.aiPrivacyMode,
+        aiWritingStyle = this.aiWritingStyle.name,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

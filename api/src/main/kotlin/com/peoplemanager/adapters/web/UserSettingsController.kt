@@ -5,6 +5,7 @@ import com.peoplemanager.adapters.web.dto.UpdateUserSettingsRequest
 import com.peoplemanager.adapters.web.dto.UserSettingsResponse
 import com.peoplemanager.application.UpdateUserSettingsCommand
 import com.peoplemanager.application.UserSettingsService
+import com.peoplemanager.domain.AiWritingStyle
 import com.peoplemanager.domain.Theme
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -35,6 +36,12 @@ class UserSettingsController(
             return ResponseEntity.badRequest().build()
         }
 
+        val writingStyle = try {
+            AiWritingStyle.valueOf(request.aiWritingStyle.uppercase())
+        } catch (e: IllegalArgumentException) {
+            AiWritingStyle.NARRATIVE
+        }
+
         val command = UpdateUserSettingsCommand(
             dueSoonDays = request.dueSoonDays,
             staleOneOnOneDays = request.staleOneOnOneDays,
@@ -49,7 +56,8 @@ class UserSettingsController(
             aiApiBaseUrl = request.aiApiBaseUrl,
             aiApiKey = request.aiApiKey,
             aiModelName = request.aiModelName,
-            aiPrivacyMode = request.aiPrivacyMode
+            aiPrivacyMode = request.aiPrivacyMode,
+            aiWritingStyle = writingStyle
         )
 
         val settings = userSettingsService.updateSettings(userId, command)

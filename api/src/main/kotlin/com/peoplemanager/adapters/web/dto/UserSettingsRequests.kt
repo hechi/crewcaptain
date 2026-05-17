@@ -26,5 +26,6 @@ data class UpdateUserSettingsRequest(
     val aiApiBaseUrl: String? = null,
     val aiApiKey: String? = null,
     val aiModelName: String? = null,
-    val aiPrivacyMode: Boolean = true
+    val aiPrivacyMode: Boolean = true,
+    val aiWritingStyle: String = "NARRATIVE"
 )

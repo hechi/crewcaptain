@@ -1,6 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.ports.UserSettingsRepository
+import com.peoplemanager.domain.AiWritingStyle
 import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.domain.Theme
 import com.peoplemanager.domain.UserId
@@ -40,6 +41,7 @@ class UserSettingsService(
             aiApiKey = command.aiApiKey,
             aiModelName = command.aiModelName,
             aiPrivacyMode = command.aiPrivacyMode,
+            aiWritingStyle = command.aiWritingStyle,
             updatedAt = java.time.Instant.now()
         )
 
@@ -63,5 +65,6 @@ data class UpdateUserSettingsCommand(
     val aiApiBaseUrl: String? = null,
     val aiApiKey: String? = null,
     val aiModelName: String? = null,
-    val aiPrivacyMode: Boolean = true
+    val aiPrivacyMode: Boolean = true,
+    val aiWritingStyle: AiWritingStyle = AiWritingStyle.NARRATIVE
 )

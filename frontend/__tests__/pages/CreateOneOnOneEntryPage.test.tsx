@@ -102,6 +102,7 @@ describe('CreateOneOnOneEntryPage', () => {
       aiApiBaseUrl: null,
       aiModelName: null,
       aiPrivacyMode: true,
+      aiWritingStyle: 'NARRATIVE',
     });
   });
 
