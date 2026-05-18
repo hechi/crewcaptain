@@ -16,6 +16,7 @@ import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-on
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
 import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
 import LoadingScreen from '@/components/LoadingScreen';
+import { Sparkles } from 'lucide-react';
 
 export default function CreateOneOnOneEntryPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -171,6 +172,47 @@ export default function CreateOneOnOneEntryPage() {
           />
         ) : null;
       })()}
+
+      {/* Extract Outcomes button — disabled on create page (entry not yet saved) */}
+      {settings?.aiEnabled && (
+        <div style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+          <span
+            data-testid="extract-outcomes-hint"
+            style={{
+              fontSize: 'var(--text-small)',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            Available after saving
+          </span>
+          <button
+            type="button"
+            data-testid="extract-outcomes-btn-disabled"
+            disabled
+            aria-label="Extract outcomes from notes"
+            title="Save the entry first to extract outcomes"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: 'var(--radius-medium)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'not-allowed',
+              fontWeight: 'var(--weight-medium)',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+              opacity: 0.5,
+            }}
+          >
+            <Sparkles size={14} />
+            Extract Outcomes
+          </button>
+        </div>
+      )}
 
       <OneOnOneEntryForm
         templateMarkdown={series?.templateMarkdown}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { extractOutcomes, applyOutcomes } from '@/lib/api-client';
 import { ExtractedActionItem } from '@/types/settings';
+import { Sparkles } from 'lucide-react';
 
 interface OutcomeExtractionModalProps {
   token: string;
@@ -207,9 +208,12 @@ export default function OutcomeExtractionModal({
                 fontWeight: 'var(--weight-bold)',
                 color: 'var(--color-primary)',
                 letterSpacing: '0.5px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              ✨ Extract Outcomes
+              <Sparkles size={18} /> Extract Outcomes
             </h2>
             <button
               type="button"

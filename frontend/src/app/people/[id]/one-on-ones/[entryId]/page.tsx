@@ -19,6 +19,7 @@ import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
 import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
 import OutcomeExtractionModal from '@/components/one-on-one/OutcomeExtractionModal';
 import LoadingScreen from '@/components/LoadingScreen';
+import { Sparkles } from 'lucide-react';
 
 export default function OneOnOneEntryDetailPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -167,8 +168,9 @@ export default function OneOnOneEntryDetailPage() {
   });
 
   const showAiAssistant = settings?.aiEnabled === true;
-  const showExtractButton = showAiAssistant && entry.notesMarkdown && entry.notesMarkdown.trim().length > 0
-    && !(entry.sensitive && settings?.aiPrivacyMode);
+  const notesHaveContent = entry.notesMarkdown != null && entry.notesMarkdown.trim().length > 0;
+  const blockedByPrivacy = entry.sensitive && settings?.aiPrivacyMode;
+  const extractEnabled = notesHaveContent && !blockedByPrivacy;
   const token = getToken();
 
   return (
@@ -290,27 +292,49 @@ export default function OneOnOneEntryDetailPage() {
       )}
 
       {/* Extract Outcomes button */}
-      {showExtractButton && token && (
-        <div style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'flex-end' }}>
+      {showAiAssistant && token && (
+        <div style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+          {!extractEnabled && (
+            <span
+              data-testid="extract-outcomes-hint"
+              style={{
+                fontSize: 'var(--text-small)',
+                color: 'var(--color-text-secondary)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {blockedByPrivacy
+                ? 'Disabled for sensitive entries (Privacy Mode)'
+                : 'Save notes first to extract outcomes'}
+            </span>
+          )}
           <button
             type="button"
             data-testid="extract-outcomes-btn"
             onClick={() => setShowExtractionModal(true)}
+            disabled={!extractEnabled}
+            aria-label="Extract outcomes from notes"
+            title={extractEnabled ? 'Extract action items and decisions from notes' : 'Save notes first to use this feature'}
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
               padding: '8px 16px',
               borderRadius: 'var(--radius-medium)',
-              border: '1px solid var(--color-border-glow)',
-              backgroundColor: 'var(--color-primary-muted)',
-              color: 'var(--color-primary)',
-              cursor: 'pointer',
+              border: extractEnabled ? '1px solid var(--color-border-glow)' : '1px solid var(--color-border)',
+              backgroundColor: extractEnabled ? 'var(--color-primary-muted)' : 'var(--color-bg-elevated)',
+              color: extractEnabled ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+              cursor: extractEnabled ? 'pointer' : 'not-allowed',
               fontWeight: 'var(--weight-medium)',
               fontSize: 'var(--text-body)',
               fontFamily: 'var(--font-mono)',
-              boxShadow: '0 0 8px var(--color-primary-muted)',
+              boxShadow: extractEnabled ? '0 0 8px var(--color-primary-muted)' : 'none',
+              opacity: extractEnabled ? 1 : 0.5,
               transition: 'all 0.2s',
             }}
           >
-            ✨ Extract Outcomes
+            <Sparkles size={14} />
+            Extract Outcomes
           </button>
         </div>
       )}

@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-18T18:00:00Z — AI Outcome Extractor feature
+2026-05-18T18:30:00Z — AI Outcome Extractor UX improvements (icon fix + disabled state on new entries)
 
 ## Current Status
 Docker Compose production file (`docker-compose.yml`) now pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. Build directives moved to `docker-compose.override.yml` for local development. DB port no longer exposed in production compose. All PRD features remain implemented. Prometheus metrics endpoint added with bearer token security and custom 1:1 metrics. Landing page now includes an interactive screenshot showcase section with tabbed gallery. Fixed critical UX bug where pages would unexpectedly refresh during editing due to aggressive session refetch and token-dependent useCallback chains. Dropdown buttons and select elements restyled with cyberpunk-lite aesthetic (glassmorphism, glow borders, monospace font, neon accents). Inline action items section on the 1:1 entry detail page. Cyberpunk HUD loading screen with animated rotating rings, neon glow core pulse, scan-line overlay, and glitch text effect. Self-assigned quick notes feature. Global Quick Note overlay. AI-Powered 1:1 Prep Assistant. AI Performance Narrative Generator. AI Coaching & Feedback Refinement. New: AI Outcome Extractor — extracts action items and decisions from 1:1 notes using LLM, with review modal, duplicate detection, and bulk-apply. Backend: 1211 tests (1 pre-existing gamification streak test failure). Frontend: 1086 tests pass.
