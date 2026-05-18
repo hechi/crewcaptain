@@ -335,13 +335,10 @@
   display: flex;
   gap: var(--space-2);
   margin-bottom: var(--space-6);
-  overflow-x: auto;
-  padding-bottom: var(--space-2);
-  scrollbar-width: thin;
+  flex-wrap: wrap;
 }
 
 .landing-showcase__tab {
-  flex-shrink: 0;
   padding: var(--space-3) var(--space-5);
   background: transparent;
   border: 1px solid var(--color-border);
@@ -676,10 +673,6 @@
 
   .landing-how__steps {
     grid-template-columns: 1fr;
-  }
-
-  .landing-showcase__tabs {
-    justify-content: flex-start;
   }
 
   .landing-showcase__container {
