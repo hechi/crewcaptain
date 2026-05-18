@@ -1050,14 +1050,15 @@ export default function PersonDetailPage() {
           {/* Morale update section */}
           <div data-testid="morale-section" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
             <h3 style={{ margin: '0 0 12px', fontSize: 'var(--text-caption)', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Morale</h3>
-            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <div>
-                <label htmlFor="morale-status" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>Status</label>
+                <label htmlFor="morale-status" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</label>
                 <select
                   id="morale-status"
                   value={moraleFormStatus}
                   onChange={(e) => setMoraleFormStatus(e.target.value as MoraleStatus)}
                   data-testid="morale-status-select"
+                  style={{ height: '36px', padding: '0 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)', boxSizing: 'border-box' }}
                 >
                   <option value="GREEN">Green</option>
                   <option value="YELLOW">Yellow</option>
@@ -1066,7 +1067,7 @@ export default function PersonDetailPage() {
                 </select>
               </div>
               <div style={{ flex: 1 }}>
-                <label htmlFor="morale-note" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>Note</label>
+                <label htmlFor="morale-note" style={{ display: 'block', fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Note</label>
                 <input
                   id="morale-note"
                   type="text"
@@ -1074,7 +1075,7 @@ export default function PersonDetailPage() {
                   onChange={(e) => setMoraleNote(e.target.value)}
                   placeholder="Optional note..."
                   data-testid="morale-note-input"
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
+                  style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', fontSize: 'var(--text-body)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)', boxSizing: 'border-box' }}
                 />
               </div>
               <button
@@ -1082,7 +1083,9 @@ export default function PersonDetailPage() {
                 onClick={handleMoraleUpdate}
                 data-testid="update-morale-button"
                 style={{
-                  padding: '8px 16px',
+                  height: '36px',
+                  marginTop: '20px',
+                  padding: '0 16px',
                   backgroundColor: 'var(--color-secondary)',
                   color: '#fff',
                   border: 'none',
@@ -1114,7 +1117,7 @@ export default function PersonDetailPage() {
             <h3 style={{ margin: '0 0 12px', fontSize: 'var(--text-caption)', fontWeight: 'var(--weight-semibold)', fontFamily: 'var(--font-heading)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>At a Glance</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
               <div>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>Last 1:1</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Last 1:1</span>
                 <p data-testid="last-1on1-date" style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', fontFamily: 'var(--font-mono)', color: person.atAGlance.last1on1Date ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
                   {person.atAGlance.last1on1Date
                     ? new Date(person.atAGlance.last1on1Date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
@@ -1122,13 +1125,13 @@ export default function PersonDetailPage() {
                 </p>
               </div>
               <div>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>Open Actions</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Open Actions</span>
                 <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-secondary)' }}>
                   {person.atAGlance.openActionItemsCount ?? 'N/A'}
                 </p>
               </div>
               <div>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>PDP Goals</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>PDP Goals</span>
                 <p style={{ margin: '2px 0 0', fontSize: 'var(--text-body)', color: 'var(--color-text-secondary)' }}>
                   {person.atAGlance.activePdpGoalsSummary || 'No goals set'}
                 </p>
