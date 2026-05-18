@@ -29,6 +29,7 @@ data class UserSettings(
     val pdpOptimizationPrompt: String? = null,
     val agendaPrepPrompt: String? = null,
     val narrativePrompt: String? = null,
+    val outcomeExtractorPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -119,6 +120,12 @@ data class UserSettings(
     fun effectiveNarrativePrompt(): String =
         narrativePrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_NARRATIVE_PROMPT
 
+    /**
+     * Returns the effective outcome extractor prompt (custom or default).
+     */
+    fun effectiveOutcomeExtractorPrompt(): String =
+        outcomeExtractorPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_OUTCOME_EXTRACTOR_PROMPT
+
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
         const val DEFAULT_STALE_ONE_ON_ONE_DAYS = 14
@@ -162,6 +169,18 @@ data class UserSettings(
             "Maintain a professional tone: concise, impactful, and forward-looking. " +
             "Do NOT include any preamble, introduction, or meta-commentary. " +
             "Output ONLY the narrative content."
+
+        const val DEFAULT_OUTCOME_EXTRACTOR_PROMPT =
+            "You are an executive assistant for a manager. Analyze the following 1:1 meeting notes. " +
+            "Extract a JSON object containing: " +
+            "1. 'action_items': A list of objects with 'title' (string), 'owner_type' (either 'MANAGER' or 'PERSON'), " +
+            "and 'suggested_days_to_due' (integer, number of days from today). " +
+            "2. 'decisions': A list of strings summarizing key agreements or conclusions. " +
+            "RULES: " +
+            "- Be concise. Only extract items explicitly mentioned or strongly implied as tasks. " +
+            "- Output ONLY valid JSON. No markdown code fences, no preamble, no explanation. " +
+            "- If no action items or decisions are found, return empty arrays. " +
+            "- suggested_days_to_due should be a reasonable estimate (7 for 'next week', 14 for 'in two weeks', etc.)."
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

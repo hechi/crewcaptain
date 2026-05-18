@@ -876,3 +876,37 @@ export async function optimizePdpGoal(
   }, token);
   return response.json();
 }
+
+// --- AI Outcome Extraction ---
+
+import { AiExtractionResponse, ApplyOutcomesRequest, ApplyOutcomesResponse } from '@/types/settings';
+
+export async function extractOutcomes(
+  token: string,
+  personId: string,
+  entryId: string
+): Promise<AiExtractionResponse> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/persons/${personId}/one-on-one-entries/${entryId}/extract-outcomes`,
+    { method: 'POST' },
+    token
+  );
+  return response.json();
+}
+
+export async function applyOutcomes(
+  token: string,
+  personId: string,
+  entryId: string,
+  request: ApplyOutcomesRequest
+): Promise<ApplyOutcomesResponse> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/persons/${personId}/one-on-one-entries/${entryId}/apply-outcomes`,
+    {
+      method: 'POST',
+      body: JSON.stringify(request),
+    },
+    token
+  );
+  return response.json();
+}

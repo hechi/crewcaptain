@@ -21,6 +21,7 @@ export interface UserSettings {
   pdpOptimizationPrompt: string | null;
   agendaPrepPrompt: string | null;
   narrativePrompt: string | null;
+  outcomeExtractorPrompt: string | null;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -43,6 +44,7 @@ export interface UpdateUserSettingsRequest {
   pdpOptimizationPrompt?: string | null;
   agendaPrepPrompt?: string | null;
   narrativePrompt?: string | null;
+  outcomeExtractorPrompt?: string | null;
 }
 
 export interface AiPrepResponse {
@@ -58,4 +60,32 @@ export interface AiNarrativeResponse {
 export interface AiCoachingResponse {
   result: string | null;
   error: string | null;
+}
+
+export interface AiExtractionResponse {
+  actionItems: ExtractedActionItem[];
+  decisions: string[];
+  error: string | null;
+}
+
+export interface ExtractedActionItem {
+  title: string;
+  ownerType: 'MANAGER' | 'PERSON';
+  suggestedDaysToDue: number | null;
+}
+
+export interface ApplyOutcomesRequest {
+  actionItems: ApplyActionItemRequest[];
+  decisions: string[];
+}
+
+export interface ApplyActionItemRequest {
+  title: string;
+  ownerType: string;
+  suggestedDaysToDue: number | null;
+}
+
+export interface ApplyOutcomesResponse {
+  actionItemsCreated: number;
+  decisionsAppended: number;
 }

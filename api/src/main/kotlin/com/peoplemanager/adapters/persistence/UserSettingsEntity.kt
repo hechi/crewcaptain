@@ -68,6 +68,9 @@ class UserSettingsEntity(
     @Column(name = "narrative_prompt", columnDefinition = "TEXT")
     val narrativePrompt: String? = null,
 
+    @Column(name = "outcome_extractor_prompt", columnDefinition = "TEXT")
+    val outcomeExtractorPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

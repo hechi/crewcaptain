@@ -44,6 +44,7 @@ class JpaUserSettingsRepositoryAdapter(
         pdpOptimizationPrompt = this.pdpOptimizationPrompt,
         agendaPrepPrompt = this.agendaPrepPrompt,
         narrativePrompt = this.narrativePrompt,
+        outcomeExtractorPrompt = this.outcomeExtractorPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -69,6 +70,7 @@ class JpaUserSettingsRepositoryAdapter(
         pdpOptimizationPrompt = this.pdpOptimizationPrompt,
         agendaPrepPrompt = this.agendaPrepPrompt,
         narrativePrompt = this.narrativePrompt,
+        outcomeExtractorPrompt = this.outcomeExtractorPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

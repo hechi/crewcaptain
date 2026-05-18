@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const [pdpOptimizationPrompt, setPdpOptimizationPrompt] = useState('');
   const [agendaPrepPrompt, setAgendaPrepPrompt] = useState('');
   const [narrativePrompt, setNarrativePrompt] = useState('');
+  const [outcomeExtractorPrompt, setOutcomeExtractorPrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -65,6 +66,7 @@ export default function SettingsPage() {
       setPdpOptimizationPrompt(result.pdpOptimizationPrompt || '');
       setAgendaPrepPrompt(result.agendaPrepPrompt || '');
       setNarrativePrompt(result.narrativePrompt || '');
+      setOutcomeExtractorPrompt(result.outcomeExtractorPrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -104,6 +106,7 @@ export default function SettingsPage() {
         pdpOptimizationPrompt: pdpOptimizationPrompt || null,
         agendaPrepPrompt: agendaPrepPrompt || null,
         narrativePrompt: narrativePrompt || null,
+        outcomeExtractorPrompt: outcomeExtractorPrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -610,6 +613,15 @@ export default function SettingsPage() {
                     value={narrativePrompt}
                     onChange={setNarrativePrompt}
                     onReset={() => setNarrativePrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-outcome-extractor-prompt"
+                    label="Outcome Extractor Prompt"
+                    placeholder="You are an executive assistant for a manager. Analyze the following 1:1 meeting notes. Extract a JSON object containing action_items and decisions..."
+                    value={outcomeExtractorPrompt}
+                    onChange={setOutcomeExtractorPrompt}
+                    onReset={() => setOutcomeExtractorPrompt('')}
                   />
                 </div>
               </>

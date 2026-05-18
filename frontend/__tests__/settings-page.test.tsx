@@ -44,6 +44,7 @@ const defaultSettings = {
   pdpOptimizationPrompt: null,
   agendaPrepPrompt: null,
   narrativePrompt: null,
+      outcomeExtractorPrompt: null,
 };
 
 describe('SettingsPage', () => {

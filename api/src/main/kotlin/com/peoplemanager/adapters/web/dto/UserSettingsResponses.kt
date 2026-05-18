@@ -20,7 +20,8 @@ data class UserSettingsResponse(
     val kudosRefinementPrompt: String?,
     val pdpOptimizationPrompt: String?,
     val agendaPrepPrompt: String?,
-    val narrativePrompt: String?
+    val narrativePrompt: String?,
+    val outcomeExtractorPrompt: String?
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -41,7 +42,8 @@ data class UserSettingsResponse(
             kudosRefinementPrompt = settings.kudosRefinementPrompt,
             pdpOptimizationPrompt = settings.pdpOptimizationPrompt,
             agendaPrepPrompt = settings.agendaPrepPrompt,
-            narrativePrompt = settings.narrativePrompt
+            narrativePrompt = settings.narrativePrompt,
+            outcomeExtractorPrompt = settings.outcomeExtractorPrompt
         )
     }
 }

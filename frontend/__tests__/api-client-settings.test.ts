@@ -33,6 +33,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -89,6 +90,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -121,6 +123,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       const mockResponse: UserSettings = {
@@ -131,6 +134,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -184,6 +188,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow();
@@ -219,6 +224,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow();
@@ -244,6 +250,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       await expect(updateUserSettings(token, request)).rejects.toThrow('Network error');
@@ -267,6 +274,7 @@ describe('Settings API Client', () => {
         pdpOptimizationPrompt: null,
         agendaPrepPrompt: null,
         narrativePrompt: null,
+        outcomeExtractorPrompt: null,
       };
 
       mockFetch.mockResolvedValueOnce({

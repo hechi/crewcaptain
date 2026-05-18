@@ -102,6 +102,7 @@ describe('DashboardPage', () => {
       pdpOptimizationPrompt: null,
       agendaPrepPrompt: null,
       narrativePrompt: null,
+      outcomeExtractorPrompt: null,
     });
   });
 
@@ -298,6 +299,7 @@ describe('DashboardPage', () => {
       pdpOptimizationPrompt: null,
       agendaPrepPrompt: null,
       narrativePrompt: null,
+      outcomeExtractorPrompt: null,
     });
     mockGetDashboard.mockResolvedValue({
       overdueActionItems: [],

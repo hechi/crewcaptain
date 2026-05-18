@@ -107,6 +107,7 @@ describe('CreateOneOnOneEntryPage', () => {
       pdpOptimizationPrompt: null,
       agendaPrepPrompt: null,
       narrativePrompt: null,
+      outcomeExtractorPrompt: null,
     });
   });
 

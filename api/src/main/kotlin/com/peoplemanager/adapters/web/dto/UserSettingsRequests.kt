@@ -31,5 +31,6 @@ data class UpdateUserSettingsRequest(
     val kudosRefinementPrompt: String? = null,
     val pdpOptimizationPrompt: String? = null,
     val agendaPrepPrompt: String? = null,
-    val narrativePrompt: String? = null
+    val narrativePrompt: String? = null,
+    val outcomeExtractorPrompt: String? = null
 )

@@ -109,6 +109,7 @@ describe('OneOnOneEntryDetailPage', () => {
       pdpOptimizationPrompt: null,
       agendaPrepPrompt: null,
       narrativePrompt: null,
+      outcomeExtractorPrompt: null,
     });
   });
 

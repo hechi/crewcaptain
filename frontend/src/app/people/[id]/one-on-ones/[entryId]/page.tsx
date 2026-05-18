@@ -8,6 +8,7 @@ import {
   deleteOneOnOneEntry,
   getPerson,
   getUserSettings,
+  listActionItemsByPerson,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { Person } from '@/types/person';
@@ -16,6 +17,7 @@ import { UserSettings } from '@/types/settings';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
 import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
+import OutcomeExtractionModal from '@/components/one-on-one/OutcomeExtractionModal';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function OneOnOneEntryDetailPage() {
@@ -34,6 +36,8 @@ export default function OneOnOneEntryDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [lastAddedSuggestion, setLastAddedSuggestion] = useState<string | null>(null);
+  const [showExtractionModal, setShowExtractionModal] = useState(false);
+  const [existingActionItemTitles, setExistingActionItemTitles] = useState<string[]>([]);
 
   const fetchData = useCallback(async () => {
     const token = getToken();
@@ -42,14 +46,18 @@ export default function OneOnOneEntryDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [personResult, entryResult, settingsResult] = await Promise.all([
+      const [personResult, entryResult, settingsResult, actionItemsResult] = await Promise.all([
         getPerson(token, personId),
         getOneOnOneEntry(token, personId, entryId),
         getUserSettings(token).catch(() => null),
+        listActionItemsByPerson(token, personId, { originatingEntryId: entryId }).catch(() => null),
       ]);
       setPerson(personResult);
       setEntry(entryResult);
       setSettings(settingsResult);
+      if (actionItemsResult) {
+        setExistingActionItemTitles(actionItemsResult.content.map((item: { title: string }) => item.title));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load entry');
     } finally {
@@ -159,6 +167,8 @@ export default function OneOnOneEntryDetailPage() {
   });
 
   const showAiAssistant = settings?.aiEnabled === true;
+  const showExtractButton = showAiAssistant && entry.notesMarkdown && entry.notesMarkdown.trim().length > 0
+    && !(entry.sensitive && settings?.aiPrivacyMode);
   const token = getToken();
 
   return (
@@ -276,6 +286,47 @@ export default function OneOnOneEntryDetailPage() {
           token={token}
           personId={personId}
           onAddSuggestion={handleAddAiSuggestion}
+        />
+      )}
+
+      {/* Extract Outcomes button */}
+      {showExtractButton && token && (
+        <div style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            data-testid="extract-outcomes-btn"
+            onClick={() => setShowExtractionModal(true)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 'var(--radius-medium)',
+              border: '1px solid var(--color-border-glow)',
+              backgroundColor: 'var(--color-primary-muted)',
+              color: 'var(--color-primary)',
+              cursor: 'pointer',
+              fontWeight: 'var(--weight-medium)',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+              boxShadow: '0 0 8px var(--color-primary-muted)',
+              transition: 'all 0.2s',
+            }}
+          >
+            ✨ Extract Outcomes
+          </button>
+        </div>
+      )}
+
+      {/* Outcome Extraction Modal */}
+      {showExtractionModal && token && (
+        <OutcomeExtractionModal
+          token={token}
+          personId={personId}
+          entryId={entryId}
+          onClose={() => setShowExtractionModal(false)}
+          onApplied={() => {
+            setShowExtractionModal(false);
+            fetchData();
+          }}
+          existingActionItemTitles={existingActionItemTitles}
         />
       )}
 

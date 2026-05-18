@@ -61,7 +61,8 @@ class UserSettingsController(
             kudosRefinementPrompt = request.kudosRefinementPrompt,
             pdpOptimizationPrompt = request.pdpOptimizationPrompt,
             agendaPrepPrompt = request.agendaPrepPrompt,
-            narrativePrompt = request.narrativePrompt
+            narrativePrompt = request.narrativePrompt,
+            outcomeExtractorPrompt = request.outcomeExtractorPrompt
         )
 
         val settings = userSettingsService.updateSettings(userId, command)
