@@ -396,6 +396,84 @@
   max-width: 600px;
 }
 
+/* ===== AI Features Section ===== */
+.landing-ai {
+  padding: var(--space-16) var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landing-ai__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  color: #a855f7;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-6);
+}
+
+.landing-ai__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-5);
+}
+
+.landing-ai-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-large);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.landing-ai-card:hover {
+  border-color: rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.1), 0 0 40px rgba(168, 85, 247, 0.05);
+}
+
+.landing-ai-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: rgba(168, 85, 247, 0.1);
+  border-radius: var(--radius-medium);
+  color: #a855f7;
+}
+
+.landing-ai-card__content {
+  flex: 1;
+}
+
+.landing-ai-card__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-body-large);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.landing-ai-card__description {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* ===== How It Works Section ===== */
 .landing-how {
   padding: var(--space-16) var(--space-6);
@@ -592,6 +670,10 @@
     grid-template-columns: 1fr;
   }
 
+  .landing-ai__grid {
+    grid-template-columns: 1fr;
+  }
+
   .landing-how__steps {
     grid-template-columns: 1fr;
   }
@@ -626,6 +708,10 @@
   .landing-btn,
   .landing-feature-card,
   .landing-footer__links a {
+    transition: none;
+  }
+
+  .landing-ai-card {
     transition: none;
   }
 

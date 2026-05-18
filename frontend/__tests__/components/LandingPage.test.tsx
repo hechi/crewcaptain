@@ -29,9 +29,10 @@ describe('LandingPage', () => {
 
   it('should render the hero badge with self-hosted messaging', () => {
     render(<LandingPage />);
-    expect(screen.getByText(/Self-hosted/)).toBeInTheDocument();
-    expect(screen.getByText(/Privacy-first/)).toBeInTheDocument();
-    expect(screen.getByText(/Open Source/)).toBeInTheDocument();
+    const heroSection = screen.getByTestId('hero-section');
+    expect(heroSection).toHaveTextContent('Self-hosted');
+    expect(heroSection).toHaveTextContent('Privacy-first');
+    expect(heroSection).toHaveTextContent('Open Source');
   });
 
   it('should render the hero subtitle', () => {
@@ -80,8 +81,32 @@ describe('LandingPage', () => {
     expect(featuresSection).toHaveTextContent('PDP Goal Tracking');
     expect(featuresSection).toHaveTextContent('Action Items');
     expect(featuresSection).toHaveTextContent('People Directory');
-    expect(featuresSection).toHaveTextContent('Quick Notes Inbox');
+    expect(featuresSection).toHaveTextContent('Quick Capture');
     expect(featuresSection).toHaveTextContent('Dashboard & Insights');
+  });
+
+  it('should render the AI features section with 6 AI feature cards', () => {
+    render(<LandingPage />);
+    expect(screen.getByTestId('ai-section')).toBeInTheDocument();
+    const aiCards = screen.getAllByTestId('ai-feature-card');
+    expect(aiCards).toHaveLength(6);
+  });
+
+  it('should render AI feature titles', () => {
+    render(<LandingPage />);
+    const aiSection = screen.getByTestId('ai-section');
+    expect(aiSection).toHaveTextContent('Generate Agenda');
+    expect(aiSection).toHaveTextContent('Extract Outcomes');
+    expect(aiSection).toHaveTextContent('Performance Narrative');
+    expect(aiSection).toHaveTextContent('Kudos Refinement');
+    expect(aiSection).toHaveTextContent('SMART Goal Check');
+    expect(aiSection).toHaveTextContent('Full Control');
+  });
+
+  it('should render the AI section privacy-first messaging', () => {
+    render(<LandingPage />);
+    expect(screen.getByText(/Privacy-first by design/)).toBeInTheDocument();
+    expect(screen.getByText(/Bring your own model/)).toBeInTheDocument();
   });
 
   it('should render the how it works section with 3 steps', () => {

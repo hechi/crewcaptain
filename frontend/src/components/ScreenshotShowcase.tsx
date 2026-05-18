@@ -21,11 +21,11 @@ const screenshots: Screenshot[] = [
   },
   {
     id: 'one-on-one-entry',
-    label: '1:1 Session',
-    src: '/screenshots/one-on-one-entry.png',
-    alt: '1:1 session entry with notes and agenda',
+    label: '1:1 with AI',
+    src: '/screenshots/one-on-one-entry-with-ai-assistant.png',
+    alt: '1:1 session entry with AI assistant for agenda generation and outcome extraction',
     caption:
-      'Capture session notes, agenda items, and outcomes during your 1:1s. Everything stays in context for next time.',
+      'Run your 1:1s with AI-powered agenda generation and automatic outcome extraction. Notes, action items, and decisions — captured effortlessly.',
   },
   {
     id: 'one-on-one-overview',
@@ -34,6 +34,46 @@ const screenshots: Screenshot[] = [
     alt: '1:1 overview showing history of past sessions',
     caption:
       'See the full timeline of past 1:1 sessions with a team member. Never lose track of what was discussed.',
+  },
+  {
+    id: 'kudos-ai',
+    label: 'Kudos AI',
+    src: '/screenshots/kudos-ai-refine.png',
+    alt: 'Kudos creation with AI-powered SBI framework refinement',
+    caption:
+      'Write better recognition with AI. Refine your kudos using the SBI (Situation-Behavior-Impact) framework for more meaningful feedback.',
+  },
+  {
+    id: 'pdp-smart-check',
+    label: 'PDP SMART Check',
+    src: '/screenshots/personal-development-goal-ai-smart-check.png',
+    alt: 'Personal development goal with AI SMART framework check',
+    caption:
+      'Validate development goals against the SMART framework. AI checks if goals are Specific, Measurable, Achievable, Relevant, and Time-bound.',
+  },
+  {
+    id: 'performance-review',
+    label: 'Review Narrative',
+    src: '/screenshots/performance-review-ai-narrative.png',
+    alt: 'AI-generated performance review narrative summary',
+    caption:
+      'Generate a performance review narrative from your collected data. Copy-paste ready for any external review tool — no file downloads needed.',
+  },
+  {
+    id: 'quick-capture',
+    label: 'Quick Capture',
+    src: '/screenshots/quick-capture-button.png',
+    alt: 'Quick capture button available on every screen',
+    caption:
+      'Capture thoughts instantly from any page. The floating quick capture button lets you jot down notes without leaving your current context.',
+  },
+  {
+    id: 'ai-settings',
+    label: 'AI Settings',
+    src: '/screenshots/settings-ai-assitant.png',
+    alt: 'AI assistant settings page with privacy controls and model configuration',
+    caption:
+      'Full control over your AI assistant. Choose your own model (local or cloud), customize prompts, and exclude sensitive content from AI processing.',
   },
   {
     id: 'action-item',

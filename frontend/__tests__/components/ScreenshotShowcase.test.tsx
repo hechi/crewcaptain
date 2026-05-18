@@ -21,17 +21,22 @@ describe('ScreenshotShowcase', () => {
     ).toBeInTheDocument();
   });
 
-  it('should render 6 tab buttons', () => {
+  it('should render 11 tab buttons', () => {
     render(<ScreenshotShowcase />);
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(6);
+    expect(tabs).toHaveLength(11);
   });
 
   it('should render tab labels for each screenshot', () => {
     render(<ScreenshotShowcase />);
     expect(screen.getByRole('tab', { name: /Dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /1:1 Session/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /1:1 with AI/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /1:1 Overview/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Kudos AI/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /PDP SMART Check/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Review Narrative/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Quick Capture/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /AI Settings/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Action Items/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Person Detail/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Search/i })).toBeInTheDocument();
@@ -50,24 +55,64 @@ describe('ScreenshotShowcase', () => {
     expect(firstTab).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('should switch to 1:1 Session screenshot when tab is clicked', () => {
+  it('should switch to 1:1 with AI screenshot when tab is clicked', () => {
     render(<ScreenshotShowcase />);
-    const tab = screen.getByRole('tab', { name: /1:1 Session/i });
+    const tab = screen.getByRole('tab', { name: /1:1 with AI/i });
     fireEvent.click(tab);
 
-    const img = screen.getByRole('img', { name: /1:1 session entry with notes/i });
+    const img = screen.getByRole('img', { name: /1:1 session entry with AI assistant/i });
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', '/screenshots/one-on-one-entry.png');
+    expect(img).toHaveAttribute('src', '/screenshots/one-on-one-entry-with-ai-assistant.png');
   });
 
-  it('should switch to 1:1 Overview screenshot when tab is clicked', () => {
+  it('should switch to Kudos AI screenshot when tab is clicked', () => {
     render(<ScreenshotShowcase />);
-    const tab = screen.getByRole('tab', { name: /1:1 Overview/i });
+    const tab = screen.getByRole('tab', { name: /Kudos AI/i });
     fireEvent.click(tab);
 
-    const img = screen.getByRole('img', { name: /1:1 overview showing history/i });
+    const img = screen.getByRole('img', { name: /Kudos creation with AI-powered SBI/i });
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', '/screenshots/one-on-one-overview.png');
+    expect(img).toHaveAttribute('src', '/screenshots/kudos-ai-refine.png');
+  });
+
+  it('should switch to PDP SMART Check screenshot when tab is clicked', () => {
+    render(<ScreenshotShowcase />);
+    const tab = screen.getByRole('tab', { name: /PDP SMART Check/i });
+    fireEvent.click(tab);
+
+    const img = screen.getByRole('img', { name: /Personal development goal with AI SMART/i });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/screenshots/personal-development-goal-ai-smart-check.png');
+  });
+
+  it('should switch to Review Narrative screenshot when tab is clicked', () => {
+    render(<ScreenshotShowcase />);
+    const tab = screen.getByRole('tab', { name: /Review Narrative/i });
+    fireEvent.click(tab);
+
+    const img = screen.getByRole('img', { name: /AI-generated performance review/i });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/screenshots/performance-review-ai-narrative.png');
+  });
+
+  it('should switch to Quick Capture screenshot when tab is clicked', () => {
+    render(<ScreenshotShowcase />);
+    const tab = screen.getByRole('tab', { name: /Quick Capture/i });
+    fireEvent.click(tab);
+
+    const img = screen.getByRole('img', { name: /Quick capture button available/i });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/screenshots/quick-capture-button.png');
+  });
+
+  it('should switch to AI Settings screenshot when tab is clicked', () => {
+    render(<ScreenshotShowcase />);
+    const tab = screen.getByRole('tab', { name: /AI Settings/i });
+    fireEvent.click(tab);
+
+    const img = screen.getByRole('img', { name: /AI assistant settings page/i });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/screenshots/settings-ai-assitant.png');
   });
 
   it('should switch to Action Items screenshot when tab is clicked', () => {
@@ -149,7 +194,7 @@ describe('ScreenshotShowcase', () => {
     firstTab.focus();
     fireEvent.keyDown(tablist, { key: 'ArrowRight' });
 
-    const secondTab = screen.getByRole('tab', { name: /1:1 Session/i });
+    const secondTab = screen.getByRole('tab', { name: /1:1 with AI/i });
     expect(secondTab).toHaveAttribute('aria-selected', 'true');
   });
 

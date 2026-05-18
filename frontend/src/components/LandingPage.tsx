@@ -13,6 +13,12 @@ import {
   CheckCircle2,
   ArrowRight,
   Compass,
+  Sparkles,
+  Brain,
+  FileText,
+  PenTool,
+  Settings2,
+  StickyNote,
 } from 'lucide-react';
 import ScreenshotShowcase from './ScreenshotShowcase';
 
@@ -109,14 +115,64 @@ export default function LandingPage() {
             description="Organize your crew with morale tracking, pinned notes, tags, and workspaces. See everything at a glance."
           />
           <FeatureCard
-            icon={<Zap size={24} />}
-            title="Quick Notes Inbox"
-            description="Capture thoughts instantly. Assign to people, attach to 1:1s, or convert to action items later."
+            icon={<StickyNote size={24} />}
+            title="Quick Capture"
+            description="Capture thoughts from any page with the floating quick capture button. Assign to people, attach to 1:1s, or convert to action items — without leaving your current context."
           />
           <FeatureCard
             icon={<BarChart3 size={24} />}
             title="Dashboard & Insights"
             description="Overdue items, stale 1:1 reminders, upcoming anniversaries, and engagement streaks — all in one view."
+          />
+        </div>
+      </section>
+
+      {/* AI Features Section */}
+      <section className="landing-ai" data-testid="ai-section">
+        <div className="landing-section__header">
+          <div className="landing-ai__badge">
+            <Sparkles size={14} aria-hidden="true" />
+            <span>AI-Powered</span>
+          </div>
+          <h2 className="landing-section__title">
+            Your optional AI co-pilot.{' '}
+            <span className="landing-section__title-muted">Privacy-first by design.</span>
+          </h2>
+          <p className="landing-section__subtitle">
+            Bring your own model — local or cloud. Every AI feature is optional, and sensitive
+            content can be excluded entirely. You stay in control.
+          </p>
+        </div>
+        <div className="landing-ai__grid">
+          <AiFeatureCard
+            icon={<MessageSquare size={20} />}
+            title="Generate Agenda"
+            description="AI suggests agenda items based on open action items, PDP goals, and previous 1:1 context."
+          />
+          <AiFeatureCard
+            icon={<Brain size={20} />}
+            title="Extract Outcomes"
+            description="After saving notes, AI extracts action items and decisions for review — no manual parsing needed."
+          />
+          <AiFeatureCard
+            icon={<FileText size={20} />}
+            title="Performance Narrative"
+            description="Generate a review summary from your collected data. Copy-paste ready for any external tool."
+          />
+          <AiFeatureCard
+            icon={<PenTool size={20} />}
+            title="Kudos Refinement"
+            description="Refine recognition using the SBI framework. AI helps you write more impactful, structured feedback."
+          />
+          <AiFeatureCard
+            icon={<Target size={20} />}
+            title="SMART Goal Check"
+            description="Validate PDP goals against the SMART framework — Specific, Measurable, Achievable, Relevant, Time-bound."
+          />
+          <AiFeatureCard
+            icon={<Settings2 size={20} />}
+            title="Full Control"
+            description="Choose your model, customize prompts, and exclude sensitive content. Works with Ollama, LiteLLM, OpenAI, or any compatible API."
           />
         </div>
       </section>
@@ -280,6 +336,26 @@ function PrivacyBadge({
     <div className="landing-privacy-badge" data-testid="privacy-badge">
       {icon}
       <span>{text}</span>
+    </div>
+  );
+}
+
+function AiFeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="landing-ai-card" data-testid="ai-feature-card">
+      <div className="landing-ai-card__icon">{icon}</div>
+      <div className="landing-ai-card__content">
+        <h3 className="landing-ai-card__title">{title}</h3>
+        <p className="landing-ai-card__description">{description}</p>
+      </div>
     </div>
   );
 }
