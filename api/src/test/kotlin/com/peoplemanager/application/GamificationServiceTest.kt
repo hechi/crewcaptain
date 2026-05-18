@@ -149,11 +149,13 @@ class GamificationServiceTest {
         @Test
         fun `should count multiple meetings in same week as one streak unit`() {
             val today = LocalDate.now()
-            // Multiple meetings in the same week
+            // Find the Monday of the current ISO week to ensure all dates are in the same week
+            val monday = today.with(java.time.DayOfWeek.MONDAY)
+            // Multiple meetings in the same ISO week (Mon, Tue, Wed)
             val meetings = listOf(
-                today.atStartOfDay().toInstant(ZoneOffset.UTC),
-                today.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
-                today.minusDays(2).atStartOfDay().toInstant(ZoneOffset.UTC),
+                monday.atStartOfDay().toInstant(ZoneOffset.UTC),
+                monday.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
+                monday.plusDays(2).atStartOfDay().toInstant(ZoneOffset.UTC),
             )
 
             every { oneOnOneEntryRepository.findAllMeetingDatesByUserId(userId) } returns meetings
