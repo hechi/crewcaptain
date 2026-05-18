@@ -45,11 +45,12 @@ describe('KudosList', () => {
     jest.clearAllMocks();
   });
 
-  it('should render kudos list with count', () => {
+  it('should render kudos list with create button', () => {
     render(
       <KudosList kudos={mockKudos} onCreateKudos={mockOnCreateKudos} onDeleteKudos={mockOnDeleteKudos} />
     );
-    expect(screen.getByText('Kudos (2)')).toBeInTheDocument();
+    expect(screen.getByTestId('kudos-create-btn')).toBeInTheDocument();
+    expect(screen.getByText('+ Give Kudos')).toBeInTheDocument();
   });
 
   it('should render all kudos cards', () => {

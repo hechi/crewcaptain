@@ -62,8 +62,31 @@ export default function PdpGoalList({
 
   return (
     <div data-testid="pdp-goal-list">
-      {/* Header with filter and create button */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      {/* Header with create button and filter */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        {!showCreateForm ? (
+          <button
+            type="button"
+            onClick={() => setShowCreateForm(true)}
+            data-testid="pdp-goal-create-btn"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'var(--color-bg-base)',
+              border: 'none',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              boxShadow: 'var(--glow-primary)',
+            }}
+          >
+            + New Goal
+          </button>
+        ) : (
+          <div />
+        )}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {statusOptions.map((option) => (
             <button
@@ -86,26 +109,6 @@ export default function PdpGoalList({
             </button>
           ))}
         </div>
-        {!showCreateForm && (
-          <button
-            type="button"
-            onClick={() => setShowCreateForm(true)}
-            data-testid="pdp-goal-create-btn"
-            style={{
-              padding: '8px 16px',
-              fontSize: 'var(--text-body)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-primary)',
-              borderRadius: 'var(--radius-medium)',
-              backgroundColor: 'var(--color-primary-muted)',
-              color: 'var(--color-primary)',
-              cursor: 'pointer',
-              fontWeight: 'var(--weight-medium)',
-            }}
-          >
-            + New Goal
-          </button>
-        )}
       </div>
 
       {/* Create form */}

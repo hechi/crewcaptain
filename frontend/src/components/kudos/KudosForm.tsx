@@ -134,6 +134,8 @@ export default function KudosForm({ onSubmit, onCancel, isSubmitting = false, ai
             fontFamily: 'var(--font-mono)',
             color: 'var(--color-text-muted)',
             marginBottom: '4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
         >
           Date
@@ -165,6 +167,8 @@ export default function KudosForm({ onSubmit, onCancel, isSubmitting = false, ai
               fontSize: 'var(--text-caption)',
               fontFamily: 'var(--font-mono)',
               color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
             }}
           >
             Recognition *
@@ -314,6 +318,8 @@ export default function KudosForm({ onSubmit, onCancel, isSubmitting = false, ai
             fontFamily: 'var(--font-mono)',
             color: 'var(--color-text-muted)',
             marginBottom: '4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
         >
           Tags (comma-separated, optional)

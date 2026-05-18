@@ -243,7 +243,7 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
       {/* Add new action item */}
       <div
         data-testid="quick-add-action-item-form"
-        style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}
+        style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', flexWrap: 'wrap' }}
       >
         <div style={{ flex: 1, minWidth: '180px' }}>
           <input
@@ -259,7 +259,8 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
             aria-invalid={!!formError}
             style={{
               width: '100%',
-              padding: '8px 12px',
+              height: '36px',
+              padding: '0 12px',
               border: `1px solid ${formError ? 'var(--color-alert)' : 'var(--color-border)'}`,
               borderRadius: 'var(--radius-medium)',
               fontSize: 'var(--text-body)',
@@ -287,7 +288,8 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
           data-testid="quick-action-due-date-input"
           aria-label="Due date"
           style={{
-            padding: '8px 12px',
+            height: '36px',
+            padding: '0 12px',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-medium)',
             fontSize: 'var(--text-body)',
@@ -303,7 +305,8 @@ export default function OneOnOneActionItems({ token, personId, entryId }: OneOnO
           disabled={isSubmitting}
           data-testid="quick-add-submit-btn"
           style={{
-            padding: '8px 16px',
+            height: '36px',
+            padding: '0 16px',
             backgroundColor: isSubmitting ? 'var(--color-secondary-muted, rgba(168, 85, 247, 0.3))' : 'var(--color-secondary)',
             color: '#fff',
             border: 'none',

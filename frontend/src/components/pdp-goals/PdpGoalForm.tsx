@@ -171,20 +171,43 @@ export default function PdpGoalForm({ existingGoal, onSubmit, onCancel, aiEnable
       </div>
 
       <div style={{ marginBottom: '12px' }}>
-        <label
-          htmlFor="pdp-goal-description"
-          style={{
-            display: 'block',
-            fontSize: 'var(--text-caption)',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--color-text-muted)',
-            marginBottom: '4px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
-        >
-          Description
-        </label>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+          <label
+            htmlFor="pdp-goal-description"
+            style={{
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Description
+          </label>
+          {aiEnabled && (
+            <button
+              type="button"
+              onClick={handleSmartCheck}
+              disabled={isOptimizing || !title.trim()}
+              data-testid="pdp-goal-smart-check-btn"
+              style={{
+                padding: '2px 10px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-primary)',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: isOptimizing ? 'var(--color-primary-muted)' : 'transparent',
+                color: 'var(--color-primary)',
+                cursor: isOptimizing || !title.trim() ? 'not-allowed' : 'pointer',
+                opacity: isOptimizing || !title.trim() ? 0.6 : 1,
+                transition: 'all 0.2s',
+                animation: aiSuggestion ? 'glow-burst 0.6s ease-out' : undefined,
+              }}
+            >
+              {isOptimizing ? '✦ Checking...' : '✦ SMART Check'}
+            </button>
+          )}
+        </div>
         <textarea
           id="pdp-goal-description"
           value={description}
@@ -240,33 +263,6 @@ export default function PdpGoalForm({ existingGoal, onSubmit, onCancel, aiEnable
           }}
         />
       </div>
-
-      {/* AI SMART Check Button */}
-      {aiEnabled && (
-        <div style={{ marginBottom: '16px' }}>
-          <button
-            type="button"
-            onClick={handleSmartCheck}
-            disabled={isOptimizing || !title.trim()}
-            data-testid="pdp-goal-smart-check-btn"
-            style={{
-              padding: '6px 14px',
-              fontSize: 'var(--text-caption)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-primary)',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: isOptimizing ? 'var(--color-primary-muted)' : 'transparent',
-              color: 'var(--color-primary)',
-              cursor: isOptimizing || !title.trim() ? 'not-allowed' : 'pointer',
-              opacity: isOptimizing || !title.trim() ? 0.6 : 1,
-              transition: 'all 0.2s',
-              animation: aiSuggestion ? 'glow-burst 0.6s ease-out' : undefined,
-            }}
-          >
-            {isOptimizing ? '✦ Checking...' : '✦ SMART Check'}
-          </button>
-        </div>
-      )}
 
       {/* AI Error */}
       {aiError && (

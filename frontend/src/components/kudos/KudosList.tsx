@@ -34,35 +34,29 @@ export default function KudosList({
   return (
     <div data-testid="kudos-list">
       {/* Header with create button */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{
-          margin: 0,
-          fontSize: 'var(--text-body)',
-          fontWeight: 'var(--weight-semibold)',
-          fontFamily: 'var(--font-heading)',
-          color: 'var(--color-text-primary)',
-        }}>
-          Kudos ({kudos.length})
-        </h3>
-        {!showCreateForm && (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        {!showCreateForm ? (
           <button
             type="button"
             onClick={() => setShowCreateForm(true)}
             data-testid="kudos-create-btn"
             style={{
-              padding: '8px 16px',
-              fontSize: 'var(--text-body)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-primary)',
+              padding: '10px 20px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'var(--color-bg-base)',
+              border: 'none',
               borderRadius: 'var(--radius-medium)',
-              backgroundColor: 'var(--color-primary-muted)',
-              color: 'var(--color-primary)',
+              fontSize: 'var(--text-body)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-mono)',
               cursor: 'pointer',
-              fontWeight: 'var(--weight-medium)',
+              boxShadow: 'var(--glow-primary)',
             }}
           >
             + Give Kudos
           </button>
+        ) : (
+          <div />
         )}
       </div>
 
