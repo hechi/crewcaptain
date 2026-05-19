@@ -168,7 +168,9 @@ export default function TrendRadarInsights({ token, personId, personName }: Tren
             pointerEvents: 'none',
           }} />
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: '32px', marginBottom: 'var(--space-3)' }}>📡</div>
+            <div style={{ marginBottom: 'var(--space-3)', color: 'var(--color-primary)', display: 'flex', justifyContent: 'center' }}>
+              <Radar size={32} />
+            </div>
             <p style={{
               color: 'var(--color-text-secondary)',
               fontFamily: 'var(--font-mono)',
@@ -326,7 +328,9 @@ export default function TrendRadarInsights({ token, personId, personName }: Tren
             backgroundColor: 'var(--color-bg-surface)',
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: 'var(--space-3)' }}>📡</div>
+          <div style={{ marginBottom: 'var(--space-3)', color: 'var(--color-primary)', display: 'flex', justifyContent: 'center' }}>
+            <Radar size={32} />
+          </div>
           <p style={{
             color: 'var(--color-text-muted)',
             fontFamily: 'var(--font-mono)',
