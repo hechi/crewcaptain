@@ -328,13 +328,13 @@ export default function TrendRadarInsights({ token, personId, personName }: Tren
             backgroundColor: 'var(--color-bg-surface)',
           }}
         >
-          <div style={{ marginBottom: 'var(--space-3)', color: 'var(--color-primary)', display: 'flex', justifyContent: 'center' }}>
-            <Radar size={32} />
+          <div style={{ marginBottom: 'var(--space-2)', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'center', opacity: 0.5 }}>
+            <Radar size={20} />
           </div>
           <p style={{
             color: 'var(--color-text-muted)',
             fontFamily: 'var(--font-mono)',
-            fontSize: 'var(--text-body)',
+            fontSize: 'var(--text-small)',
             margin: 0,
           }}>
             Click &quot;Scan Radar&quot; to analyze 90 days of data for {personName}.
