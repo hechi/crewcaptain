@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { TrendRadarInsight, AiTrendRadarResponse } from '@/types/settings';
 import { generateTrendRadar } from '@/lib/api-client';
+import { Radar, Heart, Scale, Award, MessageCircle } from 'lucide-react';
 
 interface TrendRadarInsightsProps {
   token: string;
@@ -52,13 +53,14 @@ export default function TrendRadarInsights({ token, personId, personName }: Tren
     return 'Low Signal';
   };
 
-  const getDimensionIcon = (dimension: string): string => {
+  const getDimensionIcon = (dimension: string, color: string) => {
+    const iconProps = { size: 16, color, strokeWidth: 2 };
     switch (dimension) {
-      case 'MORALE': return '◈';
-      case 'WORK_GROWTH_BALANCE': return '⚖';
-      case 'RECOGNITION': return '★';
-      case 'MEETING_EFFICACY': return '◉';
-      default: return '◆';
+      case 'MORALE': return <Heart {...iconProps} />;
+      case 'WORK_GROWTH_BALANCE': return <Scale {...iconProps} />;
+      case 'RECOGNITION': return <Award {...iconProps} />;
+      case 'MEETING_EFFICACY': return <MessageCircle {...iconProps} />;
+      default: return <Radar {...iconProps} />;
     }
   };
 
@@ -83,8 +85,12 @@ export default function TrendRadarInsights({ token, personId, personName }: Tren
           fontWeight: 'var(--weight-semibold)',
           color: 'var(--color-primary)',
           letterSpacing: '0.5px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-2)',
         }}>
-          ✦ Strategic Trend Radar
+          <Radar size={20} />
+          Strategic Trend Radar
         </h3>
         <button
           type="button"
@@ -228,10 +234,12 @@ export default function TrendRadarInsights({ token, personId, personName }: Tren
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <span style={{
-                      fontSize: '18px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       color: getConfidenceColor(insight.confidenceScore),
                     }}>
-                      {getDimensionIcon(insight.dimension)}
+                      {getDimensionIcon(insight.dimension, getConfidenceColor(insight.confidenceScore))}
                     </span>
                     <h4 style={{
                       margin: 0,
