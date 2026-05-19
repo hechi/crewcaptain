@@ -89,7 +89,7 @@ describe('LandingPage', () => {
     render(<LandingPage />);
     expect(screen.getByTestId('ai-section')).toBeInTheDocument();
     const aiCards = screen.getAllByTestId('ai-feature-card');
-    expect(aiCards).toHaveLength(6);
+    expect(aiCards).toHaveLength(7);
   });
 
   it('should render AI feature titles', () => {

@@ -19,6 +19,7 @@ import {
   PenTool,
   Settings2,
   StickyNote,
+  Radar,
 } from 'lucide-react';
 import ScreenshotShowcase from './ScreenshotShowcase';
 
@@ -168,6 +169,11 @@ export default function LandingPage() {
             icon={<Target size={20} />}
             title="SMART Goal Check"
             description="Validate PDP goals against the SMART framework — Specific, Measurable, Achievable, Relevant, Time-bound."
+          />
+          <AiFeatureCard
+            icon={<Radar size={20} />}
+            title="Trend Radar"
+            description="Surface long-term patterns across morale, work/growth balance, recognition, and meeting efficacy with confidence scoring."
           />
           <AiFeatureCard
             icon={<Settings2 size={20} />}

@@ -60,6 +60,14 @@ const screenshots: Screenshot[] = [
       'Generate a performance review narrative from your collected data. Copy-paste ready for any external review tool — no file downloads needed.',
   },
   {
+    id: 'ai-insights',
+    label: 'AI Insights',
+    src: '/screenshots/person-ai-insights.png',
+    alt: 'AI Strategic Trend Radar showing insights with confidence scores',
+    caption:
+      'Surface long-term patterns with the AI Trend Radar. Analyzes 90 days of data across morale, growth, recognition, and meeting efficacy — each insight scored by confidence level.',
+  },
+  {
     id: 'quick-capture',
     label: 'Quick Capture',
     src: '/screenshots/quick-capture-button.png',

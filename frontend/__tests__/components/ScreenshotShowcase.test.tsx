@@ -24,7 +24,7 @@ describe('ScreenshotShowcase', () => {
   it('should render 11 tab buttons', () => {
     render(<ScreenshotShowcase />);
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(11);
+    expect(tabs).toHaveLength(12);
   });
 
   it('should render tab labels for each screenshot', () => {
@@ -35,6 +35,7 @@ describe('ScreenshotShowcase', () => {
     expect(screen.getByRole('tab', { name: /Kudos AI/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /PDP SMART Check/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Review Narrative/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /AI Insights/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Quick Capture/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /AI Settings/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Action Items/i })).toBeInTheDocument();
