@@ -751,6 +751,20 @@ export async function generateAiNarrative(
   return response.json();
 }
 
+// --- AI Trend Radar ---
+
+import { AiTrendRadarResponse } from '@/types/settings';
+
+export async function generateTrendRadar(
+  token: string,
+  personId: string
+): Promise<AiTrendRadarResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/ai-trend-radar`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
 
 // --- Bulk Import ---
 

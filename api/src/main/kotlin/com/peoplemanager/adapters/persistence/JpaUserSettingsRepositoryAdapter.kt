@@ -45,6 +45,7 @@ class JpaUserSettingsRepositoryAdapter(
         agendaPrepPrompt = this.agendaPrepPrompt,
         narrativePrompt = this.narrativePrompt,
         outcomeExtractorPrompt = this.outcomeExtractorPrompt,
+        trendRadarPrompt = this.trendRadarPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -71,6 +72,7 @@ class JpaUserSettingsRepositoryAdapter(
         agendaPrepPrompt = this.agendaPrepPrompt,
         narrativePrompt = this.narrativePrompt,
         outcomeExtractorPrompt = this.outcomeExtractorPrompt,
+        trendRadarPrompt = this.trendRadarPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

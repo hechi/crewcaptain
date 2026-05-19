@@ -71,6 +71,9 @@ class UserSettingsEntity(
     @Column(name = "outcome_extractor_prompt", columnDefinition = "TEXT")
     val outcomeExtractorPrompt: String? = null,
 
+    @Column(name = "trend_radar_prompt", columnDefinition = "TEXT")
+    val trendRadarPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

@@ -30,6 +30,7 @@ data class UserSettings(
     val agendaPrepPrompt: String? = null,
     val narrativePrompt: String? = null,
     val outcomeExtractorPrompt: String? = null,
+    val trendRadarPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -126,6 +127,12 @@ data class UserSettings(
     fun effectiveOutcomeExtractorPrompt(): String =
         outcomeExtractorPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_OUTCOME_EXTRACTOR_PROMPT
 
+    /**
+     * Returns the effective trend radar prompt (custom or default).
+     */
+    fun effectiveTrendRadarPrompt(): String =
+        trendRadarPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_TREND_RADAR_PROMPT
+
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
         const val DEFAULT_STALE_ONE_ON_ONE_DAYS = 14
@@ -181,6 +188,21 @@ data class UserSettings(
             "- Output ONLY valid JSON. No markdown code fences, no preamble, no explanation. " +
             "- If no action items or decisions are found, return empty arrays. " +
             "- suggested_days_to_due should be a reasonable estimate (7 for 'next week', 14 for 'in two weeks', etc.)."
+
+        const val DEFAULT_TREND_RADAR_PROMPT =
+            "You are a strategic people analytics advisor for a manager. " +
+            "Analyze the provided manager-report metadata and identify 3 potential trends or patterns. " +
+            "For each trend, assess the data density and assign a confidence_score (0-100). " +
+            "RULES: " +
+            "- Output ONLY valid JSON. No markdown code fences, no preamble, no explanation. " +
+            "- Return a JSON object with a single key 'insights' containing an array of objects. " +
+            "- Each object must have: 'title' (string, short label like 'Burnout Risk' or 'High Impact'), " +
+            "'description' (string, 2-3 sentences explaining the pattern), " +
+            "'dimension' (string, one of: 'MORALE', 'WORK_GROWTH_BALANCE', 'RECOGNITION', 'MEETING_EFFICACY'), " +
+            "'confidence_score' (integer 0-100 based on data volume and recency). " +
+            "- confidence_score < 40 means insufficient data, 40-75 means moderate signal, > 75 means strong signal. " +
+            "- Be objective and data-driven. Do not speculate beyond what the data supports. " +
+            "- If data is very thin, reflect that honestly in low confidence scores."
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

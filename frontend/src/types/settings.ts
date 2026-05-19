@@ -22,6 +22,7 @@ export interface UserSettings {
   agendaPrepPrompt: string | null;
   narrativePrompt: string | null;
   outcomeExtractorPrompt: string | null;
+  trendRadarPrompt: string | null;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -45,6 +46,7 @@ export interface UpdateUserSettingsRequest {
   agendaPrepPrompt?: string | null;
   narrativePrompt?: string | null;
   outcomeExtractorPrompt?: string | null;
+  trendRadarPrompt?: string | null;
 }
 
 export interface AiPrepResponse {
@@ -88,4 +90,18 @@ export interface ApplyActionItemRequest {
 export interface ApplyOutcomesResponse {
   actionItemsCreated: number;
   decisionsAppended: number;
+}
+
+export interface AiTrendRadarResponse {
+  insights: TrendRadarInsight[];
+  insufficientData: boolean;
+  meetingsNeeded: number | null;
+  error: string | null;
+}
+
+export interface TrendRadarInsight {
+  title: string;
+  description: string;
+  dimension: 'MORALE' | 'WORK_GROWTH_BALANCE' | 'RECOGNITION' | 'MEETING_EFFICACY';
+  confidenceScore: number;
 }

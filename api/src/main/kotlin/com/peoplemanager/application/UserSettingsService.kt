@@ -47,6 +47,7 @@ class UserSettingsService(
             agendaPrepPrompt = command.agendaPrepPrompt,
             narrativePrompt = command.narrativePrompt,
             outcomeExtractorPrompt = command.outcomeExtractorPrompt,
+            trendRadarPrompt = command.trendRadarPrompt,
             updatedAt = java.time.Instant.now()
         )
 
@@ -76,5 +77,6 @@ data class UpdateUserSettingsCommand(
     val pdpOptimizationPrompt: String? = null,
     val agendaPrepPrompt: String? = null,
     val narrativePrompt: String? = null,
-    val outcomeExtractorPrompt: String? = null
+    val outcomeExtractorPrompt: String? = null,
+    val trendRadarPrompt: String? = null
 )

@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const [agendaPrepPrompt, setAgendaPrepPrompt] = useState('');
   const [narrativePrompt, setNarrativePrompt] = useState('');
   const [outcomeExtractorPrompt, setOutcomeExtractorPrompt] = useState('');
+  const [trendRadarPrompt, setTrendRadarPrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -67,6 +68,7 @@ export default function SettingsPage() {
       setAgendaPrepPrompt(result.agendaPrepPrompt || '');
       setNarrativePrompt(result.narrativePrompt || '');
       setOutcomeExtractorPrompt(result.outcomeExtractorPrompt || '');
+      setTrendRadarPrompt(result.trendRadarPrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -107,6 +109,7 @@ export default function SettingsPage() {
         agendaPrepPrompt: agendaPrepPrompt || null,
         narrativePrompt: narrativePrompt || null,
         outcomeExtractorPrompt: outcomeExtractorPrompt || null,
+        trendRadarPrompt: trendRadarPrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -622,6 +625,15 @@ export default function SettingsPage() {
                     value={outcomeExtractorPrompt}
                     onChange={setOutcomeExtractorPrompt}
                     onReset={() => setOutcomeExtractorPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-trend-radar-prompt"
+                    label="Trend Radar Prompt"
+                    placeholder="You are a strategic people analytics advisor for a manager. Analyze the provided manager-report metadata and identify 3 potential trends or patterns..."
+                    value={trendRadarPrompt}
+                    onChange={setTrendRadarPrompt}
+                    onReset={() => setTrendRadarPrompt('')}
                   />
                 </div>
               </>

@@ -21,7 +21,8 @@ data class UserSettingsResponse(
     val pdpOptimizationPrompt: String?,
     val agendaPrepPrompt: String?,
     val narrativePrompt: String?,
-    val outcomeExtractorPrompt: String?
+    val outcomeExtractorPrompt: String?,
+    val trendRadarPrompt: String?
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -43,7 +44,8 @@ data class UserSettingsResponse(
             pdpOptimizationPrompt = settings.pdpOptimizationPrompt,
             agendaPrepPrompt = settings.agendaPrepPrompt,
             narrativePrompt = settings.narrativePrompt,
-            outcomeExtractorPrompt = settings.outcomeExtractorPrompt
+            outcomeExtractorPrompt = settings.outcomeExtractorPrompt,
+            trendRadarPrompt = settings.trendRadarPrompt
         )
     }
 }

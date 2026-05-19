@@ -62,7 +62,8 @@ class UserSettingsController(
             pdpOptimizationPrompt = request.pdpOptimizationPrompt,
             agendaPrepPrompt = request.agendaPrepPrompt,
             narrativePrompt = request.narrativePrompt,
-            outcomeExtractorPrompt = request.outcomeExtractorPrompt
+            outcomeExtractorPrompt = request.outcomeExtractorPrompt,
+            trendRadarPrompt = request.trendRadarPrompt
         )
 
         val settings = userSettingsService.updateSettings(userId, command)

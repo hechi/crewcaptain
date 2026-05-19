@@ -56,9 +56,10 @@ import ReviewPacketModal from '@/components/ReviewPacketModal';
 import AiNarrativeModal from '@/components/AiNarrativeModal';
 import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
 import LoadingScreen from '@/components/LoadingScreen';
+import TrendRadarInsights from '@/components/TrendRadarInsights';
 import { Download, FileText, Sparkles } from 'lucide-react';
 
-type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos';
+type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos' | 'insights';
 
 export default function PersonDetailPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -67,7 +68,7 @@ export default function PersonDetailPage() {
   const searchParams = useSearchParams();
   const personId = params.id as string;
 
-  const validTabs: Tab[] = ['details', 'one-on-ones', 'action-items', 'pdp-goals', 'kudos'];
+  const validTabs: Tab[] = ['details', 'one-on-ones', 'action-items', 'pdp-goals', 'kudos', 'insights'];
   const tabParam = searchParams.get('tab') as Tab | null;
   const initialTab: Tab = tabParam && validTabs.includes(tabParam) ? tabParam : 'details';
 
@@ -908,6 +909,31 @@ export default function PersonDetailPage() {
         >
           Kudos
         </button>
+        {userSettings?.aiEnabled && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'insights'}
+            aria-controls="tab-panel-insights"
+            onClick={() => setActiveTab('insights')}
+            data-testid="tab-insights"
+            style={{
+              padding: '10px 20px',
+              border: 'none',
+              borderBottom: activeTab === 'insights' ? '2px solid var(--color-primary)' : '2px solid transparent',
+              background: 'none',
+              fontSize: 'var(--text-body)',
+              fontWeight: activeTab === 'insights' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+              color: activeTab === 'insights' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+              cursor: 'pointer',
+              marginBottom: '-1px',
+              fontFamily: 'var(--font-mono)',
+              transition: 'color 0.2s',
+            }}
+          >
+            ✦ Insights
+          </button>
+        )}
       </div>
 
       {/* Details Tab Panel */}
@@ -1339,6 +1365,17 @@ export default function PersonDetailPage() {
               aiEnabled={userSettings?.aiEnabled ?? false}
             />
           )}
+        </div>
+      )}
+
+      {/* Insights Tab Panel */}
+      {activeTab === 'insights' && userSettings?.aiEnabled && (
+        <div id="tab-panel-insights" role="tabpanel" aria-labelledby="tab-insights">
+          <TrendRadarInsights
+            token={getToken() || ''}
+            personId={personId}
+            personName={person.name}
+          />
         </div>
       )}
 
