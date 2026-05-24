@@ -41,7 +41,7 @@ describe('RememberItemsList', () => {
 
     const input = screen.getByLabelText('New remember item');
     fireEvent.change(input, { target: { value: 'New item text' } });
-    fireEvent.click(screen.getByText('Add'));
+    fireEvent.click(screen.getByRole('button', { name: /add/i }));
 
     expect(onAdd).toHaveBeenCalledWith('New item text');
   });
@@ -54,7 +54,7 @@ describe('RememberItemsList', () => {
 
     const input = screen.getByLabelText('New remember item') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'New item text' } });
-    fireEvent.click(screen.getByText('Add'));
+    fireEvent.click(screen.getByRole('button', { name: /add/i }));
 
     expect(input.value).toBe('');
   });
@@ -65,44 +65,68 @@ describe('RememberItemsList', () => {
     const onReorder = jest.fn();
     render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
 
-    fireEvent.click(screen.getByText('Add'));
+    fireEvent.click(screen.getByRole('button', { name: /add/i }));
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it('should call onRemove when remove button is clicked', () => {
+  it('should call onRemove when delete button is clicked', () => {
     const onAdd = jest.fn();
     const onRemove = jest.fn();
     const onReorder = jest.fn();
     render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
 
-    const removeButtons = screen.getAllByText('Remove');
-    fireEvent.click(removeButtons[1]);
+    const deleteButtons = screen.getAllByLabelText(/remove/i);
+    fireEvent.click(deleteButtons[1]);
 
     expect(onRemove).toHaveBeenCalledWith('item-2');
   });
 
-  it('should call onReorder when moving item down', () => {
+  it('should call onReorder when moving item down via keyboard', () => {
     const onAdd = jest.fn();
     const onRemove = jest.fn();
     const onReorder = jest.fn();
     render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
 
-    const downButton = screen.getByLabelText('Move "Prefers async communication" down');
-    fireEvent.click(downButton);
+    const dragHandles = screen.getAllByLabelText(/reorder/i);
+    fireEvent.keyDown(dragHandles[0], { key: 'ArrowDown' });
 
     expect(onReorder).toHaveBeenCalledWith(['item-2', 'item-1', 'item-3']);
   });
 
-  it('should call onReorder when moving item up', () => {
+  it('should call onReorder when moving item up via keyboard', () => {
     const onAdd = jest.fn();
     const onRemove = jest.fn();
     const onReorder = jest.fn();
     render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
 
-    const upButton = screen.getByLabelText('Move "Working on promotion case" up');
-    fireEvent.click(upButton);
+    const dragHandles = screen.getAllByLabelText(/reorder/i);
+    fireEvent.keyDown(dragHandles[1], { key: 'ArrowUp' });
 
     expect(onReorder).toHaveBeenCalledWith(['item-2', 'item-1', 'item-3']);
+  });
+
+  it('should not move item up when already at the top', () => {
+    const onAdd = jest.fn();
+    const onRemove = jest.fn();
+    const onReorder = jest.fn();
+    render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+    const dragHandles = screen.getAllByLabelText(/reorder/i);
+    fireEvent.keyDown(dragHandles[0], { key: 'ArrowUp' });
+
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it('should not move item down when already at the bottom', () => {
+    const onAdd = jest.fn();
+    const onRemove = jest.fn();
+    const onReorder = jest.fn();
+    render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+    const dragHandles = screen.getAllByLabelText(/reorder/i);
+    fireEvent.keyDown(dragHandles[2], { key: 'ArrowDown' });
+
+    expect(onReorder).not.toHaveBeenCalled();
   });
 
   it('should add item on Enter key press', () => {
@@ -116,5 +140,85 @@ describe('RememberItemsList', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
 
     expect(onAdd).toHaveBeenCalledWith('Enter item');
+  });
+
+  it('should render drag handles for each item', () => {
+    const onAdd = jest.fn();
+    const onRemove = jest.fn();
+    const onReorder = jest.fn();
+    render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+    const dragHandles = screen.getAllByLabelText(/reorder/i);
+    expect(dragHandles).toHaveLength(3);
+  });
+
+  it('should have draggable attribute on items', () => {
+    const onAdd = jest.fn();
+    const onRemove = jest.fn();
+    const onReorder = jest.fn();
+    render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+    const items = screen.getAllByTestId('remember-item');
+    items.forEach(item => {
+      expect(item).toHaveAttribute('draggable', 'true');
+    });
+  });
+
+  it('should show helper text about drag and keyboard reordering', () => {
+    const onAdd = jest.fn();
+    const onRemove = jest.fn();
+    const onReorder = jest.fn();
+    render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+    expect(screen.getByText(/drag to reorder or use tab \+ arrow keys/i)).toBeInTheDocument();
+  });
+
+  describe('Drag and Drop', () => {
+    it('should handle drag start and end', () => {
+      const onAdd = jest.fn();
+      const onRemove = jest.fn();
+      const onReorder = jest.fn();
+      render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+      const items = screen.getAllByTestId('remember-item');
+      
+      // Drag start
+      fireEvent.dragStart(items[0]);
+      
+      // Drag end
+      fireEvent.dragEnd(items[0]);
+    });
+
+    it('should handle drag over and drop to reorder', () => {
+      const onAdd = jest.fn();
+      const onRemove = jest.fn();
+      const onReorder = jest.fn();
+      render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+      const items = screen.getAllByTestId('remember-item');
+      
+      // Drag item 0 to position 1
+      fireEvent.dragStart(items[0]);
+      fireEvent.dragOver(items[1]);
+      fireEvent.drop(items[1]);
+
+      expect(onReorder).toHaveBeenCalledWith(['item-2', 'item-1', 'item-3']);
+    });
+
+    it('should not call onReorder when dropping on same position', () => {
+      const onAdd = jest.fn();
+      const onRemove = jest.fn();
+      const onReorder = jest.fn();
+      render(<RememberItemsList items={mockItems} onAdd={onAdd} onRemove={onRemove} onReorder={onReorder} />);
+
+      const items = screen.getAllByTestId('remember-item');
+      
+      // Drag and drop on same item
+      fireEvent.dragStart(items[0]);
+      fireEvent.dragOver(items[0]);
+      fireEvent.drop(items[0]);
+
+      expect(onReorder).not.toHaveBeenCalled();
+    });
   });
 });

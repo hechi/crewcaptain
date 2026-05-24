@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { GripVertical, Trash2 } from 'lucide-react';
 import { PinnedRememberItem } from '@/types/person';
 
 interface RememberItemsListProps {
@@ -12,6 +13,8 @@ interface RememberItemsListProps {
 
 export default function RememberItemsList({ items, onAdd, onRemove, onReorder }: RememberItemsListProps) {
   const [newItemText, setNewItemText] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const handleAdd = () => {
     const trimmed = newItemText.trim();
@@ -28,6 +31,7 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
     }
   };
 
+  // Move item one position up or down (for keyboard users)
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const newItems = [...items];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -36,6 +40,38 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
     [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
     onReorder(newItems.map((item) => item.id));
   };
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((index: number) => {
+    setDraggedIndex(index);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  }, [draggedIndex]);
+
+  const handleDrop = useCallback((e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newItems = [...items];
+    const [removed] = newItems.splice(draggedIndex, 1);
+    newItems.splice(dropIndex, 0, removed);
+    onReorder(newItems.map((item) => item.id));
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }, [draggedIndex, items, onReorder]);
 
   return (
     <div data-testid="remember-items-list">
@@ -57,116 +93,196 @@ export default function RememberItemsList({ items, onAdd, onRemove, onReorder }:
         </p>
       )}
 
-      <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
         {items.map((item, index) => (
-          <li
+          <div
             key={item.id}
             data-testid="remember-item"
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDrop={(e) => handleDrop(e, index)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '8px',
-              borderBottom: '1px solid var(--color-border-subtle)',
+              padding: '12px 16px',
+              border: dragOverIndex === index
+                ? '2px dashed var(--color-primary)'
+                : draggedIndex === index
+                  ? '1px solid var(--color-primary)'
+                  : '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              backgroundColor: draggedIndex === index
+                ? 'var(--color-primary-muted)'
+                : 'var(--color-bg-surface)',
+              cursor: 'grab',
+              opacity: draggedIndex === index ? 0.7 : 1,
+              transition: 'all 0.15s ease',
+              boxShadow: draggedIndex === index ? '0 4px 12px rgba(0, 0, 0, 0.3)' : 'none',
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <button
-                type="button"
-                onClick={() => moveItem(index, 'up')}
-                disabled={index === 0}
-                aria-label={`Move "${item.text}" up`}
-                style={{
-                  padding: '2px 6px',
-                  fontSize: '10px',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-small)',
-                  cursor: index === 0 ? 'not-allowed' : 'pointer',
-                  opacity: index === 0 ? 0.5 : 1,
-                  background: 'var(--color-bg-elevated)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
-                ▲
-              </button>
-              <button
-                type="button"
-                onClick={() => moveItem(index, 'down')}
-                disabled={index === items.length - 1}
-                aria-label={`Move "${item.text}" down`}
-                style={{
-                  padding: '2px 6px',
-                  fontSize: '10px',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-small)',
-                  cursor: index === items.length - 1 ? 'not-allowed' : 'pointer',
-                  opacity: index === items.length - 1 ? 0.5 : 1,
-                  background: 'var(--color-bg-elevated)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
-                ▼
-              </button>
-            </div>
-            <span style={{ flex: 1, fontSize: 'var(--text-body)', color: 'var(--color-text-primary)' }}>{item.text}</span>
+            {/* Drag Handle */}
+            <button
+              type="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowUp' && index > 0) {
+                  e.preventDefault();
+                  moveItem(index, 'up');
+                } else if (e.key === 'ArrowDown' && index < items.length - 1) {
+                  e.preventDefault();
+                  moveItem(index, 'down');
+                }
+              }}
+              aria-label={`Reorder "${item.text}". Use arrow up and down keys to move.`}
+              aria-grabbed={draggedIndex === index}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--color-text-muted)',
+                cursor: 'grab',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-muted)';
+              }}
+            >
+              <GripVertical size={18} />
+            </button>
+
+            {/* Note Content */}
+            <span
+              style={{
+                flex: 1,
+                fontSize: 'var(--text-body)',
+                color: 'var(--color-text-primary)',
+                lineHeight: '1.5',
+              }}
+            >
+              {item.text}
+            </span>
+
+            {/* Delete Button */}
             <button
               type="button"
               onClick={() => onRemove(item.id)}
               aria-label={`Remove "${item.text}"`}
               style={{
-                padding: '4px 8px',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--color-alert)',
-                border: '1px solid var(--color-alert-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '6px',
+                background: 'transparent',
+                border: 'none',
                 borderRadius: 'var(--radius-small)',
+                color: 'var(--color-text-muted)',
                 cursor: 'pointer',
-                background: 'var(--color-alert-muted)',
-                fontFamily: 'var(--font-mono)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-alert)';
+                e.currentTarget.style.backgroundColor = 'var(--color-alert-muted)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-muted)';
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
-              Remove
+              <Trash2 size={16} />
             </button>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <input
-          type="text"
-          value={newItemText}
-          onChange={(e) => setNewItemText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Add a remember item..."
-          aria-label="New remember item"
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-medium)',
-            fontSize: 'var(--text-body)',
-            backgroundColor: 'var(--color-bg-elevated)',
-            color: 'var(--color-text-primary)',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-        />
-        <button
-          type="button"
-          onClick={handleAdd}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: 'var(--color-secondary)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 'var(--radius-medium)',
-            fontSize: 'var(--text-body)',
-            fontFamily: 'var(--font-mono)',
-            cursor: 'pointer',
-            boxShadow: '0 0 8px rgba(168, 85, 247, 0.2)',
-            transition: 'box-shadow 0.2s',
-          }}
-        >
-          Add
-        </button>
+      {/* Add New Item Form */}
+      <div style={{
+        padding: '16px',
+        border: '1px dashed var(--color-border)',
+        borderRadius: 'var(--radius-medium)',
+        backgroundColor: 'var(--color-bg-surface)',
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'flex-start',
+        }}>
+          <input
+            type="text"
+            value={newItemText}
+            onChange={(e) => setNewItemText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Add a remember item..."
+            aria-label="New remember item"
+            style={{
+              flex: 1,
+              padding: '10px 14px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+              outline: 'none',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--color-primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 2px var(--color-primary-muted)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--color-border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!newItemText.trim()}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: newItemText.trim() ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
+              color: newItemText.trim() ? '#0D0F14' : 'var(--color-text-muted)',
+              border: 'none',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 600,
+              cursor: newItemText.trim() ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              if (newItemText.trim()) {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)';
+                e.currentTarget.style.boxShadow = '0 0 8px rgba(0, 240, 255, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (newItemText.trim()) {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          >
+            Add
+          </button>
+        </div>
+        <p style={{
+          margin: '8px 0 0',
+          fontSize: 'var(--text-caption)',
+          color: 'var(--color-text-muted)',
+          fontFamily: 'var(--font-mono)',
+        }}>
+          Drag to reorder or use Tab + arrow keys
+        </p>
       </div>
     </div>
   );
