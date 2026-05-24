@@ -937,6 +937,7 @@ import {
   LinkedPdpGoalInfo,
   StrategyGoalStatus,
   StrategyGoalBasicInfo,
+  LinkSuggestion,
 } from '@/types/strategy-goal';
 
 export async function createStrategyGoal(
@@ -1063,5 +1064,10 @@ export async function getStrategyGoalsByPdpGoal(
     {},
     token
   );
+  return response.json();
+}
+
+export async function getAiLinkSuggestions(token: string): Promise<LinkSuggestion[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/ai-suggestions`, {}, token);
   return response.json();
 }

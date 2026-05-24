@@ -80,3 +80,14 @@ export interface StrategyGoalBasicInfo {
   title: string;
   status: StrategyGoalStatus;
 }
+
+export interface LinkSuggestion {
+  strategyGoalId: string;
+  strategyGoalTitle: string;
+  pdpGoalId: string;
+  personId: string;
+  pdpGoalTitle: string;
+  personName: string;
+  matchScore: number;
+  reasoning: string;
+}

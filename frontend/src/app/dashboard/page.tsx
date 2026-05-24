@@ -10,6 +10,7 @@ import OverdueActionItems from '@/components/dashboard/OverdueActionItems';
 import DueSoonActionItems from '@/components/dashboard/DueSoonActionItems';
 import StaleOneOnOnes from '@/components/dashboard/StaleOneOnOnes';
 import UpcomingAnniversaries from '@/components/dashboard/UpcomingAnniversaries';
+import StrategyProgressCard from '@/components/strategy/StrategyProgressCard';
 import { ProgressRing, StreakCounter, AchievementBadge, ActivityHeatmap } from '@/components/gamification';
 import { UserSettings } from '@/types/settings';
 
