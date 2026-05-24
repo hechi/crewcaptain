@@ -6,9 +6,9 @@ import com.peoplemanager.application.ports.StrategyGoalPdpGoalLinkRepository
 import com.peoplemanager.application.ports.StrategyGoalRepository
 import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.domain.PdpGoalId
-import com.peoplemanager.domain.PdpGoalStatus
 import com.peoplemanager.domain.StrategyGoalId
 import com.peoplemanager.domain.StrategyGoalPdpGoalLink
+import com.peoplemanager.domain.StrategyGoalStatus
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
