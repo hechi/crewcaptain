@@ -97,6 +97,19 @@ export default function Navigation() {
             Dashboard
           </Link>
           <Link
+            href="/strategy"
+            data-testid="nav-strategy"
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              transition: 'color 0.2s',
+            }}
+          >
+            Strategy
+          </Link>
+          <Link
             href="/people"
             data-testid="nav-people"
             style={{
