@@ -201,4 +201,28 @@ class StrategyGoalLinkService(
         // In a full implementation, we'd inject PersonRepository and iterate through all persons
         return emptyList()
     }
+
+    data class LinkedPdpGoalInfo(
+        val pdpGoalId: PdpGoalId,
+        val personId: com.peoplemanager.domain.PersonId,
+        val title: String
+    )
+
+    fun getLinkedPdpGoals(strategyGoalId: StrategyGoalId, userId: com.peoplemanager.domain.UserId): List<LinkedPdpGoalInfo> {
+        strategyGoalRepository.findByIdAndUserId(strategyGoalId, userId)
+            ?: throw StrategyGoalNotFoundException(strategyGoalId)
+
+        val links = linkRepository.findAllByStrategyGoalIdAndUserId(strategyGoalId, userId)
+
+        return links.map { link ->
+            val pdpGoal = pdpGoalRepository.findByIdAndUserIdAndPersonId(
+                link.pdpGoalId, userId, link.personId
+            )
+            LinkedPdpGoalInfo(
+                pdpGoalId = link.pdpGoalId,
+                personId = link.personId,
+                title = pdpGoal?.title ?: "Unknown"
+            )
+        }
+    }
 }
