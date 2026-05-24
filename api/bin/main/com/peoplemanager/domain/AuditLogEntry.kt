@@ -14,7 +14,9 @@ enum class AuditAction {
     CREATE,
     UPDATE,
     DELETE,
-    RESTORE
+    RESTORE,
+    LINK,
+    UNLINK
 }
 
 enum class AuditEntityType {
@@ -27,7 +29,8 @@ enum class AuditEntityType {
     KUDOS,
     QUICK_NOTE,
     USER_SETTINGS,
-    WORKSPACE
+    WORKSPACE,
+    STRATEGY_GOAL
 }
 
 /**
@@ -273,6 +276,69 @@ data class AuditLogEntry(
                 entityType = AuditEntityType.WORKSPACE,
                 entityId = workspaceId.value.toString(),
                 summary = "Deleted workspace \"$name\""
+            )
+
+        fun strategyGoalCreated(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.CREATE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Created strategy goal \"$title\""
+            )
+
+        fun strategyGoalUpdated(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Updated strategy goal \"$title\""
+            )
+
+        fun strategyGoalDeleted(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.DELETE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Deleted strategy goal \"$title\""
+            )
+
+        fun strategyGoalLinked(userId: UserId, strategyGoalId: StrategyGoalId, strategyGoalTitle: String, pdpGoalTitle: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.LINK,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Linked PDP goal \"$pdpGoalTitle\" to strategy goal \"$strategyGoalTitle\""
+            )
+
+        fun strategyGoalUnlinked(userId: UserId, strategyGoalId: StrategyGoalId, strategyGoalTitle: String, pdpGoalTitle: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UNLINK,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Unlinked PDP goal \"$pdpGoalTitle\" from strategy goal \"$strategyGoalTitle\""
+            )
+
+        fun strategyGoalAchieved(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Marked strategy goal \"$title\" as achieved"
+            )
+
+        fun strategyGoalDropped(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Dropped strategy goal \"$title\""
             )
     }
 }

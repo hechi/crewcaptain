@@ -322,5 +322,23 @@ data class AuditLogEntry(
                 entityId = strategyGoalId.value.toString(),
                 summary = "Unlinked PDP goal \"$pdpGoalTitle\" from strategy goal \"$strategyGoalTitle\""
             )
+
+        fun strategyGoalAchieved(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Marked strategy goal \"$title\" as achieved"
+            )
+
+        fun strategyGoalDropped(userId: UserId, strategyGoalId: StrategyGoalId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.STRATEGY_GOAL,
+                entityId = strategyGoalId.value.toString(),
+                summary = "Dropped strategy goal \"$title\""
+            )
     }
 }

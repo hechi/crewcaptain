@@ -76,7 +76,7 @@ class SearchResultTest {
     @Test
     fun `SearchResultType should have all expected values`() {
         val types = SearchResultType.entries
-        types.size shouldBe 7
+        types.size shouldBe 8
         types shouldBe listOf(
             SearchResultType.PERSON,
             SearchResultType.ONE_ON_ONE_ENTRY,
@@ -84,7 +84,8 @@ class SearchResultTest {
             SearchResultType.ACTION_ITEM,
             SearchResultType.PDP_GOAL,
             SearchResultType.PDP_UPDATE,
-            SearchResultType.KUDOS
+            SearchResultType.KUDOS,
+            SearchResultType.STRATEGY_GOAL
         )
     }
 
