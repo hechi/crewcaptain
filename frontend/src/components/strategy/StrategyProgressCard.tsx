@@ -107,11 +107,16 @@ export default function StrategyProgressCard() {
     );
   }
 
+  // Note: This counts total link instances, not unique PDP goals
+  // A PDP goal linked to multiple strategy goals is counted multiple times
+  // This can exceed 100% and is intentional - it shows total alignment coverage
   const totalLinkedGoals = alignmentScores.reduce((sum, s) => sum + s.linkedPdpGoals, 0);
   const totalActivePdpGoals = alignmentScores[0]?.totalActivePdpGoals || 0;
-  const overallAlignmentPercentage = totalActivePdpGoals > 0
+  const rawPercentage = totalActivePdpGoals > 0
     ? Math.round((totalLinkedGoals / totalActivePdpGoals) * 100)
     : 0;
+  // Cap at 100% for display purposes, but show actual count
+  const overallAlignmentPercentage = Math.min(rawPercentage, 100);
 
   return (
     <div
