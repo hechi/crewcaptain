@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
 import StrategyGoalCard from '@/components/strategy/StrategyGoalCard';
 import StrategyGoalForm from '@/components/strategy/StrategyGoalForm';
+import LinkManagementModal from '@/components/strategy/LinkManagementModal';
 import Modal from '@/components/Modal';
-import { Target, Plus, AlertCircle, Link2, Users } from 'lucide-react';
+import { Target, Plus, AlertCircle, Link2, Users, Filter } from 'lucide-react';
 import {
   listStrategyGoals,
   createStrategyGoal,
@@ -43,6 +44,8 @@ export default function StrategyPage() {
   const [gapAnalysis, setGapAnalysis] = useState<GapAnalysis | null>(null);
   const [alignmentScores, setAlignmentScores] = useState<AlignmentScore[]>([]);
   const [showGapAnalysis, setShowGapAnalysis] = useState(false);
+  const [linkedOnlyFilter, setLinkedOnlyFilter] = useState(false);
+  const [managingLinksGoal, setManagingLinksGoal] = useState<StrategyGoal | null>(null);
 
   const fetchData = useCallback(async () => {
     const token = getToken();
@@ -146,6 +149,13 @@ export default function StrategyPage() {
       fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to drop strategy goal');
+    }
+  };
+
+  const handleManageLinks = (id: string) => {
+    const goal = goals.find(g => g.id === id);
+    if (goal) {
+      setManagingLinksGoal(goal);
     }
   };
 
@@ -260,6 +270,26 @@ export default function StrategyPage() {
           >
             <AlertCircle size={16} />
             Gap Analysis
+          </button>
+
+          <button
+            onClick={() => setLinkedOnlyFilter(!linkedOnlyFilter)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              backgroundColor: linkedOnlyFilter ? 'var(--color-morale-green-muted)' : 'var(--color-bg-elevated)',
+              color: linkedOnlyFilter ? 'var(--color-morale-green)' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            <Filter size={16} />
+            Linked Only
           </button>
         </div>
       </div>
@@ -385,20 +415,26 @@ export default function StrategyPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '16px' }}>
-          {goals.map((goal) => (
-            <StrategyGoalCard
-              key={goal.id}
-              goal={{
-                ...goal,
-                linkedPdpGoalCount: alignmentScores.find(s => s.strategyGoalId === goal.id)?.linkedPdpGoals ?? 0,
-              }}
-              onAchieve={handleAchieveGoal}
-              onDrop={handleDropGoal}
-              onEdit={() => setEditingGoal(goal)}
-              onDelete={() => setDeletingGoalId(goal.id)}
-              onManageLinks={() => {}}
-            />
-          ))}
+          {goals
+            .filter((goal) => {
+              if (!linkedOnlyFilter) return true;
+              const linkedCount = alignmentScores.find(s => s.strategyGoalId === goal.id)?.linkedPdpGoals ?? 0;
+              return linkedCount > 0;
+            })
+            .map((goal) => (
+              <StrategyGoalCard
+                key={goal.id}
+                goal={{
+                  ...goal,
+                  linkedPdpGoalCount: alignmentScores.find(s => s.strategyGoalId === goal.id)?.linkedPdpGoals ?? 0,
+                }}
+                onAchieve={handleAchieveGoal}
+                onDrop={handleDropGoal}
+                onEdit={() => setEditingGoal(goal)}
+                onDelete={() => setDeletingGoalId(goal.id)}
+                onManageLinks={handleManageLinks}
+              />
+            ))}
         </div>
       )}
 
@@ -479,6 +515,17 @@ export default function StrategyPage() {
           </button>
         </div>
       </Modal>
+
+      {/* Link Management Modal */}
+      {managingLinksGoal && (
+        <LinkManagementModal
+          strategyGoalId={managingLinksGoal.id}
+          strategyGoalTitle={managingLinksGoal.title}
+          isOpen={!!managingLinksGoal}
+          onClose={() => setManagingLinksGoal(null)}
+          onLinksChanged={fetchData}
+        />
+      )}
     </div>
   );
 }
