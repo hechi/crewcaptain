@@ -88,7 +88,7 @@ export default function LinkManagementModal({
     }
   }, [isOpen, status, fetchData]);
 
-  const handleToggleLink = async (pdpGoalId: string) => {
+  const handleToggleLink = async (pdpGoalId: string, personId: string) => {
     const token = getToken();
     if (!token) return;
 
@@ -103,7 +103,7 @@ export default function LinkManagementModal({
           return newSet;
         });
       } else {
-        await linkPdpGoalToStrategyGoal(token, strategyGoalId, { pdpGoalId });
+        await linkPdpGoalToStrategyGoal(token, strategyGoalId, { pdpGoalId, personId });
         setLinkedGoalIds((prev) => new Set(prev).add(pdpGoalId));
       }
       onLinksChanged();
@@ -262,7 +262,7 @@ export default function LinkManagementModal({
                       }}
                     >
                       <button
-                        onClick={() => !isProcessing && handleToggleLink(goal.id)}
+                        onClick={() => !isProcessing && handleToggleLink(goal.id, goal.personId)}
                         disabled={isProcessing}
                         style={{
                           display: 'flex',
