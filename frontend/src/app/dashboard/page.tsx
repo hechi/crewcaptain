@@ -299,6 +299,19 @@ export default function DashboardPage() {
           gap: 'var(--space-5)',
         }}
       >
+        {/* Strategy Progress */}
+        <section
+          data-testid="dashboard-section-strategy"
+          style={{
+            padding: 'var(--space-5)',
+            borderRadius: 'var(--radius-large)',
+            border: '1px solid var(--color-border)',
+            backgroundColor: 'var(--color-bg-elevated)',
+          }}
+        >
+          <StrategyProgressCard />
+        </section>
+
         {/* Overdue Action Items */}
         <section
           data-testid="dashboard-section-overdue"
