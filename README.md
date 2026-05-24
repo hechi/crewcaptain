@@ -44,6 +44,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **AI Coaching & Feedback Refinement** — AI-powered coaching tools integrated into Kudos and PDP Goals. **Kudos Refinement**: "Refine" button on the Kudos form sends the draft to the LLM using the SBI (Situation-Behavior-Impact) framework, returning a polished version in a comparison view (Apply/Keep Original). **PDP Goal SMART Check**: "SMART Check" button on the PDP Goal form evaluates the goal against SMART criteria and suggests an improved title and description. **Customizable Prompts**: All AI system prompts (Kudos Refinement, PDP Optimization, Agenda Prep, Narrative) are configurable per-user in Settings under the "AI Prompts" section, with "Reset to Default" buttons. Existing AI features (1:1 Prep, Narrative Generator) now use the user's custom prompts when set.
 - **AI Outcome Extractor** — Post-meeting productivity tool that parses 1:1 entry notes using the configured LLM to extract action items and key decisions. Identifies tasks for both Manager and Direct Report with inferred due dates. Presents results in a review modal where items can be edited, toggled, or deselected before bulk-applying. Action items are created with `originatingEntryId` linking them to the source entry. Decisions are appended to the entry's Outcomes field. Duplicate detection: items matching existing action item titles are flagged and pre-unchecked. Privacy: disabled for sensitive entries when AI Privacy Mode is ON. Custom prompt configurable in Settings. Cyberpunk-themed modal with owner-type color coding (cyan for Manager, violet for Person).
 - **AI Strategic Trend Radar** — Diagnostic tool that analyzes 90 days of team member data (1:1 outcomes, action items, PDP progress, kudos) to surface long-term patterns and momentum shifts. Evaluates four dimensions: Sentiment/Morale Drift, Work/Growth Balance, Recognition Velocity, and Meeting Efficacy. Each insight includes a Confidence Score (0-100%) based on data volume and recency: Low (<40%, insufficient data), Moderate (40-75%, some signal), High (>75%, strong signal). Minimum 2 meetings required to generate insights; shows "Scanning horizon..." empty state otherwise. Privacy Mode respected — outcomes excluded when enabled. Custom system prompt configurable in Settings. Cyberpunk glassmorphism insight cards with neon confidence gauges and dimension icons. New "✦ Insights" tab on Person Detail page (conditionally visible when AI enabled).
+- **Strategy Hub** — Strategic layer for managers to define high-level objectives and visualize team PDP goal alignment. Create strategy goals with title, description, target date, and sensitive flag. Link PDP goals to strategy goals to track alignment. Alignment scoring shows percentage of active PDP goals contributing to each strategy goal. Gap analysis panel highlights unlinked PDP goals and strategy goals without contributors. Full CRUD with status transitions (ACTIVE → ACHIEVED/DROPPED). AES-256-GCM encryption for sensitive strategy goals. Full-text search integration with GIN index. Comprehensive audit logging for all CRUD and link/unlink operations.
 
 ### Planned
 
@@ -335,6 +336,64 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | Method | Endpoint          | Description                                    |
 |--------|-------------------|------------------------------------------------|
 | GET    | `/api/v1/search`  | Full-text search across all manager data       |
+
+**Query parameters:**
+- `q` — Search query (required)
+- `type` — Filter by result type (repeatable): PERSON, ONE_ON_ONE_ENTRY, QUICK_NOTE, ACTION_ITEM, PDP_GOAL, PDP_UPDATE, KUDOS, STRATEGY_GOAL
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20, max: 100)
+
+**Notes:**
+- All results are scoped by the authenticated user (security invariant)
+- Sensitive content snippets are hidden in search results (only title shown)
+- Uses PostgreSQL full-text search with GIN indexes, prefix matching, and relevance ranking
+- Encrypted sensitive fields are not searchable (trade-off for encryption at rest)
+
+### Strategy Goals
+
+| Method | Endpoint                                                              | Description                          |
+|--------|-----------------------------------------------------------------------|--------------------------------------|
+| POST   | `/api/v1/strategy-goals`                                              | Create a strategy goal               |
+| GET    | `/api/v1/strategy-goals`                                              | List strategy goals (paginated)      |
+| GET    | `/api/v1/strategy-goals/{id}`                                         | Get a strategy goal                  |
+| PUT    | `/api/v1/strategy-goals/{id}`                                         | Update a strategy goal               |
+| DELETE | `/api/v1/strategy-goals/{id}`                                         | Delete a strategy goal               |
+| POST   | `/api/v1/strategy-goals/{id}/achieve`                                 | Mark strategy goal as ACHIEVED       |
+| POST   | `/api/v1/strategy-goals/{id}/drop`                                    | Mark strategy goal as DROPPED        |
+| POST   | `/api/v1/strategy-goals/{id}/links`                                   | Link a PDP goal to strategy goal     |
+| GET    | `/api/v1/strategy-goals/{id}/links`                                   | Get linked PDP goals                 |
+| DELETE | `/api/v1/strategy-goals/{id}/links/{pdpGoalId}`                       | Unlink a PDP goal                    |
+| GET    | `/api/v1/strategy-goals/{id}/alignment`                               | Get alignment score for goal         |
+| GET    | `/api/v1/strategy-goals/alignment`                                    | Get all alignment scores             |
+| GET    | `/api/v1/strategy-goals/gap-analysis`                                 | Get gap analysis                     |
+
+**Strategy Goal fields:**
+- `title` — Required (max 500 chars)
+- `description` — Optional text (max 5000 chars)
+- `targetDate` — Optional date (ISO 8601 date)
+- `status` — ACTIVE, ACHIEVED, or DROPPED (default: ACTIVE)
+- `sensitive` — Optional boolean (default: false)
+
+**Strategy Goal status transitions:**
+- ACTIVE → ACHIEVED (via `/achieve`)
+- ACTIVE → DROPPED (via `/drop`)
+- No other transitions are allowed
+
+**Query parameters for strategy goals list:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `status` — Filter by status (ACTIVE, ACHIEVED, DROPPED)
+
+**Alignment Score fields:**
+- `strategyGoalId` — Strategy goal UUID
+- `strategyGoalTitle` — Strategy goal title
+- `totalActivePdpGoals` — Total number of active PDP goals across all people
+- `linkedPdpGoals` — Number of PDP goals linked to this strategy goal
+- `alignmentPercentage` — Percentage of active PDP goals linked (0-100)
+
+**Gap Analysis fields:**
+- `unlinkedPdpGoals` — Array of PDP goals not linked to any strategy goal
+- `emptyStrategyGoals` — Array of strategy goals with no linked PDP goals
 
 ### User Settings
 
