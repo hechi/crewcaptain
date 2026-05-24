@@ -924,3 +924,130 @@ export async function applyOutcomes(
   );
   return response.json();
 }
+
+import {
+  StrategyGoal,
+  CreateStrategyGoalRequest,
+  UpdateStrategyGoalRequest,
+  LinkPdpGoalRequest,
+  PaginatedStrategyGoalResponse,
+  AlignmentScore,
+  AllAlignmentScoresResponse,
+  GapAnalysis,
+  LinkedPdpGoalInfo,
+  StrategyGoalStatus,
+} from '@/types/strategy-goal';
+
+export async function createStrategyGoal(
+  token: string,
+  data: CreateStrategyGoalRequest
+): Promise<StrategyGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function getStrategyGoal(token: string, id: string): Promise<StrategyGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${id}`, {}, token);
+  return response.json();
+}
+
+export async function listStrategyGoals(
+  token: string,
+  params?: {
+    status?: StrategyGoalStatus;
+    page?: number;
+    size?: number;
+  }
+): Promise<PaginatedStrategyGoalResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.page !== undefined) searchParams.set('page', params.page.toString());
+  if (params?.size !== undefined) searchParams.set('size', params.size.toString());
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/strategy-goals${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function updateStrategyGoal(
+  token: string,
+  id: string,
+  data: UpdateStrategyGoalRequest
+): Promise<StrategyGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function deleteStrategyGoal(token: string, id: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${id}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function achieveStrategyGoal(token: string, id: string): Promise<StrategyGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${id}/achieve`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function dropStrategyGoal(token: string, id: string): Promise<StrategyGoal> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${id}/drop`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function linkPdpGoalToStrategyGoal(
+  token: string,
+  strategyGoalId: string,
+  data: LinkPdpGoalRequest
+): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${strategyGoalId}/links`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+export async function unlinkPdpGoalFromStrategyGoal(
+  token: string,
+  strategyGoalId: string,
+  pdpGoalId: string
+): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${strategyGoalId}/links/${pdpGoalId}`, {
+    method: 'DELETE',
+  }, token);
+}
+
+export async function getLinkedPdpGoals(
+  token: string,
+  strategyGoalId: string
+): Promise<LinkedPdpGoalInfo[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${strategyGoalId}/links`, {}, token);
+  return response.json();
+}
+
+export async function getAlignmentScore(
+  token: string,
+  strategyGoalId: string
+): Promise<AlignmentScore> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/${strategyGoalId}/alignment`, {}, token);
+  return response.json();
+}
+
+export async function getAllAlignmentScores(token: string): Promise<AllAlignmentScoresResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/alignment`, {}, token);
+  return response.json();
+}
+
+export async function getGapAnalysis(token: string): Promise<GapAnalysis> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/gap-analysis`, {}, token);
+  return response.json();
+}
