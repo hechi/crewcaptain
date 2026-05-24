@@ -1,5 +1,6 @@
 package com.peoplemanager.adapters.web.dto
 
+import com.peoplemanager.application.AiLinkDiscoveryService
 import com.peoplemanager.application.StrategyGoalLinkService
 import com.peoplemanager.domain.StrategyGoal
 import com.peoplemanager.domain.StrategyGoalStatus
@@ -146,6 +147,31 @@ data class StrategyGoalBasicInfoResponse(
                 strategyGoalId = info.strategyGoalId.value,
                 title = info.title,
                 status = info.status
+            )
+    }
+}
+
+data class LinkSuggestionResponse(
+    val strategyGoalId: UUID,
+    val strategyGoalTitle: String,
+    val pdpGoalId: UUID,
+    val personId: UUID,
+    val pdpGoalTitle: String,
+    val personName: String,
+    val matchScore: Int,
+    val reasoning: String
+) {
+    companion object {
+        fun from(suggestion: AiLinkDiscoveryService.LinkSuggestion): LinkSuggestionResponse =
+            LinkSuggestionResponse(
+                strategyGoalId = suggestion.strategyGoalId.value,
+                strategyGoalTitle = suggestion.strategyGoalTitle,
+                pdpGoalId = suggestion.pdpGoalId.value,
+                personId = suggestion.personId.value,
+                pdpGoalTitle = suggestion.pdpGoalTitle,
+                personName = suggestion.personName,
+                matchScore = suggestion.matchScore,
+                reasoning = suggestion.reasoning
             )
     }
 }

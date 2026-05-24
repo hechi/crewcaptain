@@ -8,6 +8,7 @@ import EmptyState from '@/components/EmptyState';
 
 interface PdpGoalListProps {
   goals: PdpGoal[];
+  personId: string;
   onCreateGoal: (data: CreatePdpGoalRequest) => void;
   onUpdateGoal: (goalId: string, data: UpdatePdpGoalRequest) => void;
   onAchieveGoal: (goalId: string) => void;

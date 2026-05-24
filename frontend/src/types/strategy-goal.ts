@@ -74,3 +74,9 @@ export interface LinkedPdpGoalInfo {
   personId: string;
   title: string;
 }
+
+export interface StrategyGoalBasicInfo {
+  strategyGoalId: string;
+  title: string;
+  status: StrategyGoalStatus;
+}

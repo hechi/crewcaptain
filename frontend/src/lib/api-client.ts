@@ -936,6 +936,7 @@ import {
   GapAnalysis,
   LinkedPdpGoalInfo,
   StrategyGoalStatus,
+  StrategyGoalBasicInfo,
 } from '@/types/strategy-goal';
 
 export async function createStrategyGoal(
@@ -1049,5 +1050,18 @@ export async function getAllAlignmentScores(token: string): Promise<AllAlignment
 
 export async function getGapAnalysis(token: string): Promise<GapAnalysis> {
   const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/gap-analysis`, {}, token);
+  return response.json();
+}
+
+export async function getStrategyGoalsByPdpGoal(
+  token: string,
+  personId: string,
+  pdpGoalId: string
+): Promise<StrategyGoalBasicInfo[]> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/persons/${personId}/pdp-goals/${pdpGoalId}/strategy-goals`,
+    {},
+    token
+  );
   return response.json();
 }

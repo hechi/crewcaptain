@@ -21,7 +21,8 @@ import java.util.UUID
 @RequestMapping("/api/v1")
 class StrategyGoalController(
     private val strategyGoalService: StrategyGoalService,
-    private val strategyGoalLinkService: StrategyGoalLinkService
+    private val strategyGoalLinkService: StrategyGoalLinkService,
+    private val aiLinkDiscoveryService: AiLinkDiscoveryService
 ) {
 
     // ===== Strategy Goals =====
@@ -206,6 +207,16 @@ class StrategyGoalController(
         val userId = AuthenticatedUser.getUserId()
         val strategyGoals = strategyGoalLinkService.getStrategyGoalsByPdpGoal(PdpGoalId(pdpGoalId), userId)
         val responses = strategyGoals.map { StrategyGoalBasicInfoResponse.from(it) }
+        return ResponseEntity.ok(responses)
+    }
+
+    // ===== AI Discovery =====
+
+    @GetMapping("/strategy-goals/ai-suggestions")
+    fun getAiLinkSuggestions(): ResponseEntity<List<LinkSuggestionResponse>> {
+        val userId = AuthenticatedUser.getUserId()
+        val suggestions = aiLinkDiscoveryService.findLinkSuggestions(userId)
+        val responses = suggestions.map { LinkSuggestionResponse.from(it) }
         return ResponseEntity.ok(responses)
     }
 

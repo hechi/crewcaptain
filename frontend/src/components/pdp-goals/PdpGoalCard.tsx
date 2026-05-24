@@ -2,9 +2,11 @@
 
 import { PdpGoal } from '@/types/pdp-goal';
 import PdpGoalStatusBadge from './PdpGoalStatusBadge';
+import PdpGoalAlignmentBadges from './PdpGoalAlignmentBadges';
 
 interface PdpGoalCardProps {
   goal: PdpGoal;
+  personId: string;
   onAchieve?: (id: string) => void;
   onPause?: (id: string) => void;
   onDrop?: (id: string) => void;
@@ -20,6 +22,7 @@ interface PdpGoalCardProps {
  */
 export default function PdpGoalCard({
   goal,
+  personId,
   onAchieve,
   onPause,
   onDrop,
@@ -83,6 +86,9 @@ export default function PdpGoalCard({
           {goal.description}
         </p>
       )}
+
+      {/* Alignment Badges */}
+      <PdpGoalAlignmentBadges personId={personId} pdpGoalId={goal.id} />
 
       {/* Meta row: target date */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: (isActive || isPaused) ? '12px' : '0' }}>
