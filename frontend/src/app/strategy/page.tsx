@@ -7,6 +7,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import StrategyGoalCard from '@/components/strategy/StrategyGoalCard';
 import StrategyGoalForm from '@/components/strategy/StrategyGoalForm';
 import LinkManagementModal from '@/components/strategy/LinkManagementModal';
+import AiSuggestionsPanel from '@/components/strategy/AiSuggestionsPanel';
 import Modal from '@/components/Modal';
 import { Target, Plus, AlertCircle, Link2, Users, Filter } from 'lucide-react';
 import {
@@ -381,6 +382,11 @@ export default function StrategyPage() {
           </div>
         </div>
       )}
+
+      {/* AI Suggestions Panel */}
+      <div style={{ marginBottom: 'var(--space-6)' }}>
+        <AiSuggestionsPanel onSuggestionApplied={fetchData} />
+      </div>
 
       {/* Strategy Goals Grid */}
       {goals.length === 0 ? (
