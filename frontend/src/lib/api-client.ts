@@ -48,7 +48,7 @@ import {
 import { SearchResponse, SearchResultType } from '@/types/search';
 import { Workspace, CreateWorkspaceRequest, UpdateWorkspaceRequest, AssignPersonToWorkspaceRequest } from '@/types/workspace';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || '/api/v1';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}, token: string): Promise<Response> {
   const response = await fetch(url, {
