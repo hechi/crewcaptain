@@ -33,6 +33,7 @@ class JpaSearchRepositoryAdapter(
             if ("PDP_GOAL" in typeFilter) add(pdpGoalSearchSql())
             if ("PDP_UPDATE" in typeFilter) add(pdpUpdateSearchSql())
             if ("KUDOS" in typeFilter) add(kudosSearchSql())
+            if ("STRATEGY_GOAL" in typeFilter) add(strategyGoalSearchSql())
         }
 
         if (unionQueries.isEmpty()) {
@@ -246,6 +247,27 @@ class JpaSearchRepositoryAdapter(
         JOIN persons p ON p.id = k.person_id AND p.user_id = k.user_id
         WHERE k.user_id = :userId
           AND kudos_search_vector(k.text, k.tags)
+              @@ to_tsquery('english', CAST(:searchTerms AS text))
+    """.trimIndent()
+
+    private fun strategyGoalSearchSql(): String = """
+        SELECT
+            sg.id AS id,
+            'STRATEGY_GOAL' AS type,
+            sg.title AS title,
+            LEFT(COALESCE(sg.description, ''), 200) AS snippet,
+            NULL AS person_id,
+            NULL AS person_name,
+            sg.sensitive AS sensitive,
+            sg.created_at AS created_at,
+            ts_rank(
+                strategy_goals_search_vector(sg.title, sg.description),
+                to_tsquery('english', CAST(:searchTerms AS text))
+            ) AS relevance_score
+        FROM strategy_goals sg
+        WHERE sg.user_id = :userId
+          AND sg.sensitive = false
+          AND strategy_goals_search_vector(sg.title, sg.description)
               @@ to_tsquery('english', CAST(:searchTerms AS text))
     """.trimIndent()
 }

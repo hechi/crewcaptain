@@ -26,7 +26,8 @@ enum class SearchResultType {
     ACTION_ITEM,
     PDP_GOAL,
     PDP_UPDATE,
-    KUDOS
+    KUDOS,
+    STRATEGY_GOAL
 }
 
 /**
