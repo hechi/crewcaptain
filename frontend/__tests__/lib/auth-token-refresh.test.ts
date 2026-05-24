@@ -237,7 +237,7 @@ describe('Auth token refresh', () => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should set error when OIDC discovery fails', async () => {
+    it('should set error when OIDC discovery fails after retries', async () => {
       const now = Date.now();
       jest.setSystemTime(now);
 
@@ -247,12 +247,11 @@ describe('Auth token refresh', () => {
         accessTokenExpires: now - 1000,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      });
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const result = await jwtCallback({ token, account: undefined });
+      const jwtPromise = jwtCallback({ token, account: undefined });
+      await jest.advanceTimersByTimeAsync(8000);
+      const result = await jwtPromise;
 
       expect(result.error).toBe('RefreshAccessTokenError');
     });
@@ -273,14 +272,10 @@ describe('Auth token refresh', () => {
           token_endpoint: 'https://auth.example.com/application/o/token/',
         }),
       });
-
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: async () => ({
-          error: 'invalid_grant',
-          error_description: 'Refresh token expired',
-        }),
+        json: async () => ({ error: 'invalid_grant' }),
       });
 
       const result = await jwtCallback({ token, account: undefined });
@@ -288,7 +283,7 @@ describe('Auth token refresh', () => {
       expect(result.error).toBe('RefreshAccessTokenError');
     });
 
-    it('should set error when fetch throws a network error', async () => {
+    it('should set error when fetch throws a network error after retries', async () => {
       const now = Date.now();
       jest.setSystemTime(now);
 
@@ -298,9 +293,11 @@ describe('Auth token refresh', () => {
         accessTokenExpires: now - 1000,
       };
 
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const result = await jwtCallback({ token, account: undefined });
+      const jwtPromise = jwtCallback({ token, account: undefined });
+      await jest.advanceTimersByTimeAsync(8000);
+      const result = await jwtPromise;
 
       expect(result.error).toBe('RefreshAccessTokenError');
     });

@@ -1,10 +1,8 @@
 import NextAuth from 'next-auth';
 import type { NextAuthConfig } from 'next-auth';
 
-// Cache the token endpoint to avoid OIDC discovery on every refresh
 let cachedTokenEndpoint: string | null = null;
 
-/** Reset the cached token endpoint (exported for testing) */
 export function _resetTokenEndpointCache() {
   cachedTokenEndpoint = null;
 }
@@ -33,30 +31,36 @@ async function discoverTokenEndpoint(issuer: string): Promise<string | null> {
   }
 }
 
-async function refreshAccessToken(token: {
-  refreshToken: string;
-  [key: string]: unknown;
-}): Promise<{
+interface RefreshSuccess {
   accessToken: string;
   refreshToken: string;
   accessTokenExpires: number;
   error?: undefined;
-} | {
+  isRetryable?: undefined;
+}
+
+interface RefreshFailure {
   error: string;
+  isRetryable: boolean;
   accessToken?: undefined;
   refreshToken?: undefined;
   accessTokenExpires?: undefined;
-}> {
+}
+
+async function refreshAccessToken(token: {
+  refreshToken: string;
+  [key: string]: unknown;
+}): Promise<RefreshSuccess | RefreshFailure> {
   const issuer = process.env.OIDC_ISSUER;
   if (!issuer) {
     console.error('[auth] OIDC_ISSUER not configured');
-    return { error: 'RefreshAccessTokenError' };
+    return { error: 'RefreshAccessTokenError', isRetryable: false };
   }
 
   try {
     const tokenEndpoint = await discoverTokenEndpoint(issuer);
     if (!tokenEndpoint) {
-      return { error: 'RefreshAccessTokenError' };
+      return { error: 'RefreshAccessTokenError', isRetryable: true };
     }
 
     const response = await fetch(tokenEndpoint, {
@@ -75,9 +79,11 @@ async function refreshAccessToken(token: {
 
     if (!response.ok) {
       console.error('[auth] Token refresh failed:', response.status, refreshedTokens);
-      // Clear cached endpoint in case it's stale
-      cachedTokenEndpoint = null;
-      return { error: 'RefreshAccessTokenError' };
+      const isRetryable = response.status >= 500;
+      if (isRetryable) {
+        cachedTokenEndpoint = null;
+      }
+      return { error: 'RefreshAccessTokenError', isRetryable };
     }
 
     return {
@@ -87,10 +93,13 @@ async function refreshAccessToken(token: {
     };
   } catch (err) {
     console.error('[auth] Token refresh error:', err);
-    // Clear cached endpoint in case it's stale
     cachedTokenEndpoint = null;
-    return { error: 'RefreshAccessTokenError' };
+    return { error: 'RefreshAccessTokenError', isRetryable: true };
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export const authConfig: NextAuthConfig = {
@@ -107,7 +116,6 @@ export const authConfig: NextAuthConfig = {
   ],
   callbacks: {
     async jwt({ token, account }) {
-      // Initial sign-in: persist tokens and expiry from the OIDC provider
       if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
@@ -115,18 +123,15 @@ export const authConfig: NextAuthConfig = {
           ? account.expires_at * 1000
           : Date.now() + 3600 * 1000;
         token.error = undefined;
+        token.refreshAttempts = 0;
         return token;
       }
 
-      // Subsequent requests: check if access token is still valid
-      // Refresh 30 seconds before actual expiry to avoid edge-case failures
       const expiresAt = (token.accessTokenExpires as number) ?? 0;
       if (Date.now() < expiresAt - 30 * 1000) {
-        // Token is still valid
         return token;
       }
 
-      // Token has expired (or is about to) — attempt refresh
       const refreshToken = token.refreshToken as string | undefined;
       if (!refreshToken) {
         console.error('[auth] No refresh token available — ensure offline_access scope is granted by the OIDC provider');
@@ -134,16 +139,41 @@ export const authConfig: NextAuthConfig = {
         return token;
       }
 
-      const refreshed = await refreshAccessToken({ refreshToken });
-      if (refreshed.error) {
-        token.error = 'RefreshAccessTokenError';
-        return token;
+      const currentAttempts = (token.refreshAttempts as number) ?? 0;
+      const maxRetries = 2;
+
+      let lastError: string | undefined;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        if (attempt > 0) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.warn(`[auth] Token refresh attempt ${attempt}/${maxRetries} failed, retrying in ${delay}ms...`);
+          await sleep(delay);
+        }
+
+        const refreshed = await refreshAccessToken({ refreshToken });
+        
+        if (!refreshed.error) {
+          token.accessToken = refreshed.accessToken;
+          token.refreshToken = refreshed.refreshToken;
+          token.accessTokenExpires = refreshed.accessTokenExpires;
+          token.error = undefined;
+          token.refreshAttempts = 0;
+          console.info('[auth] Token refreshed successfully');
+          return token;
+        }
+
+        lastError = refreshed.error;
+
+        if (!refreshed.isRetryable) {
+          console.error(`[auth] Token refresh failed with non-retryable error, not retrying`);
+          break;
+        }
       }
 
-      token.accessToken = refreshed.accessToken;
-      token.refreshToken = refreshed.refreshToken;
-      token.accessTokenExpires = refreshed.accessTokenExpires;
-      token.error = undefined;
+      console.error(`[auth] Token refresh failed after ${maxRetries + 1} attempts, marking session as errored`);
+      token.error = lastError;
+      token.refreshAttempts = currentAttempts + 1;
       return token;
     },
     async session({ session, token }) {

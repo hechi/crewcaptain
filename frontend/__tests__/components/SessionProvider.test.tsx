@@ -3,8 +3,8 @@
  *
  * Verifies that:
  * 1. It wraps children with NextAuth SessionProvider with appropriate refetch settings
- * 2. refetchOnWindowFocus is disabled to prevent form state loss
- * 3. refetchInterval is set to 5 minutes for background token refresh
+ * 2. refetchOnWindowFocus is enabled for background token refresh
+ * 3. refetchInterval is set to 2 minutes for background token refresh
  */
 
 import React from 'react';
@@ -41,7 +41,7 @@ describe('SessionProvider', () => {
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
-  it('should configure refetchInterval to 3 minutes', () => {
+  it('should configure refetchInterval to 2 minutes', () => {
     render(
       <SessionProvider>
         <div>Content</div>
@@ -49,7 +49,7 @@ describe('SessionProvider', () => {
     );
 
     const provider = screen.getByTestId('next-auth-session-provider');
-    expect(provider.getAttribute('data-refetch-interval')).toBe('180');
+    expect(provider.getAttribute('data-refetch-interval')).toBe('120');
   });
 
   it('should enable refetchOnWindowFocus for background token refresh', () => {

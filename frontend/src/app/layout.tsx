@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import SessionProvider from '@/components/SessionProvider'
+import SessionErrorHandler from '@/components/SessionErrorHandler'
 import Navigation from '@/components/Navigation'
 import ThemeProvider from '@/components/ThemeProvider'
 import QuickNoteOverlay from '@/components/quick-notes/QuickNoteOverlay'
@@ -34,6 +35,7 @@ export default function RootLayout({
       </head>
       <body>
         <SessionProvider>
+          <SessionErrorHandler />
           <ThemeProvider>
             <Navigation />
             <main>{children}</main>
