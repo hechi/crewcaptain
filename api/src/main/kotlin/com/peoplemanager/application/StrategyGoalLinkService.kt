@@ -2,6 +2,7 @@ package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
 import com.peoplemanager.application.ports.PdpGoalRepository
+import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.ports.StrategyGoalPdpGoalLinkRepository
 import com.peoplemanager.application.ports.StrategyGoalRepository
 import com.peoplemanager.domain.AuditLogEntry
@@ -19,7 +20,8 @@ class StrategyGoalLinkService(
     private val strategyGoalRepository: StrategyGoalRepository,
     private val pdpGoalRepository: PdpGoalRepository,
     private val linkRepository: StrategyGoalPdpGoalLinkRepository,
-    private val auditLogService: AuditLogService
+    private val auditLogService: AuditLogService,
+    private val personRepository: PersonRepository
 ) {
 
     data class AlignmentScore(
@@ -196,10 +198,17 @@ class StrategyGoalLinkService(
     }
 
     private fun getAllActivePdpGoalsForUser(userId: com.peoplemanager.domain.UserId): List<com.peoplemanager.domain.PdpGoal> {
-        // This requires querying all persons and their PDP goals
-        // For now, we'll return an empty list as this would require PersonRepository
-        // In a full implementation, we'd inject PersonRepository and iterate through all persons
-        return emptyList()
+        // Gather all ACTIVE PDP goals across all persons for the user
+        val persons = personRepository.findAllByUserIdUnpaged(userId)
+        val pageable = PageRequest.of(0, 1000)
+        val results = mutableListOf<com.peoplemanager.domain.PdpGoal>()
+
+        for (person in persons) {
+            val page = pdpGoalRepository.findAllByUserIdAndPersonId(userId, person.id, com.peoplemanager.domain.PdpGoalStatus.ACTIVE, pageable)
+            results.addAll(page.content)
+        }
+
+        return results
     }
 
     data class LinkedPdpGoalInfo(

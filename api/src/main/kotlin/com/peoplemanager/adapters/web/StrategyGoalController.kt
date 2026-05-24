@@ -149,11 +149,11 @@ class StrategyGoalController(
     @GetMapping("/strategy-goals/{strategyGoalId}/links")
     fun getLinkedPdpGoals(
         @PathVariable strategyGoalId: UUID
-    ): ResponseEntity<List<LinkedPdpGoalInfo>> {
+    ): ResponseEntity<List<LinkedPdpGoalResponse>> {
         val userId = AuthenticatedUser.getUserId()
         val links = strategyGoalLinkService.getLinkedPdpGoals(StrategyGoalId(strategyGoalId), userId)
-        // TODO: Convert links to response DTOs
-        return ResponseEntity.ok(emptyList())
+        val responses = links.map { LinkedPdpGoalResponse.from(it) }
+        return ResponseEntity.ok(responses)
     }
 
     @DeleteMapping("/strategy-goals/{strategyGoalId}/links/{pdpGoalId}")
@@ -203,10 +203,5 @@ class StrategyGoalController(
         return ResponseEntity.notFound().build()
     }
 
-    // TODO: Remove this placeholder data class
-    data class LinkedPdpGoalInfo(
-        val pdpGoalId: UUID,
-        val personId: UUID,
-        val title: String
-    )
+    // Placeholder removed; use LinkedPdpGoalResponse DTO instead
 }
