@@ -2,6 +2,7 @@ package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.*
+import com.peoplemanager.application.AiLinkDiscoveryService
 import com.peoplemanager.application.StrategyGoalLinkService
 import com.peoplemanager.application.StrategyGoalService
 import com.peoplemanager.application.StrategyGoalNotFoundException
