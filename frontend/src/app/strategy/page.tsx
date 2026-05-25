@@ -8,8 +8,9 @@ import StrategyGoalCard from '@/components/strategy/StrategyGoalCard';
 import StrategyGoalForm from '@/components/strategy/StrategyGoalForm';
 import LinkManagementModal from '@/components/strategy/LinkManagementModal';
 import AiSuggestionsPanel from '@/components/strategy/AiSuggestionsPanel';
+import SpiderWebVisualization, { LinkData } from '@/components/strategy/SpiderWebVisualization';
 import Modal from '@/components/Modal';
-import { Target, Plus, AlertCircle, Link2, Users, Filter } from 'lucide-react';
+import { Target, Plus, AlertCircle, Link2, Users, Filter, LayoutGrid, Share2, Eye, EyeOff } from 'lucide-react';
 import {
   listStrategyGoals,
   createStrategyGoal,
@@ -19,6 +20,7 @@ import {
   dropStrategyGoal,
   getGapAnalysis,
   getAllAlignmentScores,
+  getLinkedPdpGoals,
 } from '@/lib/api-client';
 import {
   StrategyGoal,
@@ -47,6 +49,9 @@ export default function StrategyPage() {
   const [showGapAnalysis, setShowGapAnalysis] = useState(false);
   const [linkedOnlyFilter, setLinkedOnlyFilter] = useState(false);
   const [managingLinksGoal, setManagingLinksGoal] = useState<StrategyGoal | null>(null);
+  const [hideSensitiveContent, setHideSensitiveContent] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'web'>('grid');
+  const [linkData, setLinkData] = useState<LinkData[]>([]);
 
   const fetchData = useCallback(async () => {
     const token = getToken();
@@ -67,6 +72,26 @@ export default function StrategyPage() {
       setGoals(goalsResponse.content);
       setGapAnalysis(gapData);
       setAlignmentScores(scoresData.scores);
+      
+      const activeGoals = goalsResponse.content.filter(g => g.status === 'ACTIVE');
+      const linkPromises = activeGoals.map(goal => 
+        getLinkedPdpGoals(token, goal.id).then(links => 
+          links.map(link => ({
+            strategyGoalId: goal.id,
+            pdpGoal: {
+              id: link.pdpGoalId,
+              personId: link.personId,
+              personName: link.personName || 'Unknown',
+              title: link.title,
+              status: 'ACTIVE' as const,
+            },
+          }))
+        ).catch(() => [] as LinkData[])
+      );
+      
+      const linkResults = await Promise.all(linkPromises);
+      setLinkData(linkResults.flat());
+      
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load strategy goals');
@@ -232,7 +257,7 @@ export default function StrategyPage() {
         )}
 
         {/* Filter Bar */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StrategyGoalStatus | '')}
@@ -292,6 +317,75 @@ export default function StrategyPage() {
             <Filter size={16} />
             Linked Only
           </button>
+
+          <button
+            onClick={() => setHideSensitiveContent(!hideSensitiveContent)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              backgroundColor: hideSensitiveContent ? 'var(--color-warning-muted)' : 'var(--color-bg-elevated)',
+              color: hideSensitiveContent ? 'var(--color-warning)' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            {hideSensitiveContent ? <EyeOff size={16} /> : <Eye size={16} />}
+            {hideSensitiveContent ? 'Sensitive Hidden' : 'Hide Sensitive'}
+          </button>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px', backgroundColor: 'var(--color-bg-surface)', borderRadius: 'var(--radius-medium)', border: '1px solid var(--color-border)' }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                fontSize: 'var(--text-small)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 'var(--weight-medium)',
+                border: 'none',
+                borderRadius: 'var(--radius-medium) 0 0 var(--radius-medium)',
+                backgroundColor: viewMode === 'grid' ? 'var(--color-primary-muted)' : 'transparent',
+                color: viewMode === 'grid' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s, color 0.2s',
+              }}
+              aria-label="Grid view"
+            >
+              <LayoutGrid size={16} />
+              Grid
+            </button>
+            <button
+              onClick={() => setViewMode('web')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                fontSize: 'var(--text-small)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 'var(--weight-medium)',
+                border: 'none',
+                borderRadius: '0 var(--radius-medium) var(--radius-medium) 0',
+                backgroundColor: viewMode === 'web' ? 'var(--color-primary-muted)' : 'transparent',
+                color: viewMode === 'web' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s, color 0.2s',
+              }}
+              aria-label="Spider web view"
+            >
+              <Share2 size={16} />
+              Web
+            </button>
+          </div>
         </div>
       </div>
 
@@ -388,8 +482,20 @@ export default function StrategyPage() {
         <AiSuggestionsPanel onSuggestionApplied={fetchData} />
       </div>
 
-      {/* Strategy Goals Grid */}
-      {goals.length === 0 ? (
+      {/* Strategy Goals Grid or Spider Web View */}
+      {viewMode === 'web' ? (
+        <SpiderWebVisualization
+          goals={goals}
+          links={linkData}
+          onNodeClick={(id, type) => {
+            if (type === 'strategy') {
+              const goal = goals.find(g => g.id === id);
+              if (goal) setEditingGoal(goal);
+            }
+          }}
+          hideSensitiveContent={hideSensitiveContent}
+        />
+      ) : goals.length === 0 ? (
         <div style={{
           textAlign: 'center',
           padding: 'var(--space-12)',
@@ -439,6 +545,7 @@ export default function StrategyPage() {
                 onEdit={() => setEditingGoal(goal)}
                 onDelete={() => setDeletingGoalId(goal.id)}
                 onManageLinks={handleManageLinks}
+                hideSensitiveContent={hideSensitiveContent}
               />
             ))}
         </div>

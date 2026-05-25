@@ -239,7 +239,15 @@ class StrategyGoalLinkService(
         val status: StrategyGoalStatus
     )
 
-    fun getStrategyGoalsByPdpGoal(pdpGoalId: PdpGoalId, userId: com.peoplemanager.domain.UserId): List<StrategyGoalBasicInfo> {
+    fun getStrategyGoalsByPdpGoal(
+        pdpGoalId: PdpGoalId,
+        personId: com.peoplemanager.domain.PersonId,
+        userId: com.peoplemanager.domain.UserId
+    ): List<StrategyGoalBasicInfo> {
+        // Validate that the PDP goal belongs to the specified person
+        val pdpGoal = pdpGoalRepository.findByIdAndUserIdAndPersonId(pdpGoalId, userId, personId)
+            ?: throw PdpGoalNotFoundException(pdpGoalId)
+
         // Find all links for this PDP goal
         val allLinks = linkRepository.findAllByUserId(userId)
         val linksForPdpGoal = allLinks.filter { it.pdpGoalId == pdpGoalId }

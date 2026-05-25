@@ -11,6 +11,7 @@ interface StrategyGoalCardProps {
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onManageLinks?: (id: string) => void;
+  hideSensitiveContent?: boolean;
 }
 
 export default function StrategyGoalCard({
@@ -20,8 +21,11 @@ export default function StrategyGoalCard({
   onEdit,
   onDelete,
   onManageLinks,
+  hideSensitiveContent = false,
 }: StrategyGoalCardProps) {
   const isActive = goal.status === 'ACTIVE';
+  const isSensitive = goal.sensitive;
+  const shouldHideContent = isSensitive && hideSensitiveContent;
 
   const formattedTargetDate = goal.targetDate
     ? new Date(goal.targetDate + 'T00:00:00').toLocaleDateString(undefined, {
@@ -36,9 +40,9 @@ export default function StrategyGoalCard({
       data-testid="strategy-goal-card"
       style={{
         padding: 'var(--space-4)',
-        border: `1px solid var(--color-border)`,
+        border: `1px solid ${isSensitive ? 'rgba(255, 214, 0, 0.3)' : 'var(--color-border)'}`,
         borderRadius: 'var(--radius-medium)',
-        backgroundColor: 'var(--color-bg-surface)',
+        backgroundColor: isSensitive ? 'var(--color-warning-muted)' : 'var(--color-bg-surface)',
         transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
     >
@@ -49,14 +53,18 @@ export default function StrategyGoalCard({
             margin: 0,
             fontSize: 'var(--text-body)',
             fontWeight: 'var(--weight-semibold)',
-            color: goal.status === 'DROPPED' ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+            color: goal.status === 'DROPPED' ? 'var(--color-text-muted)' : isSensitive ? 'var(--color-warning)' : 'var(--color-text-primary)',
             textDecoration: goal.status === 'DROPPED' ? 'line-through' : 'none',
             flex: 1,
             marginRight: '12px',
           }}
         >
-          {goal.title}
-          {goal.sensitive && (
+          {shouldHideContent ? (
+            <span style={{ fontStyle: 'italic' }}>Sensitive title hidden</span>
+          ) : (
+            goal.title
+          )}
+          {isSensitive && (
             <span style={{ marginLeft: '8px', fontSize: 'var(--text-caption)', color: 'var(--color-alert)' }}>
               🔒
             </span>
@@ -71,11 +79,11 @@ export default function StrategyGoalCard({
           style={{
             margin: '0 0 8px',
             fontSize: 'var(--text-small)',
-            color: 'var(--color-text-secondary)',
+            color: isSensitive ? 'var(--color-warning)' : 'var(--color-text-secondary)',
             lineHeight: '1.4',
           }}
         >
-          {goal.description}
+          {shouldHideContent ? 'Sensitive description hidden' : goal.description}
         </p>
       )}
 

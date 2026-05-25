@@ -43,6 +43,34 @@ describe('StrategyGoalCard', () => {
     expect(screen.getByText('🔒')).toBeInTheDocument();
   });
 
+  it('masks sensitive title when hideSensitiveContent is true', () => {
+    const sensitiveGoal = { ...mockGoal, sensitive: true };
+    render(<StrategyGoalCard goal={sensitiveGoal} hideSensitiveContent={true} {...mockHandlers} />);
+    expect(screen.getByTestId('strategy-goal-title')).toHaveTextContent('Sensitive title hidden');
+  });
+
+  it('masks sensitive description when hideSensitiveContent is true', () => {
+    const sensitiveGoal = { ...mockGoal, sensitive: true };
+    render(<StrategyGoalCard goal={sensitiveGoal} hideSensitiveContent={true} {...mockHandlers} />);
+    expect(screen.getByTestId('strategy-goal-description')).toHaveTextContent('Sensitive description hidden');
+  });
+
+  it('shows lock icon for sensitive goals', () => {
+    const sensitiveGoal = { ...mockGoal, sensitive: true };
+    render(<StrategyGoalCard goal={sensitiveGoal} {...mockHandlers} />);
+    // lock icon rendered as emoji next to title
+    expect(screen.getByText('🔒')).toBeInTheDocument();
+  });
+
+  it('applies warning styling to sensitive goals', () => {
+    const sensitiveGoal = { ...mockGoal, sensitive: true };
+    const { getByTestId } = render(<StrategyGoalCard goal={sensitiveGoal} {...mockHandlers} />);
+    const card = getByTestId('strategy-goal-card');
+    // border should include the warning rgba color and background should reference warning muted variable
+    expect(card.style.border).toContain('rgba(255, 214, 0, 0.3)');
+    expect(card.style.backgroundColor).toContain('--color-warning-muted');
+  });
+
   it('does not show action buttons when goal is ACHIEVED', () => {
     const achievedGoal = { ...mockGoal, status: 'ACHIEVED' };
     render(<StrategyGoalCard goal={achievedGoal} {...mockHandlers} />);

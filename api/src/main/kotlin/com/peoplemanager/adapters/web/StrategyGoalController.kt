@@ -206,7 +206,11 @@ class StrategyGoalController(
         @PathVariable pdpGoalId: UUID
     ): ResponseEntity<List<StrategyGoalBasicInfoResponse>> {
         val userId = AuthenticatedUser.getUserId()
-        val strategyGoals = strategyGoalLinkService.getStrategyGoalsByPdpGoal(PdpGoalId(pdpGoalId), userId)
+        val strategyGoals = strategyGoalLinkService.getStrategyGoalsByPdpGoal(
+            PdpGoalId(pdpGoalId),
+            PersonId(personId),
+            userId
+        )
         val responses = strategyGoals.map { StrategyGoalBasicInfoResponse.from(it) }
         return ResponseEntity.ok(responses)
     }
