@@ -64,8 +64,8 @@ export default function SpiderWebVisualization({
     const { width, height } = dimensions;
     const centerX = width / 2;
     const strategyY = Math.max(80, height * 0.15);
-    const pdpAreaTop = height * 0.35;
-    const pdpAreaBottom = height * 0.85;
+    const pdpAreaTop = height * 0.42;
+    const pdpAreaBottom = height * 0.9;
     
     // Filter to active goals for visualization
     const activeGoals = goals.filter(g => g.status === 'ACTIVE');
@@ -104,45 +104,59 @@ export default function SpiderWebVisualization({
       pdpByStrategy[link.strategyGoalId].push(link);
     });
 
-    // Position PDP goals in columns beneath each strategy goal
+    // Position PDP goals in a fan pattern around each strategy goal
     const pdpPositions: Record<string, NodePosition> = {};
+    const connections: Array<{
+      strategyId: string;
+      pdpId: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    }> = [];
     const pdpRadius = baseRadius * 0.65;
-    const verticalSpacing = Math.max(50, Math.min(70, (pdpAreaBottom - pdpAreaTop) / 5));
+    const minDistance = Math.max(120, Math.min(180, height * 0.25));
+    const maxSpreadAngle = Math.PI / 2.5;
     
     Object.entries(pdpByStrategy).forEach(([strategyId, pdpLinks]) => {
       const strategyPos = strategyPositions[strategyId];
       if (!strategyPos) return;
       
-      const columnCount = pdpLinks.length;
-      const startY = pdpAreaTop;
+      const goalCount = pdpLinks.length;
       
       pdpLinks.forEach((link, index) => {
-        const yOffset = (index - (columnCount - 1) / 2) * verticalSpacing;
-        const baseX = strategyPos.x;
-        // Slight horizontal offset for visual interest
-        const horizontalSpread = Math.max(20, Math.min(60, width * 0.05));
-        const xOffset = (index % 2 === 0 ? -1 : 1) * horizontalSpread * (index % 3) * 0.3;
+        // Skip if this PDP goal was already positioned (duplicate ID)
+        if (pdpPositions[link.pdpGoal.id]) {
+          console.warn(`Duplicate PDP goal ID detected: ${link.pdpGoal.id}, skipping positioning`);
+          return;
+        }
+        
+        const angleStep = goalCount > 1 ? maxSpreadAngle / (goalCount - 1) : 0;
+        const angle = -maxSpreadAngle / 2 + index * angleStep;
+        
+        const distance = minDistance + (index % 2) * 20;
+        
+        const x = strategyPos.x + Math.sin(angle) * distance;
+        const y = strategyPos.y + Math.cos(angle) * distance;
+        
+        const clampedX = Math.max(pdpRadius + 20, Math.min(width - pdpRadius - 20, x));
+        const clampedY = Math.max(strategyPos.y + 80, Math.min(height - 60, y));
         
         pdpPositions[link.pdpGoal.id] = {
-          x: baseX + xOffset,
-          y: startY + Math.abs(index) * verticalSpacing + yOffset * 0.3,
+          x: clampedX,
+          y: clampedY,
           radius: pdpRadius,
         };
+        
+        connections.push({
+          strategyId: strategyId,
+          pdpId: link.pdpGoal.id,
+          x1: strategyPos.x,
+          y1: strategyPos.y + strategyPos.radius,
+          x2: clampedX,
+          y2: clampedY - pdpRadius,
+        });
       });
-    });
-
-    // Build connections
-    const connections = links.map(link => {
-      const strategyPos = strategyPositions[link.strategyGoalId];
-      const pdpPos = pdpPositions[link.pdpGoal.id];
-      return {
-        strategyId: link.strategyGoalId,
-        pdpId: link.pdpGoal.id,
-        x1: strategyPos?.x ?? 0,
-        y1: strategyPos?.y ?? 0,
-        x2: pdpPos?.x ?? 0,
-        y2: pdpPos?.y ?? 0,
-      };
     });
 
     return { strategyPositions, pdpPositions, connections };
@@ -299,15 +313,14 @@ export default function SpiderWebVisualization({
             const highlighted = isConnectionHighlighted(conn.strategyId, conn.pdpId);
             return (
               <line
-                key={`conn-${index}`}
+                key={`conn-${conn.strategyId}-${conn.pdpId}-${index}`}
                 x1={conn.x1}
                 y1={conn.y1}
                 x2={conn.x2}
                 y2={conn.y2}
-                stroke={highlighted ? 'var(--color-primary)' : 'var(--color-border)'}
-                strokeWidth={highlighted ? 2 : 1}
-                strokeOpacity={highlighted ? 0.8 : 0.3}
-                filter={highlighted ? 'url(#glow-strong)' : 'url(#glow)'}
+                stroke={highlighted ? '#06b6d4' : '#4b5563'}
+                strokeWidth={highlighted ? 3 : 2}
+                strokeOpacity={highlighted ? 1 : 0.8}
                 style={{
                   transition: 'stroke 0.2s, stroke-opacity 0.2s',
                 }}

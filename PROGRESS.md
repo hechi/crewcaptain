@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-25T10:15:00Z — Implemented LLM-powered AI Link Suggestions for Strategy Hub. Replaced keyword-based matching with real AI analysis using configured LLM. Added configurable prompt support in Settings. Frontend shows Generate button with cyberpunk loading animation. All frontend tests pass (107 suites, 1172 tests). Frontend build succeeds.
+2026-05-25T20:05:00Z — Redesigned Spider Web visualization layout: PDP goals now distributed in a fan/arc pattern around their parent strategy goal instead of vertical columns. This prevents PDP goals from overlapping with connection lines from other strategy goals. All 17 SpiderWebVisualization tests pass.
 
 ## Current Status
 All PRD features implemented plus AI Strategic Trend Radar and Strategy Hub with LLM-powered Link Suggestions. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1263 tests all pass. Frontend: 1172 tests all pass. Frontend build succeeds.
@@ -144,6 +144,11 @@ All PRD features implemented plus AI Strategic Trend Radar and Strategy Hub with
 | 008 | Authentication session error handling — added SessionErrorHandler component to auto-redirect on token refresh failures, implemented exponential backoff retry logic (3 attempts), reduced refetchInterval to 2min | Medium | Fixed |
 | 007 | Pages unexpectedly refresh during editing due to session refetch cascading into data re-fetches | High | Fixed |
 | 006 | Docker healthcheck fails — spring-boot-starter-actuator missing, /actuator/health returns 404 | High | Fixed |
+| 009 | Strategy page "Manage Links" button icon not displaying in some browsers — replaced emoji with Lucide Link2 icon component | Low | Fixed |
+| 010 | AI Link Suggestions panel always visible on Strategy page — now conditionally renders only when aiEnabled=true in user settings | Low | Fixed |
+| 011 | Strategy goal card target date emoji (🎯) not displaying in some browsers — replaced with Lucide Target icon component | Low | Fixed |
+| 012 | Spider web view first linked goal missing connection line — fixed positioning calculation inconsistency | Low | Fixed |
+| 013 | Spider web view goals overlapping with connection lines — increased vertical spacing and adjusted line endpoints to node edges | Low | Fixed |
 
 ## Next Steps (Prioritized)
 1. (Feature backlog complete — all PRD features implemented)

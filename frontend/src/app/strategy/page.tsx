@@ -21,6 +21,7 @@ import {
   getGapAnalysis,
   getAllAlignmentScores,
   getLinkedPdpGoals,
+  getUserSettings,
 } from '@/lib/api-client';
 import {
   StrategyGoal,
@@ -30,6 +31,7 @@ import {
   GapAnalysis,
   AlignmentScore,
 } from '@/types/strategy-goal';
+import { UserSettings } from '@/types/settings';
 import { useStableToken } from '@/lib/useStableToken';
 
 export default function StrategyPage() {
@@ -52,6 +54,7 @@ export default function StrategyPage() {
   const [hideSensitiveContent, setHideSensitiveContent] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'web'>('grid');
   const [linkData, setLinkData] = useState<LinkData[]>([]);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 
   const fetchData = useCallback(async () => {
     const token = getToken();
@@ -59,7 +62,7 @@ export default function StrategyPage() {
 
     try {
       setLoading(true);
-      const [goalsResponse, gapData, scoresData] = await Promise.all([
+      const [goalsResponse, gapData, scoresData, settingsData] = await Promise.all([
         listStrategyGoals(token, {
           status: statusFilter || undefined,
           page: 0,
@@ -67,11 +70,13 @@ export default function StrategyPage() {
         }),
         getGapAnalysis(token),
         getAllAlignmentScores(token),
+        getUserSettings(token),
       ]);
       
       setGoals(goalsResponse.content);
       setGapAnalysis(gapData);
       setAlignmentScores(scoresData.scores);
+      setUserSettings(settingsData);
       
       const activeGoals = goalsResponse.content.filter(g => g.status === 'ACTIVE');
       const linkPromises = activeGoals.map(goal => 
@@ -484,10 +489,12 @@ export default function StrategyPage() {
         </div>
       )}
 
-      {/* AI Suggestions Panel */}
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <AiSuggestionsPanel onSuggestionApplied={fetchData} />
-      </div>
+      {/* AI Suggestions Panel - only show when AI is enabled */}
+      {userSettings?.aiEnabled && (
+        <div style={{ marginBottom: 'var(--space-6)' }}>
+          <AiSuggestionsPanel onSuggestionApplied={fetchData} />
+        </div>
+      )}
 
       {/* Strategy Goals Grid or Spider Web View */}
       {viewMode === 'web' ? (

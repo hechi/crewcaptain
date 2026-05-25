@@ -2,7 +2,7 @@
 
 import { StrategyGoal } from '@/types/strategy-goal';
 import StrategyGoalStatusBadge from './StrategyGoalStatusBadge';
-import { Users } from 'lucide-react';
+import { Users, Link2, Target } from 'lucide-react';
 
 interface StrategyGoalCardProps {
   goal: StrategyGoal;
@@ -92,12 +92,16 @@ export default function StrategyGoalCard({
           <span
             data-testid="strategy-goal-target-date"
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
               fontSize: 'var(--text-caption)',
               fontFamily: 'var(--font-mono)',
               color: 'var(--color-text-muted)',
             }}
           >
-            🎯 Target: {formattedTargetDate}
+            <Target size={12} />
+            Target: {formattedTargetDate}
           </span>
         )}
         {goal.linkedPdpGoalCount !== undefined && goal.linkedPdpGoalCount > 0 && (
@@ -129,6 +133,9 @@ export default function StrategyGoalCard({
               onClick={() => onManageLinks(goal.id)}
               data-testid="strategy-goal-manage-links-btn"
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
                 padding: '4px 12px',
                 fontSize: 'var(--text-caption)',
                 fontFamily: 'var(--font-mono)',
@@ -140,7 +147,8 @@ export default function StrategyGoalCard({
                 fontWeight: 'var(--weight-medium)',
               }}
             >
-              🔗 Manage Links
+              <Link2 size={12} />
+              Manage Links
             </button>
           )}
           {onAchieve && (
