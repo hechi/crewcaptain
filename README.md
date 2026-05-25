@@ -348,6 +348,7 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - Sensitive content snippets are hidden in search results (only title shown)
 - Uses PostgreSQL full-text search with GIN indexes, prefix matching, and relevance ranking
 - Encrypted sensitive fields are not searchable (trade-off for encryption at rest)
+- Strategy Goals follow the same rule: when a strategy goal is marked sensitive=true, its title and description are encrypted at rest and excluded from full-text search and GIN indexes. Queries against encrypted fields return no results by design.
 
 ### Strategy Goals
 
@@ -373,6 +374,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `targetDate` — Optional date (ISO 8601 date)
 - `status` — ACTIVE, ACHIEVED, or DROPPED (default: ACTIVE)
 - `sensitive` — Optional boolean (default: false)
+
+Encryption/Search trade-off:
+- When `sensitive=true`, title and description are stored encrypted (AES-256-GCM) and decrypted on read.
+- Encrypted fields cannot be indexed or searched. Sensitive strategy goals are excluded from search results, and queries against encrypted values return no matches by design.
 
 **Strategy Goal status transitions:**
 - ACTIVE → ACHIEVED (via `/achieve`)
