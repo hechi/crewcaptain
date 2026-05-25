@@ -40,6 +40,9 @@ class AiLinkDiscoveryService(
             userId, StrategyGoalStatus.ACTIVE, pageable
         ).content
 
+        // Filter out sensitive strategy goals to preserve privacy — never suggest links to them
+        val nonSensitiveStrategyGoals = strategyGoals.filter { !it.sensitive }
+
         // Get all active PDP goals across all persons
         val persons = personRepository.findAllByUserIdUnpaged(userId)
         val allPdpGoals = persons.flatMap { person ->
@@ -59,7 +62,7 @@ class AiLinkDiscoveryService(
             .toSet()
 
         // Simple keyword-based matching
-        for (strategyGoal in strategyGoals) {
+        for (strategyGoal in nonSensitiveStrategyGoals) {
             val strategyKeywords = extractKeywords(strategyGoal.title + " " + (strategyGoal.description ?: ""))
 
             for ((pdpGoal, personId, personName) in allPdpGoals) {
