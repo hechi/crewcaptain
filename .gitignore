@@ -13,6 +13,7 @@ node_modules/
 
 # Gradle / Java
 build/
+bin/
 .gradle/
 *.jar
 !gradle/wrapper/gradle-wrapper.jar

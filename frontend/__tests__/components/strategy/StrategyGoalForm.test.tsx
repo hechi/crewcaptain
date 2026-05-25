@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import StrategyGoalForm from '@/components/strategy/StrategyGoalForm';
 
 describe('StrategyGoalForm', () => {
@@ -50,7 +51,7 @@ describe('StrategyGoalForm', () => {
     expect(mockSubmit).toHaveBeenCalledWith({
       title: 'New Goal',
       description: 'New Description',
-      targetDate: undefined,
+      targetDate: null,
       sensitive: false,
     });
   });

@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import StrategyGoalCard from '@/components/strategy/StrategyGoalCard';
 import { StrategyGoal } from '@/types/strategy-goal';
 
