@@ -175,3 +175,8 @@ data class LinkSuggestionResponse(
             )
     }
 }
+
+data class AiLinkSuggestionsResponse(
+    val suggestions: List<LinkSuggestionResponse>? = null,
+    val error: String? = null
+)

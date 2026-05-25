@@ -35,7 +35,7 @@ import { useStableToken } from '@/lib/useStableToken';
 export default function StrategyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const getToken = useStableToken();
+  const { getToken } = useStableToken();
   
   const [goals, setGoals] = useState<StrategyGoal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,12 +115,12 @@ export default function StrategyPage() {
     return null;
   }
 
-  const handleCreateGoal = async (data: CreateStrategyGoalRequest) => {
+  const handleCreateGoal = async (data: CreateStrategyGoalRequest | UpdateStrategyGoalRequest) => {
     const token = getToken();
     if (!token) return;
 
     try {
-      await createStrategyGoal(token, data);
+      await createStrategyGoal(token, data as CreateStrategyGoalRequest);
       setIsCreateModalOpen(false);
       fetchData();
     } catch (err) {
@@ -128,12 +128,12 @@ export default function StrategyPage() {
     }
   };
 
-  const handleUpdateGoal = async (data: UpdateStrategyGoalRequest) => {
+  const handleUpdateGoal = async (data: CreateStrategyGoalRequest | UpdateStrategyGoalRequest) => {
     const token = getToken();
     if (!token || !editingGoal) return;
 
     try {
-      await updateStrategyGoal(token, editingGoal.id, data);
+      await updateStrategyGoal(token, editingGoal.id, data as UpdateStrategyGoalRequest);
       setEditingGoal(null);
       fetchData();
     } catch (err) {
@@ -262,7 +262,7 @@ export default function StrategyPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StrategyGoalStatus | '')}
             style={{
-              padding: '8px 12px',
+              padding: '8px 32px 8px 12px',
               fontSize: 'var(--text-body)',
               fontFamily: 'var(--font-mono)',
               border: '1px solid var(--color-border)',
@@ -270,6 +270,13 @@ export default function StrategyPage() {
               backgroundColor: 'var(--color-bg-elevated)',
               color: 'var(--color-text-primary)',
               cursor: 'pointer',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 8px center',
+              backgroundSize: '16px',
             }}
           >
             <option value="">All Statuses</option>

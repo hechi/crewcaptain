@@ -28,6 +28,7 @@ interface PdpGoalListProps {
  */
 export default function PdpGoalList({
   goals,
+  personId,
   onCreateGoal,
   onUpdateGoal,
   onAchieveGoal,
@@ -143,6 +144,7 @@ export default function PdpGoalList({
               <PdpGoalCard
                 key={goal.id}
                 goal={goal}
+                personId={personId}
                 onAchieve={onAchieveGoal}
                 onPause={onPauseGoal}
                 onDrop={onDropGoal}

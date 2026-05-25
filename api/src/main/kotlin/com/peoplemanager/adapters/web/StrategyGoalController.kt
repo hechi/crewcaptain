@@ -3,6 +3,7 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.*
 import com.peoplemanager.application.AiLinkDiscoveryService
+import com.peoplemanager.application.AiLinkSuggestionsResult
 import com.peoplemanager.application.StrategyGoalLinkService
 import com.peoplemanager.application.StrategyGoalService
 import com.peoplemanager.application.StrategyGoalNotFoundException
@@ -217,12 +218,20 @@ class StrategyGoalController(
 
     // ===== AI Discovery =====
 
-    @GetMapping("/strategy-goals/ai-suggestions")
-    fun getAiLinkSuggestions(): ResponseEntity<List<LinkSuggestionResponse>> {
+    @PostMapping("/strategy-goals/ai-suggestions")
+    fun generateAiLinkSuggestions(): ResponseEntity<AiLinkSuggestionsResponse> {
         val userId = AuthenticatedUser.getUserId()
-        val suggestions = aiLinkDiscoveryService.findLinkSuggestions(userId)
-        val responses = suggestions.map { LinkSuggestionResponse.from(it) }
-        return ResponseEntity.ok(responses)
+        val result = aiLinkDiscoveryService.generateLinkSuggestions(userId)
+
+        return when (result) {
+            is AiLinkSuggestionsResult.Success -> {
+                val responses = result.suggestions.map { LinkSuggestionResponse.from(it) }
+                ResponseEntity.ok(AiLinkSuggestionsResponse(suggestions = responses, error = null))
+            }
+            is AiLinkSuggestionsResult.Error -> {
+                ResponseEntity.ok(AiLinkSuggestionsResponse(suggestions = null, error = result.message))
+            }
+        }
     }
 
     // ===== Exception Handlers =====

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Sparkles, Loader2, Target, Users, Link2, Check, X } from 'lucide-react';
+import { Sparkles, Loader2, Target, Users, Check, X, Wand2 } from 'lucide-react';
 import { useStableToken } from '@/lib/useStableToken';
-import { getAiLinkSuggestions, linkPdpGoalToStrategyGoal } from '@/lib/api-client';
+import { generateAiLinkSuggestions, linkPdpGoalToStrategyGoal } from '@/lib/api-client';
 import { LinkSuggestion } from '@/types/strategy-goal';
 
 interface AiSuggestionsPanelProps {
@@ -13,14 +13,15 @@ interface AiSuggestionsPanelProps {
 
 export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestionsPanelProps) {
   const { status } = useSession();
-  const getToken = useStableToken();
+  const { getToken } = useStableToken();
   const [suggestions, setSuggestions] = useState<LinkSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasGenerated, setHasGenerated] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
-  const fetchSuggestions = async () => {
+  const handleGenerate = async () => {
     if (status !== 'authenticated') return;
 
     const token = getToken();
@@ -29,18 +30,29 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
     try {
       setLoading(true);
       setError(null);
-      const data = await getAiLinkSuggestions(token);
-      setSuggestions(data);
+      setSuggestions([]);
+
+      const response = await generateAiLinkSuggestions(token);
+
+      if (response.error) {
+        setError(response.error);
+        setSuggestions([]);
+      } else if (response.suggestions) {
+        setSuggestions(response.suggestions);
+        setError(null);
+      } else {
+        setSuggestions([]);
+        setError('No suggestions returned from AI');
+      }
+      setHasGenerated(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load suggestions');
+      setError(err instanceof Error ? err.message : 'Failed to generate suggestions');
+      setSuggestions([]);
+      setHasGenerated(true);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchSuggestions();
-  }, [status, getToken]);
 
   const handleApply = async (suggestion: LinkSuggestion) => {
     const token = getToken();
@@ -69,7 +81,8 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
     (s) => !dismissedIds.has(s.pdpGoalId + s.strategyGoalId)
   );
 
-  if (loading) {
+  // Initial state - show Generate button
+  if (!hasGenerated && !loading) {
     return (
       <div
         style={{
@@ -81,18 +94,155 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
           <Sparkles size={20} color="var(--color-primary)" />
-          <h3 style={{ margin: 0, fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)' }}>
-            AI Link Suggestions
-          </h3>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)' }}>
+              AI Link Suggestions
+            </h3>
+            <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: 'var(--text-small)' }}>
+              Use AI to analyze your goals and suggest meaningful connections
+            </p>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-muted)' }}>
-          <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-          <span>Analyzing your goals...</span>
-        </div>
+
+        <button
+          onClick={handleGenerate}
+          disabled={status !== 'authenticated'}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: 'var(--text-body)',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            borderRadius: 'var(--radius-medium)',
+            backgroundColor: 'var(--color-primary)',
+            color: 'var(--color-bg-base)',
+            cursor: status === 'authenticated' ? 'pointer' : 'not-allowed',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            boxShadow: 'var(--glow-primary)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <Wand2 size={18} />
+          Generate Suggestions
+        </button>
+
+        {status !== 'authenticated' && (
+          <p style={{ margin: '8px 0 0', color: 'var(--color-text-muted)', fontSize: 'var(--text-caption)', textAlign: 'center' }}>
+            Please sign in to use AI features
+          </p>
+        )}
       </div>
     );
   }
 
+  // Loading state with cyberpunk animation
+  if (loading) {
+    return (
+      <div
+        style={{
+          padding: 'var(--space-4)',
+          backgroundColor: 'var(--color-bg-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-medium)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Animated gradient background */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.05), transparent)',
+            animation: 'shimmer 2s infinite',
+          }}
+        />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', position: 'relative' }}>
+          <div
+            style={{
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            }}
+          >
+            <Sparkles size={20} color="var(--color-primary)" />
+          </div>
+          <h3 style={{ margin: 0, fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)' }}>
+            AI Link Suggestions
+          </h3>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+            padding: '32px',
+            position: 'relative',
+          }}
+        >
+          {/* Animated spinner with glow */}
+          <div
+            style={{
+              position: 'relative',
+              width: '48px',
+              height: '48px',
+            }}
+          >
+            <Loader2
+              size={48}
+              color="var(--color-primary)"
+              style={{
+                animation: 'spin 1s linear infinite',
+                filter: 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))',
+              }}
+            />
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <p
+              style={{
+                margin: '0 0 4px',
+                color: 'var(--color-text-primary)',
+                fontSize: 'var(--text-body)',
+                fontWeight: 'var(--weight-medium)',
+              }}
+            >
+              Analyzing your goals...
+            </p>
+            <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: 'var(--text-small)' }}>
+              AI is comparing strategy goals with PDP goals to find alignments
+            </p>
+          </div>
+        </div>
+
+        <style jsx>{`
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Error state
   if (error) {
     return (
       <div
@@ -109,11 +259,27 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
             AI Link Suggestions
           </h3>
         </div>
-        <p style={{ margin: 0, color: 'var(--color-alert)', fontSize: 'var(--text-small)' }}>{error}</p>
+        <p style={{ margin: '0 0 16px', color: 'var(--color-alert)', fontSize: 'var(--text-small)' }}>{error}</p>
+        <button
+          onClick={handleGenerate}
+          style={{
+            padding: '8px 16px',
+            fontSize: 'var(--text-caption)',
+            fontFamily: 'var(--font-mono)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-small)',
+            backgroundColor: 'var(--color-bg-elevated)',
+            color: 'var(--color-text-secondary)',
+            cursor: 'pointer',
+          }}
+        >
+          Try Again
+        </button>
       </div>
     );
   }
 
+  // Empty state - no suggestions
   if (visibleSuggestions.length === 0) {
     return (
       <div
@@ -124,21 +290,53 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
           borderRadius: 'var(--radius-medium)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
           <Sparkles size={20} color="var(--color-morale-green)" />
-          <div>
+          <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, fontSize: 'var(--text-body)', fontWeight: 'var(--weight-semibold)' }}>
               AI Link Suggestions
             </h3>
             <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: 'var(--text-small)' }}>
-              No suggestions right now. Your goals look well-aligned!
+              Analysis complete
             </p>
           </div>
+          <button
+            onClick={handleGenerate}
+            style={{
+              padding: '4px 8px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            Regenerate
+          </button>
+        </div>
+
+        <div
+          style={{
+            padding: '24px',
+            textAlign: 'center',
+            backgroundColor: 'var(--color-bg-elevated)',
+            borderRadius: 'var(--radius-medium)',
+          }}
+        >
+          <p style={{ margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: 'var(--text-body)' }}>
+            No suggestions found
+          </p>
+          <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: 'var(--text-small)' }}>
+            Your goals look well-aligned! The AI didn&apos;t find any strong new connections to suggest.
+          </p>
         </div>
       </div>
     );
   }
 
+  // Success state with suggestions
   return (
     <div
       style={{
@@ -155,11 +353,11 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
             AI Link Suggestions
           </h3>
           <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: 'var(--text-small)' }}>
-            Based on keyword analysis
+            {visibleSuggestions.length} suggestion{visibleSuggestions.length !== 1 ? 's' : ''} found
           </p>
         </div>
         <button
-          onClick={fetchSuggestions}
+          onClick={handleGenerate}
           style={{
             padding: '4px 8px',
             fontSize: 'var(--text-caption)',
@@ -171,7 +369,7 @@ export default function AiSuggestionsPanel({ onSuggestionApplied }: AiSuggestion
             cursor: 'pointer',
           }}
         >
-          Refresh
+          Regenerate
         </button>
       </div>
 

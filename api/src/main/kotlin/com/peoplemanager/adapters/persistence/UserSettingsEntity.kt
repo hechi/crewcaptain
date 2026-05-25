@@ -74,6 +74,9 @@ class UserSettingsEntity(
     @Column(name = "trend_radar_prompt", columnDefinition = "TEXT")
     val trendRadarPrompt: String? = null,
 
+    @Column(name = "link_suggestions_prompt", columnDefinition = "TEXT")
+    val linkSuggestionsPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

@@ -23,6 +23,7 @@ export interface UserSettings {
   narrativePrompt: string | null;
   outcomeExtractorPrompt: string | null;
   trendRadarPrompt: string | null;
+  linkSuggestionsPrompt: string | null;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -47,6 +48,7 @@ export interface UpdateUserSettingsRequest {
   narrativePrompt?: string | null;
   outcomeExtractorPrompt?: string | null;
   trendRadarPrompt?: string | null;
+  linkSuggestionsPrompt?: string | null;
 }
 
 export interface AiPrepResponse {

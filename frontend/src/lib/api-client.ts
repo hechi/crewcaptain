@@ -1067,7 +1067,16 @@ export async function getStrategyGoalsByPdpGoal(
   return response.json();
 }
 
-export async function getAiLinkSuggestions(token: string): Promise<LinkSuggestion[]> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/strategy-goals/ai-suggestions`, {}, token);
+export interface AiLinkSuggestionsResponse {
+  suggestions?: LinkSuggestion[];
+  error?: string;
+}
+
+export async function generateAiLinkSuggestions(token: string): Promise<AiLinkSuggestionsResponse> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/strategy-goals/ai-suggestions`,
+    { method: 'POST' },
+    token
+  );
   return response.json();
 }

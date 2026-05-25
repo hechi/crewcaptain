@@ -72,6 +72,7 @@ export interface GapAnalysis {
 export interface LinkedPdpGoalInfo {
   pdpGoalId: string;
   personId: string;
+  personName: string;
   title: string;
 }
 

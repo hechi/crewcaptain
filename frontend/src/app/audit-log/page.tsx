@@ -16,6 +16,8 @@ const ENTITY_TYPE_LABELS: Record<AuditEntityType, string> = {
   KUDOS: 'Kudos',
   QUICK_NOTE: 'Quick Note',
   USER_SETTINGS: 'Settings',
+  WORKSPACE: 'Workspace',
+  STRATEGY_GOAL: 'Strategy Goal',
 };
 
 const ACTION_LABELS: Record<AuditAction, string> = {
@@ -23,6 +25,8 @@ const ACTION_LABELS: Record<AuditAction, string> = {
   UPDATE: 'Updated',
   DELETE: 'Deleted',
   RESTORE: 'Restored',
+  LINK: 'Linked',
+  UNLINK: 'Unlinked',
 };
 
 const ACTION_COLORS: Record<AuditAction, string> = {
@@ -30,6 +34,8 @@ const ACTION_COLORS: Record<AuditAction, string> = {
   UPDATE: 'var(--color-primary)',
   DELETE: 'var(--color-danger, #ef4444)',
   RESTORE: 'var(--color-warning, #f59e0b)',
+  LINK: 'var(--color-primary)',
+  UNLINK: 'var(--color-danger, #ef4444)',
 };
 
 function formatRelativeTime(dateStr: string): string {

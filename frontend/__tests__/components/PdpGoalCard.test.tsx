@@ -3,6 +3,14 @@ import '@testing-library/jest-dom';
 import PdpGoalCard from '@/components/pdp-goals/PdpGoalCard';
 import { PdpGoal } from '@/types/pdp-goal';
 
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(() => ({ status: 'unauthenticated', data: null })),
+}));
+
+jest.mock('@/lib/useStableToken', () => ({
+  useStableToken: jest.fn(() => jest.fn(() => null)),
+}));
+
 const mockGoal: PdpGoal = {
   id: 'goal-1',
   personId: 'person-1',

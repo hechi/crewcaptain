@@ -1,4 +1,4 @@
-export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'RESTORE';
+export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'RESTORE' | 'LINK' | 'UNLINK';
 
 export type AuditEntityType =
   | 'PERSON'
@@ -9,7 +9,9 @@ export type AuditEntityType =
   | 'PDP_UPDATE'
   | 'KUDOS'
   | 'QUICK_NOTE'
-  | 'USER_SETTINGS';
+  | 'USER_SETTINGS'
+  | 'WORKSPACE'
+  | 'STRATEGY_GOAL';
 
 export interface AuditLogEntry {
   id: string;

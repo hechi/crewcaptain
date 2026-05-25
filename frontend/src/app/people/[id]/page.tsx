@@ -1334,6 +1334,7 @@ export default function PersonDetailPage() {
           ) : (
             <PdpGoalList
               goals={pdpGoals?.content || []}
+              personId={personId}
               onCreateGoal={handleCreatePdpGoal}
               onUpdateGoal={handleUpdatePdpGoal}
               onAchieveGoal={handleAchievePdpGoal}

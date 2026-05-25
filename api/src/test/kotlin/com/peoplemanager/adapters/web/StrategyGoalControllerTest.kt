@@ -7,6 +7,7 @@ import com.peoplemanager.adapters.web.dto.CreateStrategyGoalRequest
 import com.peoplemanager.adapters.web.dto.LinkPdpGoalRequest
 import com.peoplemanager.adapters.web.dto.UpdateStrategyGoalRequest
 import com.peoplemanager.application.AiLinkDiscoveryService
+import com.peoplemanager.application.AiLinkSuggestionsResult
 import com.peoplemanager.application.StrategyGoalLinkService
 import com.peoplemanager.application.StrategyGoalNotFoundException
 import com.peoplemanager.application.StrategyGoalService
@@ -316,7 +317,7 @@ class StrategyGoalControllerTest {
     @Test
     fun `reverse lookup and AI suggestions endpoints return 200`() {
         every { strategyGoalLinkService.getStrategyGoalsByPdpGoal(any(), any(), any()) } returns emptyList()
-        every { aiLinkDiscoveryService.findLinkSuggestions(any()) } returns emptyList()
+        every { aiLinkDiscoveryService.generateLinkSuggestions(any()) } returns AiLinkSuggestionsResult.Success(emptyList())
 
         val personId = UUID.randomUUID(); val pdpGoalId = UUID.randomUUID()
         mockMvc.perform(
@@ -325,7 +326,7 @@ class StrategyGoalControllerTest {
         ).andExpect(status().isOk)
 
         mockMvc.perform(
-            get("/api/v1/strategy-goals/ai-suggestions")
+            post("/api/v1/strategy-goals/ai-suggestions")
                 .with(authentication(authenticatedJwt(userId)))
         ).andExpect(status().isOk)
     }

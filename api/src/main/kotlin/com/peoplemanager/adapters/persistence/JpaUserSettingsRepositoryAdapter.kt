@@ -46,6 +46,7 @@ class JpaUserSettingsRepositoryAdapter(
         narrativePrompt = this.narrativePrompt,
         outcomeExtractorPrompt = this.outcomeExtractorPrompt,
         trendRadarPrompt = this.trendRadarPrompt,
+        linkSuggestionsPrompt = this.linkSuggestionsPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -73,6 +74,7 @@ class JpaUserSettingsRepositoryAdapter(
         narrativePrompt = this.narrativePrompt,
         outcomeExtractorPrompt = this.outcomeExtractorPrompt,
         trendRadarPrompt = this.trendRadarPrompt,
+        linkSuggestionsPrompt = this.linkSuggestionsPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

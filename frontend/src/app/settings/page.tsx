@@ -38,6 +38,7 @@ export default function SettingsPage() {
   const [narrativePrompt, setNarrativePrompt] = useState('');
   const [outcomeExtractorPrompt, setOutcomeExtractorPrompt] = useState('');
   const [trendRadarPrompt, setTrendRadarPrompt] = useState('');
+  const [linkSuggestionsPrompt, setLinkSuggestionsPrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -69,6 +70,7 @@ export default function SettingsPage() {
       setNarrativePrompt(result.narrativePrompt || '');
       setOutcomeExtractorPrompt(result.outcomeExtractorPrompt || '');
       setTrendRadarPrompt(result.trendRadarPrompt || '');
+      setLinkSuggestionsPrompt(result.linkSuggestionsPrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -110,6 +112,7 @@ export default function SettingsPage() {
         narrativePrompt: narrativePrompt || null,
         outcomeExtractorPrompt: outcomeExtractorPrompt || null,
         trendRadarPrompt: trendRadarPrompt || null,
+        linkSuggestionsPrompt: linkSuggestionsPrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -634,6 +637,15 @@ export default function SettingsPage() {
                     value={trendRadarPrompt}
                     onChange={setTrendRadarPrompt}
                     onReset={() => setTrendRadarPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-link-suggestions-prompt"
+                    label="Link Suggestions Prompt"
+                    placeholder="You are a strategic alignment advisor for a manager. Analyze strategy goals and team PDP goals, then suggest meaningful connections..."
+                    value={linkSuggestionsPrompt}
+                    onChange={setLinkSuggestionsPrompt}
+                    onReset={() => setLinkSuggestionsPrompt('')}
                   />
                 </div>
               </>

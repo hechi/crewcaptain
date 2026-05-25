@@ -14,7 +14,7 @@ interface PdpGoalAlignmentBadgesProps {
 
 export default function PdpGoalAlignmentBadges({ personId, pdpGoalId }: PdpGoalAlignmentBadgesProps) {
   const { status } = useSession();
-  const getToken = useStableToken();
+  const { getToken } = useStableToken();
   const [linkedGoals, setLinkedGoals] = useState<StrategyGoalBasicInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

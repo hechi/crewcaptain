@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-25T08:15:00Z — Added comprehensive StrategyGoal integration tests (Testcontainers). Coverage: persistence CRUD for strategy_goals and strategy_goal_pdp_goal_links, Flyway migrations, FK constraints and cascade, business logic (create/update/delete/achieve/drop), link/unlink, alignment scoring with 100% cap, gap analysis (unlinked PDP goals, empty strategy goals), cross-user isolation (404), encryption at rest for sensitive goals with decryption on read, plaintext for non-sensitive, and audit logging for create/update/delete/link/unlink. Tests pass locally.
+2026-05-25T10:15:00Z — Implemented LLM-powered AI Link Suggestions for Strategy Hub. Replaced keyword-based matching with real AI analysis using configured LLM. Added configurable prompt support in Settings. Frontend shows Generate button with cyberpunk loading animation. All frontend tests pass (107 suites, 1172 tests). Frontend build succeeds.
 
 ## Current Status
-All PRD features implemented plus AI Strategic Trend Radar and Strategy Hub. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, and Strategic Trend Radar. Strategy Hub provides strategic layer for defining high-level objectives and visualizing team PDP goal alignment. Backend: 1263 tests all pass. Frontend: 1128 tests pass.
+All PRD features implemented plus AI Strategic Trend Radar and Strategy Hub with LLM-powered Link Suggestions. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1263 tests all pass. Frontend: 1172 tests all pass. Frontend build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)

@@ -11,7 +11,9 @@ import { AlignmentScore } from '@/types/strategy-goal';
 export default function StrategyProgressCard() {
   const { status } = useSession();
   const router = useRouter();
-  const getToken = useStableToken();
+  // useStableToken returns an object { getToken, isAuthenticated, status }
+  // destructure the stable getToken function so we can call it below.
+  const { getToken } = useStableToken();
   const [alignmentScores, setAlignmentScores] = useState<AlignmentScore[]>([]);
   const [activeGoalsCount, setActiveGoalsCount] = useState(0);
   const [loading, setLoading] = useState(true);

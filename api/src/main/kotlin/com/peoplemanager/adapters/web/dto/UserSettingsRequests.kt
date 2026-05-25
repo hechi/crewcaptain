@@ -33,5 +33,6 @@ data class UpdateUserSettingsRequest(
     val agendaPrepPrompt: String? = null,
     val narrativePrompt: String? = null,
     val outcomeExtractorPrompt: String? = null,
-    val trendRadarPrompt: String? = null
+    val trendRadarPrompt: String? = null,
+    val linkSuggestionsPrompt: String? = null
 )

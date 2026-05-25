@@ -33,7 +33,7 @@ export default function LinkManagementModal({
   onLinksChanged,
 }: LinkManagementModalProps) {
   const { status } = useSession();
-  const getToken = useStableToken();
+  const { getToken } = useStableToken();
   const [people, setPeople] = useState<Person[]>([]);
   const [allPdpGoals, setAllPdpGoals] = useState<PdpGoalWithPerson[]>([]);
   const [linkedGoalIds, setLinkedGoalIds] = useState<Set<string>>(new Set());
@@ -138,7 +138,7 @@ export default function LinkManagementModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Manage Links: ${strategyGoalTitle}`}>
-      <div style={{ minWidth: '500px', maxWidth: '700px' }}>
+      <div style={{ width: '100%', maxWidth: '600px' }}>
         <p style={{ margin: '0 0 16px', fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)' }}>
           Link team members&apos; PDP goals to this strategy objective. Only ACTIVE goals are shown.
         </p>
@@ -285,13 +285,16 @@ export default function LinkManagementModal({
                         ) : null}
                       </button>
 
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                         <div
                           style={{
                             fontSize: 'var(--text-body)',
                             fontWeight: 'var(--weight-medium)',
                             color: 'var(--color-text-primary)',
                             marginBottom: '4px',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
+                            lineHeight: '1.4',
                           }}
                         >
                           {goal.title}

@@ -31,6 +31,7 @@ data class UserSettings(
     val narrativePrompt: String? = null,
     val outcomeExtractorPrompt: String? = null,
     val trendRadarPrompt: String? = null,
+    val linkSuggestionsPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -133,6 +134,12 @@ data class UserSettings(
     fun effectiveTrendRadarPrompt(): String =
         trendRadarPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_TREND_RADAR_PROMPT
 
+    /**
+     * Returns the effective link suggestions prompt (custom or default).
+     */
+    fun effectiveLinkSuggestionsPrompt(): String =
+        linkSuggestionsPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_LINK_SUGGESTIONS_PROMPT
+
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
         const val DEFAULT_STALE_ONE_ON_ONE_DAYS = 14
@@ -203,6 +210,31 @@ data class UserSettings(
             "- confidence_score < 40 means insufficient data, 40-75 means moderate signal, > 75 means strong signal. " +
             "- Be objective and data-driven. Do not speculate beyond what the data supports. " +
             "- If data is very thin, reflect that honestly in low confidence scores."
+
+        const val DEFAULT_LINK_SUGGESTIONS_PROMPT =
+            "You are a strategic alignment advisor for a manager. " +
+            "Your task is to analyze strategy goals and team members' personal development goals (PDP goals), " +
+            "then suggest meaningful connections between them. " +
+            "RULES: " +
+            "- Output ONLY valid JSON. No markdown code fences, no preamble, no explanation. " +
+            "- Return a JSON object with a single key 'suggestions' containing an array of objects. " +
+            "- Each suggestion object must have these fields: " +
+            "  'strategyGoalId' (UUID string from the Strategy Goals list), " +
+            "  'pdpGoalId' (UUID string from the PDP Goals list), " +
+            "  'personId' (UUID string from the PDP Goals list - NOT the person's name), " +
+            "  'personName' (the person's name as shown in the PDP Goals list), " +
+            "  'strategyGoalTitle' (the strategy goal title), " +
+            "  'pdpGoalTitle' (the PDP goal title), " +
+            "  'matchScore' (integer 0-100 indicating strength of alignment), " +
+            "  'reasoning' (string explaining the connection). " +
+            "CRITICAL: The UUID fields (strategyGoalId, pdpGoalId, personId) must contain the EXACT UUID strings " +
+            "provided in the input lists. Do NOT invent UUIDs. Copy them exactly from the bracketed IDs in the input. " +
+            "Example: if input shows '- [550e8400-e29b-41d4-a716-446655440000] Reduce Cloud Costs', " +
+            "you must use '550e8400-e29b-41d4-a716-446655440000' as the strategyGoalId. " +
+            "- Only suggest links that have genuine strategic relevance (matchScore >= 40). " +
+            "- Limit to the top 5-10 most relevant suggestions. " +
+            "- Do NOT suggest links for sensitive strategy goals. " +
+            "- Be specific in reasoning: explain WHY this PDP goal contributes to the strategy goal."
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

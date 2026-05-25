@@ -7,19 +7,32 @@ jest.mock('next-auth/react', () => ({
   useSession: jest.fn(),
 }));
 
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({ push: jest.fn() })),
+}));
+
+
+// Do NOT mock useStableToken here — tests should control auth state via next-auth's useSession
+// so that useStableToken (real implementation) reads the mocked session and returns the
+// proper token/status. This avoids stale/mock tokens and keeps behavior consistent.
+
 jest.mock('@/lib/api-client', () => ({
   getDashboard: jest.fn(),
   getGamificationStats: jest.fn(),
   getUserSettings: jest.fn(),
+  getAllAlignmentScores: jest.fn(),
+  listStrategyGoals: jest.fn(),
 }));
 
 import { useSession } from 'next-auth/react';
-import { getDashboard, getGamificationStats, getUserSettings } from '@/lib/api-client';
+import { getDashboard, getGamificationStats, getUserSettings, getAllAlignmentScores, listStrategyGoals } from '@/lib/api-client';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 const mockGetDashboard = getDashboard as jest.MockedFunction<typeof getDashboard>;
 const mockGetGamificationStats = getGamificationStats as jest.MockedFunction<typeof getGamificationStats>;
 const mockGetUserSettings = getUserSettings as jest.MockedFunction<typeof getUserSettings>;
+const mockGetAllAlignmentScores = getAllAlignmentScores as jest.MockedFunction<typeof getAllAlignmentScores>;
+const mockListStrategyGoals = listStrategyGoals as jest.MockedFunction<typeof listStrategyGoals>;
 
 const mockDashboardData = {
   overdueActionItems: [
@@ -83,6 +96,8 @@ describe('DashboardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetGamificationStats.mockResolvedValue(mockGamificationData);
+    mockGetAllAlignmentScores.mockResolvedValue({ scores: [] });
+    mockListStrategyGoals.mockResolvedValue({ content: [], totalElements: 0, page: 0, size: 20, totalPages: 0 });
     mockGetUserSettings.mockResolvedValue({
       dueSoonDays: 3,
       staleOneOnOneDays: 14,
