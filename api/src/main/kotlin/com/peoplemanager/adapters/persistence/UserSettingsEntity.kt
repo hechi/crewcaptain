@@ -77,6 +77,9 @@ class UserSettingsEntity(
     @Column(name = "link_suggestions_prompt", columnDefinition = "TEXT")
     val linkSuggestionsPrompt: String? = null,
 
+    @Column(name = "strategy_optimization_prompt", columnDefinition = "TEXT")
+    val strategyOptimizationPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

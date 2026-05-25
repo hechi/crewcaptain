@@ -81,4 +81,26 @@ class UserSettingsPromptsTest {
 
         settings.effectiveNarrativePrompt() shouldBe customPrompt
     }
+
+    @Test
+    fun `effectiveStrategyOptimizationPrompt should return default when no custom prompt is set`() {
+        val settings = UserSettings.createDefault(userId)
+
+        settings.effectiveStrategyOptimizationPrompt() shouldBe UserSettings.DEFAULT_STRATEGY_OPTIMIZATION_PROMPT
+    }
+
+    @Test
+    fun `effectiveStrategyOptimizationPrompt should return custom prompt when set`() {
+        val customPrompt = "Optimize for board presentation."
+        val settings = UserSettings.createDefault(userId).copy(strategyOptimizationPrompt = customPrompt)
+
+        settings.effectiveStrategyOptimizationPrompt() shouldBe customPrompt
+    }
+
+    @Test
+    fun `effectiveStrategyOptimizationPrompt should return default when custom prompt is blank`() {
+        val settings = UserSettings.createDefault(userId).copy(strategyOptimizationPrompt = "   ")
+
+        settings.effectiveStrategyOptimizationPrompt() shouldBe UserSettings.DEFAULT_STRATEGY_OPTIMIZATION_PROMPT
+    }
 }

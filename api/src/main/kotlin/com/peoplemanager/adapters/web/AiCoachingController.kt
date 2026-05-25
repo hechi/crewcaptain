@@ -45,6 +45,22 @@ class AiCoachingController(
             )
         }
     }
+
+    @PostMapping("/optimize-strategy-goal")
+    fun optimizeStrategyGoal(
+        @Valid @RequestBody request: OptimizeStrategyGoalRequest
+    ): ResponseEntity<AiCoachingResponse> {
+        val userId = AuthenticatedUser.getUserId()
+
+        return when (val result = aiCoachingService.optimizeStrategyGoal(userId, request.title, request.description)) {
+            is AiCoachingResult.Success -> ResponseEntity.ok(
+                AiCoachingResponse(result = result.content, error = null)
+            )
+            is AiCoachingResult.Error -> ResponseEntity.ok(
+                AiCoachingResponse(result = null, error = result.message)
+            )
+        }
+    }
 }
 
 data class RefineKudosRequest(
@@ -54,6 +70,12 @@ data class RefineKudosRequest(
 
 data class OptimizePdpGoalRequest(
     @field:NotBlank(message = "Goal title is required")
+    val title: String,
+    val description: String? = null
+)
+
+data class OptimizeStrategyGoalRequest(
+    @field:NotBlank(message = "Strategy goal title is required")
     val title: String,
     val description: String? = null
 )

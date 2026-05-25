@@ -49,6 +49,7 @@ class UserSettingsService(
             outcomeExtractorPrompt = command.outcomeExtractorPrompt,
             trendRadarPrompt = command.trendRadarPrompt,
             linkSuggestionsPrompt = command.linkSuggestionsPrompt,
+            strategyOptimizationPrompt = command.strategyOptimizationPrompt,
             updatedAt = java.time.Instant.now()
         )
 
@@ -80,5 +81,6 @@ data class UpdateUserSettingsCommand(
     val narrativePrompt: String? = null,
     val outcomeExtractorPrompt: String? = null,
     val trendRadarPrompt: String? = null,
-    val linkSuggestionsPrompt: String? = null
+    val linkSuggestionsPrompt: String? = null,
+    val strategyOptimizationPrompt: String? = null
 )

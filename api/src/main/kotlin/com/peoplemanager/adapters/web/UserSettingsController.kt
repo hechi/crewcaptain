@@ -64,7 +64,8 @@ class UserSettingsController(
             narrativePrompt = request.narrativePrompt,
             outcomeExtractorPrompt = request.outcomeExtractorPrompt,
             trendRadarPrompt = request.trendRadarPrompt,
-            linkSuggestionsPrompt = request.linkSuggestionsPrompt
+            linkSuggestionsPrompt = request.linkSuggestionsPrompt,
+            strategyOptimizationPrompt = request.strategyOptimizationPrompt
         )
 
         val settings = userSettingsService.updateSettings(userId, command)

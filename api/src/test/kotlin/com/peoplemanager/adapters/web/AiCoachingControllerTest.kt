@@ -195,4 +195,74 @@ class AiCoachingControllerTest {
         )
             .andExpect(status().isUnauthorized)
     }
+
+    // ===== POST /api/v1/ai/optimize-strategy-goal =====
+
+    @Test
+    fun `optimize-strategy-goal should return optimized goal on success`() {
+        every { aiCoachingService.optimizeStrategyGoal(any(), any(), any()) } returns
+            AiCoachingResult.Success("Title: Modernize Tech Stack by Q4\nDescription: Migrate legacy systems to cloud infrastructure")
+
+        mockMvc.perform(
+            post("/api/v1/ai/optimize-strategy-goal")
+                .with(authentication(authenticatedJwt()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title": "Improve technology", "description": "Make things better"}""")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.result").value("Title: Modernize Tech Stack by Q4\nDescription: Migrate legacy systems to cloud infrastructure"))
+            .andExpect(jsonPath("$.error").doesNotExist())
+    }
+
+    @Test
+    fun `optimize-strategy-goal should work without description`() {
+        every { aiCoachingService.optimizeStrategyGoal(any(), any(), any()) } returns
+            AiCoachingResult.Success("Optimized strategy goal")
+
+        mockMvc.perform(
+            post("/api/v1/ai/optimize-strategy-goal")
+                .with(authentication(authenticatedJwt()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title": "Expand team"}""")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.result").value("Optimized strategy goal"))
+    }
+
+    @Test
+    fun `optimize-strategy-goal should return error message when AI fails`() {
+        every { aiCoachingService.optimizeStrategyGoal(any(), any(), any()) } returns
+            AiCoachingResult.Error("AI service unavailable")
+
+        mockMvc.perform(
+            post("/api/v1/ai/optimize-strategy-goal")
+                .with(authentication(authenticatedJwt()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title": "My strategy goal", "description": "desc"}""")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.result").doesNotExist())
+            .andExpect(jsonPath("$.error").value("AI service unavailable"))
+    }
+
+    @Test
+    fun `optimize-strategy-goal should return 400 when title is blank`() {
+        mockMvc.perform(
+            post("/api/v1/ai/optimize-strategy-goal")
+                .with(authentication(authenticatedJwt()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title": "", "description": "desc"}""")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `optimize-strategy-goal should return 401 without authentication`() {
+        mockMvc.perform(
+            post("/api/v1/ai/optimize-strategy-goal")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title": "My strategy goal"}""")
+        )
+            .andExpect(status().isUnauthorized)
+    }
 }

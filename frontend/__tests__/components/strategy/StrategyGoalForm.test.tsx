@@ -1,6 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import StrategyGoalForm from '@/components/strategy/StrategyGoalForm';
+
+jest.mock('@/lib/api-client', () => ({
+  optimizeStrategyGoal: jest.fn(),
+}));
+
+jest.mock('@/lib/useStableToken', () => ({
+  useStableToken: () => ({ getToken: () => 'test-token' }),
+}));
 
 describe('StrategyGoalForm', () => {
   const mockSubmit = jest.fn();
@@ -81,7 +89,108 @@ describe('StrategyGoalForm', () => {
     fireEvent.change(titleInput, { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: /create/i }));
 
-    // Form should not submit with empty title
     expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should show SMART Check button when aiEnabled is true', () => {
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={true} />);
+    expect(screen.getByTestId('strategy-goal-smart-check-btn')).toBeInTheDocument();
+  });
+
+  it('should not show SMART Check button when aiEnabled is false', () => {
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={false} />);
+    expect(screen.queryByTestId('strategy-goal-smart-check-btn')).not.toBeInTheDocument();
+  });
+
+  it('should disable SMART Check button when title is empty', () => {
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={true} />);
+    expect(screen.getByTestId('strategy-goal-smart-check-btn')).toBeDisabled();
+  });
+
+  it('should apply AI suggestion with structured format', async () => {
+    const { optimizeStrategyGoal } = require('@/lib/api-client');
+    optimizeStrategyGoal.mockResolvedValue({
+      result: 'Title: Modernize Tech Stack by Q4\nDescription: Migrate legacy systems to cloud infrastructure\nExplanation: More specific and time-bound',
+      error: null,
+    });
+
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={true} />);
+
+    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Improve tech' } });
+    fireEvent.click(screen.getByTestId('strategy-goal-smart-check-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('strategy-goal-ai-comparison')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('strategy-goal-ai-apply-btn'));
+
+    expect(screen.getByLabelText(/title/i)).toHaveValue('Modernize Tech Stack by Q4');
+    expect(screen.getByLabelText(/description/i)).toHaveValue('Migrate legacy systems to cloud infrastructure');
+  });
+
+  it('should apply AI suggestion as description when no structured format', async () => {
+    const { optimizeStrategyGoal } = require('@/lib/api-client');
+    optimizeStrategyGoal.mockResolvedValue({
+      result: 'This goal could be improved by adding measurable outcomes and a deadline.',
+      error: null,
+    });
+
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={true} />);
+
+    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Improve tech' } });
+    fireEvent.click(screen.getByTestId('strategy-goal-smart-check-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('strategy-goal-ai-comparison')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('strategy-goal-ai-apply-btn'));
+
+    expect(screen.getByLabelText(/description/i)).toHaveValue(
+      'This goal could be improved by adding measurable outcomes and a deadline.'
+    );
+  });
+
+  it('should dismiss AI suggestion when Keep Original is clicked', async () => {
+    const { optimizeStrategyGoal } = require('@/lib/api-client');
+    optimizeStrategyGoal.mockResolvedValue({
+      result: 'Title: Improved Goal\nDescription: Better description',
+      error: null,
+    });
+
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={true} />);
+
+    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Original Goal' } });
+    fireEvent.click(screen.getByTestId('strategy-goal-smart-check-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('strategy-goal-ai-comparison')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('strategy-goal-ai-dismiss-btn'));
+
+    // Verify the comparison is dismissed and fields remain unchanged
+    expect(screen.queryByTestId('strategy-goal-ai-comparison')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/title/i)).toHaveValue('Original Goal');
+  });
+
+  it('should show error message when AI optimization fails', async () => {
+    const { optimizeStrategyGoal } = require('@/lib/api-client');
+    optimizeStrategyGoal.mockResolvedValue({
+      result: null,
+      error: 'AI service unavailable',
+    });
+
+    render(<StrategyGoalForm onSubmit={mockSubmit} onCancel={mockCancel} submitLabel="Create" aiEnabled={true} />);
+
+    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Goal' } });
+    fireEvent.click(screen.getByTestId('strategy-goal-smart-check-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('strategy-goal-ai-error')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('strategy-goal-ai-error')).toHaveTextContent('AI service unavailable');
   });
 });

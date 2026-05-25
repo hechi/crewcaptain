@@ -32,6 +32,7 @@ data class UserSettings(
     val outcomeExtractorPrompt: String? = null,
     val trendRadarPrompt: String? = null,
     val linkSuggestionsPrompt: String? = null,
+    val strategyOptimizationPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -140,6 +141,12 @@ data class UserSettings(
     fun effectiveLinkSuggestionsPrompt(): String =
         linkSuggestionsPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_LINK_SUGGESTIONS_PROMPT
 
+    /**
+     * Returns the effective strategy goal optimization prompt (custom or default).
+     */
+    fun effectiveStrategyOptimizationPrompt(): String =
+        strategyOptimizationPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_STRATEGY_OPTIMIZATION_PROMPT
+
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
         const val DEFAULT_STALE_ONE_ON_ONE_DAYS = 14
@@ -235,6 +242,17 @@ data class UserSettings(
             "- Limit to the top 5-10 most relevant suggestions. " +
             "- Do NOT suggest links for sensitive strategy goals. " +
             "- Be specific in reasoning: explain WHY this PDP goal contributes to the strategy goal."
+
+        const val DEFAULT_STRATEGY_OPTIMIZATION_PROMPT =
+            "You are a strategic planning expert. Evaluate the following strategy goal and ensure it meets SMART (Specific, Measurable, Achievable, Relevant, Time-bound) criteria. " +
+            "Provide an improved version of the goal title and description, and briefly explain why it is better. " +
+            "RULES: " +
+            "- Do NOT use markdown formatting (no bold, italic, headers, or bullet points). " +
+            "- Do NOT include any preamble or introduction. " +
+            "- Format your response EXACTLY as three plain text lines:\n" +
+            "Title: <improved title>\n" +
+            "Description: <improved description>\n" +
+            "Explanation: <why it is better>"
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

@@ -47,6 +47,7 @@ class JpaUserSettingsRepositoryAdapter(
         outcomeExtractorPrompt = this.outcomeExtractorPrompt,
         trendRadarPrompt = this.trendRadarPrompt,
         linkSuggestionsPrompt = this.linkSuggestionsPrompt,
+        strategyOptimizationPrompt = this.strategyOptimizationPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -75,6 +76,7 @@ class JpaUserSettingsRepositoryAdapter(
         outcomeExtractorPrompt = this.outcomeExtractorPrompt,
         trendRadarPrompt = this.trendRadarPrompt,
         linkSuggestionsPrompt = this.linkSuggestionsPrompt,
+        strategyOptimizationPrompt = this.strategyOptimizationPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

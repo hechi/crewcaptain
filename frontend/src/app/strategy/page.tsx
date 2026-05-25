@@ -575,6 +575,7 @@ export default function StrategyPage() {
           onSubmit={handleCreateGoal}
           onCancel={() => setIsCreateModalOpen(false)}
           submitLabel="Create Strategy Goal"
+          aiEnabled={userSettings?.aiEnabled}
         />
       </Modal>
 
@@ -595,6 +596,7 @@ export default function StrategyPage() {
             onSubmit={handleUpdateGoal}
             onCancel={() => setEditingGoal(null)}
             submitLabel="Save Changes"
+            aiEnabled={userSettings?.aiEnabled}
           />
         )}
       </Modal>

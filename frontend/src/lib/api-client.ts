@@ -891,6 +891,18 @@ export async function optimizePdpGoal(
   return response.json();
 }
 
+export async function optimizeStrategyGoal(
+  token: string,
+  title: string,
+  description?: string | null
+): Promise<AiCoachingResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/ai/optimize-strategy-goal`, {
+    method: 'POST',
+    body: JSON.stringify({ title, description: description || null }),
+  }, token);
+  return response.json();
+}
+
 // --- AI Outcome Extraction ---
 
 import { AiExtractionResponse, ApplyOutcomesRequest, ApplyOutcomesResponse } from '@/types/settings';

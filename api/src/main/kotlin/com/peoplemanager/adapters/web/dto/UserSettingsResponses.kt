@@ -23,7 +23,8 @@ data class UserSettingsResponse(
     val narrativePrompt: String?,
     val outcomeExtractorPrompt: String?,
     val trendRadarPrompt: String?,
-    val linkSuggestionsPrompt: String?
+    val linkSuggestionsPrompt: String?,
+    val strategyOptimizationPrompt: String?
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -47,7 +48,8 @@ data class UserSettingsResponse(
             narrativePrompt = settings.narrativePrompt,
             outcomeExtractorPrompt = settings.outcomeExtractorPrompt,
             trendRadarPrompt = settings.trendRadarPrompt,
-            linkSuggestionsPrompt = settings.linkSuggestionsPrompt
+            linkSuggestionsPrompt = settings.linkSuggestionsPrompt,
+            strategyOptimizationPrompt = settings.strategyOptimizationPrompt
         )
     }
 }

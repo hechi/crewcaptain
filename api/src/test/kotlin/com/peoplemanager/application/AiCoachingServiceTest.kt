@@ -225,4 +225,103 @@ class AiCoachingServiceTest {
         result.shouldBeInstanceOf<AiCoachingResult.Error>()
         result.message shouldBe "Timeout"
     }
+
+    // ===== optimizeStrategyGoal =====
+
+    @Test
+    fun `optimizeStrategyGoal should return optimized text on success`() {
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success("Title: Modernize Tech Stack\nDescription: Migrate to cloud\nExplanation: More specific")
+
+        val result = service.optimizeStrategyGoal(userId, "Improve tech", "Make things better")
+
+        result.shouldBeInstanceOf<AiCoachingResult.Success>()
+        result.content shouldBe "Title: Modernize Tech Stack\nDescription: Migrate to cloud\nExplanation: More specific"
+    }
+
+    @Test
+    fun `optimizeStrategyGoal should use default prompt when no custom prompt is set`() {
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success("Optimized")
+
+        service.optimizeStrategyGoal(userId, "My strategy goal", "My description")
+
+        verify {
+            aiClientPort.chatCompletion(
+                baseUrl = "http://localhost:11434/v1",
+                apiKey = "test-key",
+                model = "llama3",
+                systemPrompt = UserSettings.DEFAULT_STRATEGY_OPTIMIZATION_PROMPT,
+                userMessage = "Title: My strategy goal\nDescription: My description"
+            )
+        }
+    }
+
+    @Test
+    fun `optimizeStrategyGoal should use custom prompt when set`() {
+        val customPrompt = "Rewrite for board presentation. Focus on ROI."
+        val settingsWithCustomPrompt = configuredSettings.copy(strategyOptimizationPrompt = customPrompt)
+        every { userSettingsRepository.findByUserId(userId) } returns settingsWithCustomPrompt
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success("Board-ready goal")
+
+        service.optimizeStrategyGoal(userId, "My strategy goal", null)
+
+        verify {
+            aiClientPort.chatCompletion(
+                baseUrl = "http://localhost:11434/v1",
+                apiKey = "test-key",
+                model = "llama3",
+                systemPrompt = customPrompt,
+                userMessage = "Title: My strategy goal"
+            )
+        }
+    }
+
+    @Test
+    fun `optimizeStrategyGoal should handle null description`() {
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success("Optimized")
+
+        service.optimizeStrategyGoal(userId, "My strategy goal", null)
+
+        verify {
+            aiClientPort.chatCompletion(
+                baseUrl = any(),
+                apiKey = any(),
+                model = any(),
+                systemPrompt = any(),
+                userMessage = "Title: My strategy goal"
+            )
+        }
+    }
+
+    @Test
+    fun `optimizeStrategyGoal should return error when title is blank`() {
+        val result = service.optimizeStrategyGoal(userId, "  ", "description")
+
+        result.shouldBeInstanceOf<AiCoachingResult.Error>()
+        result.message shouldBe "Strategy goal title cannot be empty."
+    }
+
+    @Test
+    fun `optimizeStrategyGoal should return error when AI is not configured`() {
+        every { userSettingsRepository.findByUserId(userId) } returns null
+
+        val result = service.optimizeStrategyGoal(userId, "My strategy goal", "desc")
+
+        result.shouldBeInstanceOf<AiCoachingResult.Error>()
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings."
+    }
+
+    @Test
+    fun `optimizeStrategyGoal should return error when AI API fails`() {
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Error("Connection failed")
+
+        val result = service.optimizeStrategyGoal(userId, "My strategy goal", "desc")
+
+        result.shouldBeInstanceOf<AiCoachingResult.Error>()
+        result.message shouldBe "Connection failed"
+    }
 }

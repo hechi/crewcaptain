@@ -65,6 +65,30 @@ class AiCoachingService(
         return callAi(settings, systemPrompt, userMessage)
     }
 
+    /**
+     * Optimizes a strategy goal using SMART criteria (or user's custom prompt).
+     * The prompt must contain {{title}} and {{description}} placeholders.
+     */
+    fun optimizeStrategyGoal(userId: UserId, title: String, description: String?): AiCoachingResult {
+        val settings = loadAndValidateSettings(userId) ?: return AiCoachingResult.Error(
+            "AI Assistant is not configured. Please configure it in Settings."
+        )
+
+        if (title.isBlank()) {
+            return AiCoachingResult.Error("Strategy goal title cannot be empty.")
+        }
+
+        val systemPrompt = settings.effectiveStrategyOptimizationPrompt()
+        val userMessage = buildString {
+            append("Title: $title")
+            if (!description.isNullOrBlank()) {
+                append("\nDescription: $description")
+            }
+        }
+
+        return callAi(settings, systemPrompt, userMessage)
+    }
+
     private fun loadAndValidateSettings(userId: UserId): UserSettings? {
         val settings = userSettingsRepository.findByUserId(userId)
             ?: return null
