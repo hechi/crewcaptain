@@ -51,7 +51,7 @@ class NotificationGenerationService(
         val effectiveDueSoonDays = settings?.dueSoonDays ?: dueSoonDays
         val effectiveAnniversaryDays = settings?.anniversaryLookaheadDays ?: anniversaryLookaheadDays
 
-        val today = LocalDate.now()
+        val today = LocalDate.now(ZoneOffset.UTC)
         val deduplicationCutoff = Instant.now().minus(DEDUPLICATION_WINDOW)
         val persons = personRepository.findAllByUserIdUnpaged(userId)
         val personMap = persons.associateBy { it.id }

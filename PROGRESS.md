@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-06-02T22:30:00Z — Added clickable link detection in sticky notes: URLs in note text are rendered as `<a>` tags that open in a new tab. Link clicks don't trigger card drag. 3 new frontend tests. Frontend: 1202 tests all pass. Build succeeds.
+2026-06-03T00:35:00Z — Fixed timezone inconsistency in DashboardService and NotificationGenerationService: changed `LocalDate.now()` to `LocalDate.now(ZoneOffset.UTC)` to match the UTC zone used for Instant-to-LocalDate conversions. Updated DashboardServiceTest person fixtures to also use UTC. All backend tests now pass (previously 5 failures in stale 1:1 and anniversary assertions due to off-by-one errors when system timezone differs from UTC).
 
 ## Current Status
-All PRD features implemented plus AI Strategic Trend Radar, Strategy Hub with LLM-powered Link Suggestions, and Sticky Notes. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1328 tests (5 pre-existing dashboard/notification timing failures). Frontend: 1199 tests all pass. Frontend build succeeds.
+All PRD features implemented plus AI Strategic Trend Radar, Strategy Hub with LLM-powered Link Suggestions, and Sticky Notes. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1328 tests all pass (timezone fix resolved 5 stale 1:1 / anniversary timing failures). Frontend: 1199 tests all pass. Frontend build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)

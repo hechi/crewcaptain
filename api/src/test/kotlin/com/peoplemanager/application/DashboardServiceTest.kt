@@ -39,14 +39,14 @@ class DashboardServiceTest {
         id = personId1,
         userId = userId,
         name = "Alice Smith",
-        startDate = LocalDate.now().minusYears(2).plusDays(5) // Anniversary in 5 days
+        startDate = LocalDate.now(ZoneOffset.UTC).minusYears(2).plusDays(5) // Anniversary in 5 days
     )
 
     private val person2 = Person(
         id = personId2,
         userId = userId,
         name = "Bob Jones",
-        startDate = LocalDate.now().minusYears(1).plusDays(60) // Anniversary in 60 days (outside window)
+        startDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(60) // Anniversary in 60 days (outside window)
     )
 
     @BeforeEach

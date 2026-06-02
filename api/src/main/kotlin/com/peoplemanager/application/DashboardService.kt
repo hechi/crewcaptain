@@ -29,7 +29,7 @@ class DashboardService(
 ) : DashboardQueryPort {
 
     override fun getDashboard(query: GetDashboardQuery): DashboardData {
-        val today = LocalDate.now()
+        val today = LocalDate.now(ZoneOffset.UTC)
         val persons = personRepository.findAllByUserIdUnpaged(query.userId)
         val personMap = persons.associateBy { it.id }
 
