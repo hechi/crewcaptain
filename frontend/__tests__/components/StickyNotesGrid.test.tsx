@@ -183,4 +183,56 @@ describe('StickyNotesGrid', () => {
     fireEvent.click(saveButton);
     expect(defaultProps.onAdd).not.toHaveBeenCalled();
   });
+
+  it('renders URLs as clickable links that open in a new tab', () => {
+    const itemWithLink: PinnedRememberItem = {
+      id: 'link-item',
+      text: 'Check https://miro.com/board/123 for details',
+      color: 'cyan',
+      tag: 'Link',
+      sensitive: false,
+      displayOrder: 0,
+      createdAt: '2024-01-01T00:00:00Z',
+    };
+    render(<StickyNotesGrid {...defaultProps} items={[itemWithLink]} />);
+
+    const link = screen.getByRole('link', { name: /miro\.com/ });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', 'https://miro.com/board/123');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('renders plain text alongside links without wrapping all text in a link', () => {
+    const itemWithLink: PinnedRememberItem = {
+      id: 'mixed',
+      text: 'See https://example.com and follow up',
+      color: 'green',
+      tag: null,
+      sensitive: false,
+      displayOrder: 0,
+      createdAt: '2024-01-01T00:00:00Z',
+    };
+    render(<StickyNotesGrid {...defaultProps} items={[itemWithLink]} />);
+
+    expect(screen.getByText('See')).toBeInTheDocument();
+    expect(screen.getByText('and follow up')).toBeInTheDocument();
+    expect(screen.getByRole('link')).toHaveAttribute('href', 'https://example.com');
+  });
+
+  it('does not render links for text without URLs', () => {
+    const plainItem: PinnedRememberItem = {
+      id: 'plain',
+      text: 'No links here just plain text',
+      color: 'slate',
+      tag: null,
+      sensitive: false,
+      displayOrder: 0,
+      createdAt: '2024-01-01T00:00:00Z',
+    };
+    render(<StickyNotesGrid {...defaultProps} items={[plainItem]} />);
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText('No links here just plain text')).toBeInTheDocument();
+  });
 });

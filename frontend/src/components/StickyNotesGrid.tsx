@@ -4,6 +4,40 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { GripVertical, Trash2, X, Eye, EyeOff, Pencil } from 'lucide-react';
 import { PinnedRememberItem, StickyNoteColor } from '@/types/person';
 
+const URL_REGEX = /(https?:\/\/[^\s<>)"']+)/g;
+
+/** Renders text with URLs converted to clickable links that open in new tabs. */
+export function Linkify({ text }: { text: string }) {
+  const parts = text.split(URL_REGEX);
+  return (
+    <>
+      {parts.map((part, i) =>
+        URL_REGEX.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            onDragStart={(e) => e.stopPropagation()}
+            style={{
+              color: 'var(--color-primary)',
+              textDecoration: 'underline',
+              wordBreak: 'break-all',
+            }}
+          >
+            {part.length > 40 ? part.slice(0, 37) + '…' : part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+// Reset lastIndex after split usage
+URL_REGEX.lastIndex = 0;
+
 const STICKY_COLORS: { value: StickyNoteColor; bg: string; border: string; label: string }[] = [
   { value: 'cyan', bg: 'rgba(0, 240, 255, 0.12)', border: 'rgba(0, 240, 255, 0.3)', label: 'Cyan' },
   { value: 'purple', bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.3)', label: 'Purple' },
@@ -332,7 +366,7 @@ function StickyNoteCard({
             Sensitive note — view to reveal
           </span>
         ) : (
-          <span>{truncatedText}</span>
+          <span><Linkify text={truncatedText} /></span>
         )}
       </div>
 

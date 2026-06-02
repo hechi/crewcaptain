@@ -1,7 +1,7 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-06-02T22:15:00Z — Transformed Pinned Remember Items into Sticky Notes feature: added color (6 options), tag, sensitive flag to notes; new StickyNotesGrid component with card-based UI, inline edit, delete+undo, drag-and-drop reorder, starter templates; PersonCard shows 2-note previews; MarkdownExportFormatter masks sensitive notes. Backend: 1328 tests (5 pre-existing failures unrelated to this change). Frontend: 1199 tests all pass. Build succeeds.
+2026-06-02T22:30:00Z — Added clickable link detection in sticky notes: URLs in note text are rendered as `<a>` tags that open in a new tab. Link clicks don't trigger card drag. 3 new frontend tests. Frontend: 1202 tests all pass. Build succeeds.
 
 ## Current Status
 All PRD features implemented plus AI Strategic Trend Radar, Strategy Hub with LLM-powered Link Suggestions, and Sticky Notes. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1328 tests (5 pre-existing dashboard/notification timing failures). Frontend: 1199 tests all pass. Frontend build succeeds.
