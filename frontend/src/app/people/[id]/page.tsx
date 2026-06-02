@@ -46,6 +46,7 @@ import { useStableToken } from '@/lib/useStableToken';
 import PersonForm from '@/components/PersonForm';
 import MoraleIndicator from '@/components/MoraleIndicator';
 import RememberItemsList from '@/components/RememberItemsList';
+import StickyNotesGrid from '@/components/StickyNotesGrid';
 import OneOnOneTimeline from '@/components/one-on-one/OneOnOneTimeline';
 import SeriesConfigPanel from '@/components/one-on-one/SeriesConfigPanel';
 import ActionItemList from '@/components/action-items/ActionItemList';
@@ -306,14 +307,26 @@ export default function PersonDetailPage() {
     }
   };
 
-  const handleAddRememberItem = async (text: string) => {
+  const handleAddRememberItem = async (data: { text: string; color?: string; tag?: string; sensitive?: boolean }) => {
     const token = getToken();
     if (!token) return;
     try {
-      const items = await addRememberItem(token, personId, text);
+      const items = await addRememberItem(token, personId, data);
       setPerson((prev) => prev ? { ...prev, pinnedRememberItems: items } : prev);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add remember item');
+    }
+  };
+
+  const handleUpdateRememberItem = async (itemId: string, data: { text: string; color?: string; tag?: string; sensitive?: boolean }) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const { updateRememberItem } = await import('@/lib/api-client');
+      const items = await updateRememberItem(token, personId, itemId, data);
+      setPerson((prev) => prev ? { ...prev, pinnedRememberItems: items } : prev);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update remember item');
     }
   };
 
@@ -1128,11 +1141,12 @@ export default function PersonDetailPage() {
             </div>
           </div>
 
-          {/* Remember Items */}
+          {/* Sticky Notes */}
           <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-medium)', backgroundColor: 'var(--color-bg-surface)' }}>
-            <RememberItemsList
+            <StickyNotesGrid
               items={person.pinnedRememberItems}
               onAdd={handleAddRememberItem}
+              onUpdate={handleUpdateRememberItem}
               onRemove={handleRemoveRememberItem}
               onReorder={handleReorderRememberItems}
             />

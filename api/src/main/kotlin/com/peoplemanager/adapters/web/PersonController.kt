@@ -9,6 +9,7 @@ import com.peoplemanager.adapters.web.dto.RememberItemResponse
 import com.peoplemanager.adapters.web.dto.ReorderRememberItemsRequest
 import com.peoplemanager.adapters.web.dto.SetMoraleRequest
 import com.peoplemanager.adapters.web.dto.UpdatePersonRequest
+import com.peoplemanager.adapters.web.dto.UpdateRememberItemRequest
 import com.peoplemanager.application.commands.AddRememberItemCommand
 import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.DeletePersonCommand
@@ -18,6 +19,7 @@ import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
+import com.peoplemanager.application.commands.UpdateRememberItemCommand
 import com.peoplemanager.application.ports.ActionItemQueryPort
 import com.peoplemanager.application.ports.OneOnOneQueryPort
 import com.peoplemanager.application.ports.PdpGoalQueryPort
@@ -193,10 +195,33 @@ class PersonController(
         val command = AddRememberItemCommand(
             userId = userId,
             personId = PersonId(id),
-            text = request.text
+            text = request.text,
+            color = request.color,
+            tag = request.tag,
+            sensitive = request.sensitive
         )
         val items = personCommandPort.addRememberItem(command)
         return ResponseEntity.status(HttpStatus.CREATED).body(items.map { RememberItemResponse.from(it) })
+    }
+
+    @PutMapping("/{id}/remember-items/{itemId}")
+    fun updateRememberItem(
+        @PathVariable id: UUID,
+        @PathVariable itemId: UUID,
+        @Valid @RequestBody request: UpdateRememberItemRequest
+    ): ResponseEntity<List<RememberItemResponse>> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = UpdateRememberItemCommand(
+            userId = userId,
+            personId = PersonId(id),
+            itemId = RememberItemId(itemId),
+            text = request.text,
+            color = request.color,
+            tag = request.tag,
+            sensitive = request.sensitive
+        )
+        val items = personCommandPort.updateRememberItem(command)
+        return ResponseEntity.ok(items.map { RememberItemResponse.from(it) })
     }
 
     @DeleteMapping("/{id}/remember-items/{itemId}")

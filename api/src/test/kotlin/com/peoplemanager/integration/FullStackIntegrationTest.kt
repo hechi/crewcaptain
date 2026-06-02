@@ -667,4 +667,148 @@ class FullStackIntegrationTest {
             }
         }
     }
+
+    @Nested
+    inner class StickyNotesTests {
+
+        @Test
+        fun `should add sticky note with color, tag, and sensitive flag`() {
+            val personId = createPersonViaApi(userA.id, "Alice")
+
+            val request = mapOf(
+                "text" to "Has 2 kids — picks up early Fridays",
+                "color" to "amber",
+                "tag" to "Family",
+                "sensitive" to false
+            )
+
+            mockMvc.perform(
+                post("/api/v1/persons/$personId/remember-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isCreated)
+                .andExpect(jsonPath("$[0].text").value("Has 2 kids — picks up early Fridays"))
+                .andExpect(jsonPath("$[0].color").value("amber"))
+                .andExpect(jsonPath("$[0].tag").value("Family"))
+                .andExpect(jsonPath("$[0].sensitive").value(false))
+        }
+
+        @Test
+        fun `should update sticky note text, color, tag, and sensitive`() {
+            val personId = createPersonViaApi(userA.id, "Bob")
+
+            // Add a note first
+            val addRequest = mapOf("text" to "Original text", "color" to "cyan")
+            val addResult = mockMvc.perform(
+                post("/api/v1/persons/$personId/remember-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(addRequest))
+            )
+                .andExpect(status().isCreated)
+                .andReturn()
+
+            val items = objectMapper.readTree(addResult.response.contentAsString)
+            val itemId = items[0]["id"].asText()
+
+            // Update it
+            val updateRequest = mapOf(
+                "text" to "Updated text",
+                "color" to "pink",
+                "tag" to "Docs",
+                "sensitive" to true
+            )
+
+            mockMvc.perform(
+                put("/api/v1/persons/$personId/remember-items/$itemId")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updateRequest))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$[0].text").value("Updated text"))
+                .andExpect(jsonPath("$[0].color").value("pink"))
+                .andExpect(jsonPath("$[0].tag").value("Docs"))
+                .andExpect(jsonPath("$[0].sensitive").value(true))
+        }
+
+        @Test
+        fun `should default to cyan color when color not provided`() {
+            val personId = createPersonViaApi(userA.id, "Charlie")
+
+            val request = mapOf("text" to "Simple note")
+
+            mockMvc.perform(
+                post("/api/v1/persons/$personId/remember-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isCreated)
+                .andExpect(jsonPath("$[0].color").value("cyan"))
+                .andExpect(jsonPath("$[0].sensitive").value(false))
+        }
+
+        @Test
+        fun `user B cannot update user A sticky notes`() {
+            val personId = createPersonViaApi(userA.id, "Alice Private")
+
+            // Add a note as userA
+            val addRequest = mapOf("text" to "Private note")
+            val addResult = mockMvc.perform(
+                post("/api/v1/persons/$personId/remember-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(addRequest))
+            )
+                .andExpect(status().isCreated)
+                .andReturn()
+
+            val items = objectMapper.readTree(addResult.response.contentAsString)
+            val itemId = items[0]["id"].asText()
+
+            // User B cannot update it
+            val updateRequest = mapOf("text" to "Hacked text")
+            mockMvc.perform(
+                put("/api/v1/persons/$personId/remember-items/$itemId")
+                    .with(authentication(authenticatedJwt(userB.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updateRequest))
+            )
+                .andExpect(status().isNotFound)
+        }
+
+        @Test
+        fun `sticky notes persist across person retrieval`() {
+            val personId = createPersonViaApi(userA.id, "Persistence Test")
+
+            val request = mapOf(
+                "text" to "Retro board link",
+                "color" to "purple",
+                "tag" to "Manager",
+                "sensitive" to false
+            )
+
+            mockMvc.perform(
+                post("/api/v1/persons/$personId/remember-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isCreated)
+
+            // Retrieve person and verify sticky notes are there
+            mockMvc.perform(
+                get("/api/v1/persons/$personId")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.pinnedRememberItems[0].text").value("Retro board link"))
+                .andExpect(jsonPath("$.pinnedRememberItems[0].color").value("purple"))
+                .andExpect(jsonPath("$.pinnedRememberItems[0].tag").value("Manager"))
+                .andExpect(jsonPath("$.pinnedRememberItems[0].sensitive").value(false))
+        }
+    }
 }

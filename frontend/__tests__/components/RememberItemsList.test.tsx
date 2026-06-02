@@ -5,9 +5,9 @@ import RememberItemsList from '@/components/RememberItemsList';
 import { PinnedRememberItem } from '@/types/person';
 
 const mockItems: PinnedRememberItem[] = [
-  { id: 'item-1', text: 'Prefers async communication', displayOrder: 0, createdAt: '2025-01-01T00:00:00Z' },
-  { id: 'item-2', text: 'Working on promotion case', displayOrder: 1, createdAt: '2025-01-02T00:00:00Z' },
-  { id: 'item-3', text: 'Has a dog named Max', displayOrder: 2, createdAt: '2025-01-03T00:00:00Z' },
+  { id: 'item-1', text: 'Prefers async communication', color: 'cyan', tag: null, sensitive: false, displayOrder: 0, createdAt: '2025-01-01T00:00:00Z' },
+  { id: 'item-2', text: 'Working on promotion case', color: 'cyan', tag: null, sensitive: false, displayOrder: 1, createdAt: '2025-01-02T00:00:00Z' },
+  { id: 'item-3', text: 'Has a dog named Max', color: 'cyan', tag: null, sensitive: false, displayOrder: 2, createdAt: '2025-01-03T00:00:00Z' },
 ];
 
 describe('RememberItemsList', () => {

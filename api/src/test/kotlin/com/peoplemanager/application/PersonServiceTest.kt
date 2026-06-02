@@ -9,6 +9,7 @@ import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
+import com.peoplemanager.application.commands.UpdateRememberItemCommand
 import com.peoplemanager.application.ports.PersonRepository
 import com.peoplemanager.application.queries.GetPersonQuery
 import com.peoplemanager.application.queries.ListDeletedPersonsQuery
@@ -18,6 +19,7 @@ import com.peoplemanager.domain.Person
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.PinnedRememberItem
 import com.peoplemanager.domain.RememberItemId
+import com.peoplemanager.domain.StickyNoteColor
 import com.peoplemanager.domain.UserId
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
@@ -429,6 +431,75 @@ class PersonServiceTest {
             result shouldHaveSize 1
             result[0].text shouldBe "Remember to follow up on project"
             result[0].displayOrder shouldBe 0
+
+            verify(exactly = 1) { personRepository.save(any()) }
+        }
+
+        @Test
+        fun `should add item with color, tag, and sensitive flag`() {
+            val person = createTestPerson()
+            val command = AddRememberItemCommand(
+                userId = userId,
+                personId = personId,
+                text = "Has 2 kids",
+                color = "amber",
+                tag = "Family",
+                sensitive = true
+            )
+
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
+            val personSlot = slot<Person>()
+            every { personRepository.save(capture(personSlot)) } answers { personSlot.captured }
+
+            val result = personService.addRememberItem(command)
+
+            result shouldHaveSize 1
+            result[0].text shouldBe "Has 2 kids"
+            result[0].color shouldBe StickyNoteColor.AMBER
+            result[0].tag shouldBe "Family"
+            result[0].sensitive shouldBe true
+
+            verify(exactly = 1) { personRepository.save(any()) }
+        }
+    }
+
+    @Nested
+    inner class UpdateRememberItem {
+
+        @Test
+        fun `should load person, update item, save, and return updated list`() {
+            val itemId = RememberItemId.generate()
+            val item = PinnedRememberItem(
+                id = itemId,
+                text = "Original text",
+                color = StickyNoteColor.CYAN,
+                tag = null,
+                sensitive = false,
+                displayOrder = 0,
+                createdAt = Instant.now()
+            )
+            val person = createTestPerson(pinnedRememberItems = listOf(item))
+            val command = UpdateRememberItemCommand(
+                userId = userId,
+                personId = personId,
+                itemId = itemId,
+                text = "Updated text",
+                color = "pink",
+                tag = "Docs",
+                sensitive = true
+            )
+
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
+            val personSlot = slot<Person>()
+            every { personRepository.save(capture(personSlot)) } answers { personSlot.captured }
+
+            val result = personService.updateRememberItem(command)
+
+            result shouldHaveSize 1
+            result[0].text shouldBe "Updated text"
+            result[0].color shouldBe StickyNoteColor.PINK
+            result[0].tag shouldBe "Docs"
+            result[0].sensitive shouldBe true
 
             verify(exactly = 1) { personRepository.save(any()) }
         }

@@ -136,20 +136,33 @@ class MarkdownExportFormatterTest {
         @Test
         fun `should include pinned remember items`() {
             val items = listOf(
-                PinnedRememberItem(RememberItemId.generate(), "Prefers async communication", 0, Instant.now()),
-                PinnedRememberItem(RememberItemId.generate(), "Has a dog named Max", 1, Instant.now())
+                PinnedRememberItem(id = RememberItemId.generate(), text = "Prefers async communication", displayOrder = 0, createdAt = Instant.now()),
+                PinnedRememberItem(id = RememberItemId.generate(), text = "Has a dog named Max", displayOrder = 1, createdAt = Instant.now())
             )
             val person = createPerson(pinnedRememberItems = items)
             val result = MarkdownExportFormatter.format(createExportData(person = person))
-            result shouldContain "## Pinned Remember Items"
+            result shouldContain "## Pinned / Sticky Notes"
             result shouldContain "- Prefers async communication"
             result shouldContain "- Has a dog named Max"
         }
 
         @Test
+        fun `should mask sensitive sticky notes in export`() {
+            val items = listOf(
+                PinnedRememberItem(id = RememberItemId.generate(), text = "Sensitive info", sensitive = true, displayOrder = 0, createdAt = Instant.now()),
+                PinnedRememberItem(id = RememberItemId.generate(), text = "Normal note", tag = "Family", displayOrder = 1, createdAt = Instant.now())
+            )
+            val person = createPerson(pinnedRememberItems = items)
+            val result = MarkdownExportFormatter.format(createExportData(person = person))
+            result shouldContain "- *[Sensitive note]*"
+            result shouldNotContain "Sensitive info"
+            result shouldContain "- Normal note [Family]"
+        }
+
+        @Test
         fun `should not include section when no remember items`() {
             val result = MarkdownExportFormatter.format(createExportData())
-            result shouldNotContain "## Pinned Remember Items"
+            result shouldNotContain "## Pinned / Sticky Notes"
         }
     }
 
@@ -375,7 +388,7 @@ class MarkdownExportFormatterTest {
         @Test
         fun `should produce a complete well-structured export`() {
             val items = listOf(
-                PinnedRememberItem(RememberItemId.generate(), "Likes coffee", 0, Instant.now())
+                PinnedRememberItem(id = RememberItemId.generate(), text = "Likes coffee", displayOrder = 0, createdAt = Instant.now())
             )
             val person = createPerson(pinnedRememberItems = items)
             val entry = OneOnOneEntry(
@@ -410,7 +423,7 @@ class MarkdownExportFormatterTest {
 
             // Verify section ordering
             val profileIdx = result.indexOf("## Profile")
-            val rememberIdx = result.indexOf("## Pinned Remember Items")
+            val rememberIdx = result.indexOf("## Pinned / Sticky Notes")
             val moraleIdx = result.indexOf("## Morale")
             val oneOnOneIdx = result.indexOf("## 1:1 History")
             val actionIdx = result.indexOf("## Action Items")

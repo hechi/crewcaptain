@@ -37,15 +37,46 @@ data class Person(
     fun updateMorale(status: MoraleStatus, note: String?): Person =
         copy(moraleStatus = status, moraleNote = note, updatedAt = Instant.now())
 
-    fun addRememberItem(text: String): Person {
+    fun addRememberItem(
+        text: String,
+        color: StickyNoteColor = StickyNoteColor.CYAN,
+        tag: String? = null,
+        sensitive: Boolean = false
+    ): Person {
         val newItem = PinnedRememberItem(
             id = RememberItemId.generate(),
             text = text,
+            color = color,
+            tag = tag,
+            sensitive = sensitive,
             displayOrder = pinnedRememberItems.size,
             createdAt = Instant.now()
         )
         return copy(
             pinnedRememberItems = pinnedRememberItems + newItem,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun updateRememberItem(
+        itemId: RememberItemId,
+        text: String,
+        color: StickyNoteColor,
+        tag: String?,
+        sensitive: Boolean
+    ): Person {
+        val updatedItems = pinnedRememberItems.map { item ->
+            if (item.id == itemId) {
+                item.copy(text = text, color = color, tag = tag, sensitive = sensitive)
+            } else {
+                item
+            }
+        }
+        require(updatedItems.any { it.id == itemId }) {
+            "Remember item with id $itemId not found"
+        }
+        return copy(
+            pinnedRememberItems = updatedItems,
             updatedAt = Instant.now()
         )
     }

@@ -452,8 +452,8 @@ class PersonControllerTest {
         val id1 = UUID.randomUUID()
         val id2 = UUID.randomUUID()
         val reorderedItems = listOf(
-            PinnedRememberItem(RememberItemId(id2), "Item 2", 0, Instant.now()),
-            PinnedRememberItem(RememberItemId(id1), "Item 1", 1, Instant.now())
+            PinnedRememberItem(id = RememberItemId(id2), text = "Item 2", displayOrder = 0, createdAt = Instant.now()),
+            PinnedRememberItem(id = RememberItemId(id1), text = "Item 1", displayOrder = 1, createdAt = Instant.now())
         )
         val request = ReorderRememberItemsRequest(orderedIds = listOf(id2, id1))
 

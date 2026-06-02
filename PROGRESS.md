@@ -1,10 +1,10 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-05-25T20:05:00Z — Redesigned Spider Web visualization layout: PDP goals now distributed in a fan/arc pattern around their parent strategy goal instead of vertical columns. This prevents PDP goals from overlapping with connection lines from other strategy goals. All 17 SpiderWebVisualization tests pass.
+2026-06-02T22:15:00Z — Transformed Pinned Remember Items into Sticky Notes feature: added color (6 options), tag, sensitive flag to notes; new StickyNotesGrid component with card-based UI, inline edit, delete+undo, drag-and-drop reorder, starter templates; PersonCard shows 2-note previews; MarkdownExportFormatter masks sensitive notes. Backend: 1328 tests (5 pre-existing failures unrelated to this change). Frontend: 1199 tests all pass. Build succeeds.
 
 ## Current Status
-All PRD features implemented plus AI Strategic Trend Radar and Strategy Hub with LLM-powered Link Suggestions. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1263 tests all pass. Frontend: 1172 tests all pass. Frontend build succeeds.
+All PRD features implemented plus AI Strategic Trend Radar, Strategy Hub with LLM-powered Link Suggestions, and Sticky Notes. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1328 tests (5 pre-existing dashboard/notification timing failures). Frontend: 1199 tests all pass. Frontend build succeeds.
 
 ## Completed Features
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
@@ -123,6 +123,8 @@ All PRD features implemented plus AI Strategic Trend Radar and Strategy Hub with
  - [x] Strategy Goals FTS + Encryption Integration Tests — New integration test suite verifying: GIN index presence (idx_strategy_goals_fts), IMMUTABLE search vector function, functional search behavior, userId scoping, encryption/search trade-off (non-sensitive searchable; sensitive excluded/unsearchable), and correct encryption at rest with decryption on read. README updated to document trade-off. (2026-05-25)
 
 - [x] Landing Page AI Features Update — Added dedicated AI features section with 6 capability cards (Generate Agenda, Extract Outcomes, Performance Narrative, Kudos Refinement, SMART Goal Check, Full Control) with privacy-first messaging and purple/violet accent theming. Updated screenshot showcase from 6 to 11 tabs: added 1:1 with AI, Kudos AI, PDP SMART Check, Review Narrative, Quick Capture, and AI Settings screenshots. Replaced old 1:1 Session tab with updated AI-enhanced version. Updated Quick Notes feature card to "Quick Capture" highlighting the global floating button. New CSS for AI section with glassmorphism cards, purple glow hover effects, and responsive grid. All screenshots copied to frontend/public/screenshots/. Frontend tests: LandingPage (21 tests), ScreenshotShowcase (22 tests). (2026-05-18)
+
+- [x] Sticky Notes — Transformed Pinned Remember Items into visual sticky-note cards. Backend: Flyway migration adds `color`, `tag`, `sensitive` columns. Domain model extended with `StickyNoteColor` enum (CYAN, PURPLE, GREEN, AMBER, PINK, SLATE). New `UpdateRememberItemCommand` and `PUT /{id}/remember-items/{itemId}` endpoint. MarkdownExportFormatter masks sensitive notes. Frontend: New `StickyNotesGrid` component with card grid, inline composer/editor, 6 color picker, tag field, sensitive toggle, starter templates (Family, Link, Docs, Life event, Manager), drag-and-drop + keyboard reorder, delete with 10s undo toast, truncation at 100 chars. `PersonCard` shows up to 2 non-sensitive note previews. 5 new integration tests, 2 new service tests, 18 new frontend component tests. (2026-06-02)
 
 ## In Progress
 - (none)

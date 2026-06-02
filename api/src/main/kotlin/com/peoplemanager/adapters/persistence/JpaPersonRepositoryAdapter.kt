@@ -112,6 +112,9 @@ class JpaPersonRepositoryAdapter(
     private fun PinnedRememberItemEntity.toDomain(): PinnedRememberItem = PinnedRememberItem(
         id = RememberItemId(this.id),
         text = this.text,
+        color = StickyNoteColor.fromString(this.color),
+        tag = this.tag,
+        sensitive = this.sensitive,
         displayOrder = this.displayOrder,
         createdAt = this.createdAt
     )
@@ -139,6 +142,9 @@ class JpaPersonRepositoryAdapter(
                 id = item.id.value,
                 person = personEntity,
                 text = item.text,
+                color = item.color.name,
+                tag = item.tag,
+                sensitive = item.sensitive,
                 displayOrder = item.displayOrder,
                 createdAt = item.createdAt
             )

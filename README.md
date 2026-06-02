@@ -13,6 +13,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Person Directory** — Full CRUD for team members with name, preferred name, role title, timezone, start date, email, and tags
 - **Morale Tracking** — Visual morale indicators (Green/Yellow/Red/Unknown) per person with optional notes
 - **Pinned Remember Items** — Add, remove, and reorder quick-reference notes per person
+- **Sticky Notes** — Visual sticky-note cards replacing the basic pinned items list. Each note has a color (6 options: cyan, purple, green, amber, pink, slate), optional tag label, sensitive flag, and supports inline edit, drag-and-drop reorder, and delete with undo (10s toast). Person detail shows a card grid with truncation at 100 chars; People list shows up to 2 non-sensitive previews per card. Starter templates for quick capture (Family, Docs, Link, Life event, Manager). Markdown export includes sticky notes with sensitive content masked. Soft limit of 10 notes with friendly warning.
 - **Filtering & Pagination** — Filter people by tag or morale status with paginated results
 - **At-a-Glance Summary** — Person detail includes last 1:1 date, open action items count, and active PDP goals (placeholder)
 - **OIDC Authentication** — Secure login via authentik (OAuth2/OIDC) with automatic user provisioning

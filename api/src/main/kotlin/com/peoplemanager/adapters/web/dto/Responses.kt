@@ -65,6 +65,9 @@ data class AtAGlanceResponse(
 data class RememberItemResponse(
     val id: UUID,
     val text: String,
+    val color: String,
+    val tag: String?,
+    val sensitive: Boolean,
     val displayOrder: Int,
     val createdAt: Instant
 ) {
@@ -72,6 +75,9 @@ data class RememberItemResponse(
         fun from(item: PinnedRememberItem): RememberItemResponse = RememberItemResponse(
             id = item.id.value,
             text = item.text,
+            color = item.color.name.lowercase(),
+            tag = item.tag,
+            sensitive = item.sensitive,
             displayOrder = item.displayOrder,
             createdAt = item.createdAt
         )

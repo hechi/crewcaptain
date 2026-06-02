@@ -1,8 +1,13 @@
 export type MoraleStatus = 'GREEN' | 'YELLOW' | 'RED' | 'UNKNOWN';
 
+export type StickyNoteColor = 'cyan' | 'purple' | 'green' | 'amber' | 'pink' | 'slate';
+
 export interface PinnedRememberItem {
   id: string;
   text: string;
+  color: StickyNoteColor;
+  tag: string | null;
+  sensitive: boolean;
   displayOrder: number;
   createdAt: string;
 }

@@ -9,6 +9,7 @@ import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
+import com.peoplemanager.application.commands.UpdateRememberItemCommand
 import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.application.ports.PersonCommandPort
 import com.peoplemanager.application.ports.PersonQueryPort
@@ -20,6 +21,7 @@ import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.Person
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.PinnedRememberItem
+import com.peoplemanager.domain.StickyNoteColor
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -108,7 +110,18 @@ class PersonService(
         val person = personRepository.findByIdAndUserId(command.personId, command.userId)
             ?: throw PersonNotFoundException(command.personId)
 
-        val updated = person.addRememberItem(command.text)
+        val color = StickyNoteColor.fromString(command.color)
+        val updated = person.addRememberItem(command.text, color, command.tag, command.sensitive)
+        val saved = personRepository.save(updated)
+        return saved.pinnedRememberItems
+    }
+
+    override fun updateRememberItem(command: UpdateRememberItemCommand): List<PinnedRememberItem> {
+        val person = personRepository.findByIdAndUserId(command.personId, command.userId)
+            ?: throw PersonNotFoundException(command.personId)
+
+        val color = StickyNoteColor.fromString(command.color)
+        val updated = person.updateRememberItem(command.itemId, command.text, color, command.tag, command.sensitive)
         val saved = personRepository.save(updated)
         return saved.pinnedRememberItems
     }

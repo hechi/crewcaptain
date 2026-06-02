@@ -179,10 +179,27 @@ export async function setMorale(token: string, personId: string, data: {
   return response.json();
 }
 
-export async function addRememberItem(token: string, personId: string, text: string): Promise<PinnedRememberItem[]> {
+export async function addRememberItem(
+  token: string,
+  personId: string,
+  data: { text: string; color?: string; tag?: string; sensitive?: boolean }
+): Promise<PinnedRememberItem[]> {
   const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/remember-items`, {
     method: 'POST',
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function updateRememberItem(
+  token: string,
+  personId: string,
+  itemId: string,
+  data: { text: string; color?: string; tag?: string; sensitive?: boolean }
+): Promise<PinnedRememberItem[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/remember-items/${itemId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
   }, token);
   return response.json();
 }

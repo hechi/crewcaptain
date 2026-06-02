@@ -9,6 +9,7 @@ import com.peoplemanager.application.commands.ReorderRememberItemsCommand
 import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
+import com.peoplemanager.application.commands.UpdateRememberItemCommand
 import com.peoplemanager.domain.Person
 import com.peoplemanager.domain.PinnedRememberItem
 
@@ -20,6 +21,7 @@ interface PersonCommandPort {
     fun restorePerson(command: RestorePersonCommand): Person
     fun setMorale(command: SetMoraleCommand): Person
     fun addRememberItem(command: AddRememberItemCommand): List<PinnedRememberItem>
+    fun updateRememberItem(command: UpdateRememberItemCommand): List<PinnedRememberItem>
     fun removeRememberItem(command: RemoveRememberItemCommand): List<PinnedRememberItem>
     fun reorderRememberItems(command: ReorderRememberItemsCommand): List<PinnedRememberItem>
 }

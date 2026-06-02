@@ -61,10 +61,15 @@ object MarkdownExportFormatter {
     private fun appendPinnedRememberItems(sb: StringBuilder, items: List<PinnedRememberItem>) {
         if (items.isEmpty()) return
 
-        sb.appendLine("## Pinned Remember Items")
+        sb.appendLine("## Pinned / Sticky Notes")
         sb.appendLine()
         items.sortedBy { it.displayOrder }.forEach { item ->
-            sb.appendLine("- ${item.text}")
+            val tagStr = item.tag?.let { " [$it]" } ?: ""
+            if (item.sensitive) {
+                sb.appendLine("- *[Sensitive note]*$tagStr")
+            } else {
+                sb.appendLine("- ${item.text}$tagStr")
+            }
         }
         sb.appendLine()
     }

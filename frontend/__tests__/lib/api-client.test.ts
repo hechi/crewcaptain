@@ -325,7 +325,7 @@ describe('setMorale', () => {
 
 describe('addRememberItem', () => {
   const mockItems = [
-    { id: 'item-1', text: 'Prefers async communication', displayOrder: 0, createdAt: '2025-05-08T12:00:00Z' },
+    { id: 'item-1', text: 'Prefers async communication', color: 'cyan', tag: null, sensitive: false, displayOrder: 0, createdAt: '2025-05-08T12:00:00Z' },
   ];
 
   it('should send POST request with correct URL, headers, and body', async () => {
@@ -335,13 +335,13 @@ describe('addRememberItem', () => {
     });
 
     const personId = '550e8400-e29b-41d4-a716-446655440000';
-    const text = 'Prefers async communication';
+    const data = { text: 'Prefers async communication' };
 
-    await addRememberItem(mockToken, personId, text);
+    await addRememberItem(mockToken, personId, data);
 
     expect(mockFetch).toHaveBeenCalledWith(`/api/v1/persons/${personId}/remember-items`, {
       method: 'POST',
-      body: JSON.stringify({ text }),
+      body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${mockToken}`,
@@ -355,7 +355,7 @@ describe('addRememberItem', () => {
       json: () => Promise.resolve(mockItems),
     });
 
-    const result = await addRememberItem(mockToken, mockPerson.id, 'Prefers async communication');
+    const result = await addRememberItem(mockToken, mockPerson.id, { text: 'Prefers async communication' });
     expect(result).toEqual(mockItems);
   });
 });

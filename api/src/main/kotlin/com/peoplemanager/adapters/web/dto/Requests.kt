@@ -37,7 +37,18 @@ data class SetMoraleRequest(
 
 data class AddRememberItemRequest(
     @field:NotBlank(message = "Text must not be blank")
-    val text: String
+    val text: String,
+    val color: String? = null,
+    val tag: String? = null,
+    val sensitive: Boolean = false
+)
+
+data class UpdateRememberItemRequest(
+    @field:NotBlank(message = "Text must not be blank")
+    val text: String,
+    val color: String? = null,
+    val tag: String? = null,
+    val sensitive: Boolean = false
 )
 
 data class ReorderRememberItemsRequest(

@@ -24,6 +24,7 @@ const mockPerson: Person = {
   moraleStatus: 'GREEN',
   moraleNote: null,
   pinnedRememberItems: [],
+  workspaceId: null,
   atAGlance: {
     last1on1Date: null,
     openActionItemsCount: null,
@@ -31,6 +32,7 @@ const mockPerson: Person = {
   },
   createdAt: '2025-05-08T12:00:00Z',
   updatedAt: '2025-05-08T12:00:00Z',
+  deletedAt: null,
 };
 
 describe('PersonCard', () => {
@@ -61,5 +63,35 @@ describe('PersonCard', () => {
     render(<PersonCard person={personWithoutRole} />);
     expect(screen.getByText('Jane Smith')).toBeInTheDocument();
     expect(screen.queryByText('Senior Engineer')).not.toBeInTheDocument();
+  });
+
+  it('should show "Add sticky note" CTA when no remember items', () => {
+    render(<PersonCard person={mockPerson} />);
+    expect(screen.getByTestId('add-sticky-cta')).toBeInTheDocument();
+    expect(screen.getByText('Add sticky note')).toBeInTheDocument();
+  });
+
+  it('should show sticky note previews for non-sensitive items', () => {
+    const personWithNotes = {
+      ...mockPerson,
+      pinnedRememberItems: [
+        { id: '1', text: 'Has 2 kids — picks up early Fridays', color: 'cyan' as const, tag: 'Family', sensitive: false, displayOrder: 0, createdAt: '2024-01-01T00:00:00Z' },
+        { id: '2', text: 'Building house', color: 'amber' as const, tag: null, sensitive: false, displayOrder: 1, createdAt: '2024-01-02T00:00:00Z' },
+      ],
+    };
+    render(<PersonCard person={personWithNotes} />);
+    expect(screen.getByTestId('sticky-note-previews')).toBeInTheDocument();
+  });
+
+  it('should hide sensitive sticky notes from previews', () => {
+    const personWithSensitive = {
+      ...mockPerson,
+      pinnedRememberItems: [
+        { id: '1', text: 'Secret info', color: 'pink' as const, tag: null, sensitive: true, displayOrder: 0, createdAt: '2024-01-01T00:00:00Z' },
+      ],
+    };
+    render(<PersonCard person={personWithSensitive} />);
+    expect(screen.queryByText('Secret info')).not.toBeInTheDocument();
+    expect(screen.getByText('+sensitive')).toBeInTheDocument();
   });
 });

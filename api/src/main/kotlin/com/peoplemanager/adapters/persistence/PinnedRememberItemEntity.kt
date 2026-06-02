@@ -18,6 +18,15 @@ class PinnedRememberItemEntity(
     @Column(name = "text", nullable = false)
     var text: String = "",
 
+    @Column(name = "color", nullable = false)
+    var color: String = "CYAN",
+
+    @Column(name = "tag")
+    var tag: String? = null,
+
+    @Column(name = "sensitive", nullable = false)
+    var sensitive: Boolean = false,
+
     @Column(name = "display_order", nullable = false)
     var displayOrder: Int = 0,
 

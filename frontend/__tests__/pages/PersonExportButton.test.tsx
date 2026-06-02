@@ -24,6 +24,7 @@ jest.mock('@/lib/api-client', () => ({
   deletePerson: jest.fn(),
   setMorale: jest.fn(),
   addRememberItem: jest.fn(),
+  updateRememberItem: jest.fn(),
   removeRememberItem: jest.fn(),
   reorderRememberItems: jest.fn(),
   exportPersonMarkdown: jest.fn(),
@@ -48,7 +49,7 @@ const mockPerson: Person = {
   moraleStatus: 'GREEN',
   moraleNote: 'Doing great',
   pinnedRememberItems: [
-    { id: 'item-1', text: 'Prefers async', displayOrder: 0, createdAt: '2025-05-08T12:00:00Z' },
+    { id: 'item-1', text: 'Prefers async', color: 'cyan', tag: null, sensitive: false, displayOrder: 0, createdAt: '2025-05-08T12:00:00Z' },
   ],
   atAGlance: { last1on1Date: null, openActionItemsCount: null, activePdpGoalsSummary: null },
   createdAt: '2025-05-08T12:00:00Z',

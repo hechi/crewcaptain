@@ -25,6 +25,7 @@ jest.mock('@/lib/api-client', () => ({
   deletePerson: jest.fn(),
   setMorale: jest.fn(),
   addRememberItem: jest.fn(),
+  updateRememberItem: jest.fn(),
   removeRememberItem: jest.fn(),
   reorderRememberItems: jest.fn(),
   listOneOnOneEntries: jest.fn(),

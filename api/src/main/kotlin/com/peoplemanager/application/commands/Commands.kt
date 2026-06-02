@@ -54,7 +54,20 @@ data class SetMoraleCommand(
 data class AddRememberItemCommand(
     val userId: UserId,
     val personId: PersonId,
-    val text: String
+    val text: String,
+    val color: String? = null,
+    val tag: String? = null,
+    val sensitive: Boolean = false
+)
+
+data class UpdateRememberItemCommand(
+    val userId: UserId,
+    val personId: PersonId,
+    val itemId: RememberItemId,
+    val text: String,
+    val color: String? = null,
+    val tag: String? = null,
+    val sensitive: Boolean = false
 )
 
 data class RemoveRememberItemCommand(
