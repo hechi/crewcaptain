@@ -2,7 +2,7 @@ package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.GamificationStatsResponse
-import com.peoplemanager.application.ports.GamificationQueryPort
+import com.peoplemanager.application.port.input.GamificationQueryPort
 import com.peoplemanager.application.queries.GetGamificationStatsQuery
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

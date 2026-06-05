@@ -1,6 +1,6 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.UserRepository
+import com.peoplemanager.application.port.output.UserRepository
 import com.peoplemanager.domain.OidcIdentity
 import com.peoplemanager.domain.User
 import com.peoplemanager.domain.UserId

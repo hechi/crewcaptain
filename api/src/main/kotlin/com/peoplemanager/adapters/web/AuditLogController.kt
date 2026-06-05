@@ -2,7 +2,7 @@ package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.PaginatedAuditLogResponse
-import com.peoplemanager.application.ports.AuditLogQueryPort
+import com.peoplemanager.application.port.input.AuditLogQueryPort
 import com.peoplemanager.application.queries.GetAuditLogQuery
 import com.peoplemanager.domain.AuditAction
 import com.peoplemanager.domain.AuditEntityType

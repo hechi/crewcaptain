@@ -3,7 +3,7 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.BulkImportResponse
 import com.peoplemanager.application.commands.BulkImportPersonsCommand
-import com.peoplemanager.application.ports.PersonBulkImportPort
+import com.peoplemanager.application.port.output.PersonBulkImportPort
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

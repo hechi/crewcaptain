@@ -4,11 +4,11 @@ import com.peoplemanager.application.commands.CreateOneOnOneEntryCommand
 import com.peoplemanager.application.commands.DeleteOneOnOneEntryCommand
 import com.peoplemanager.application.commands.UpdateOneOnOneEntryCommand
 import com.peoplemanager.application.commands.UpsertOneOnOneSeriesCommand
-import com.peoplemanager.application.ports.OneOnOneCommandPort
-import com.peoplemanager.application.ports.OneOnOneEntryRepository
-import com.peoplemanager.application.ports.OneOnOneQueryPort
-import com.peoplemanager.application.ports.OneOnOneSeriesRepository
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.input.OneOnOneCommandPort
+import com.peoplemanager.application.port.output.OneOnOneEntryRepository
+import com.peoplemanager.application.port.input.OneOnOneQueryPort
+import com.peoplemanager.application.port.output.OneOnOneSeriesRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.queries.GetLastOneOnOneDateQuery
 import com.peoplemanager.application.queries.GetOneOnOneEntryQuery
 import com.peoplemanager.application.queries.GetOneOnOneSeriesQuery

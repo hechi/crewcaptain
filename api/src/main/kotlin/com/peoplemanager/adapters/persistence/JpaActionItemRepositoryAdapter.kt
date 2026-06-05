@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.ActionItemRepository
+import com.peoplemanager.application.port.output.ActionItemRepository
 import com.peoplemanager.domain.ActionItem
 import com.peoplemanager.domain.ActionItemId
 import com.peoplemanager.domain.ActionItemOwnerType

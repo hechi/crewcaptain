@@ -1,7 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
-import com.peoplemanager.application.ports.StrategyGoalRepository
+import com.peoplemanager.application.port.output.StrategyGoalRepository
 import com.peoplemanager.application.queries.GetStrategyGoalQuery
 import com.peoplemanager.domain.*
 import io.mockk.*

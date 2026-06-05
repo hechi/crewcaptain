@@ -2,7 +2,7 @@ package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.SearchResponse
-import com.peoplemanager.application.ports.SearchQueryPort
+import com.peoplemanager.application.port.input.SearchQueryPort
 import com.peoplemanager.application.queries.SearchQuery
 import com.peoplemanager.domain.SearchResultType
 import org.springframework.http.ResponseEntity

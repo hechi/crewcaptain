@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.BulkImportResult
-import com.peoplemanager.application.ports.PersonBulkImportPort
+import com.peoplemanager.application.port.output.BulkImportResult
+import com.peoplemanager.application.port.output.PersonBulkImportPort
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId
 import io.mockk.every

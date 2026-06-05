@@ -1,8 +1,8 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.AiClientPort
-import com.peoplemanager.application.ports.AiCompletionResult
-import com.peoplemanager.application.ports.UserSettingsRepository
+import com.peoplemanager.application.port.output.AiClientPort
+import com.peoplemanager.application.port.output.AiCompletionResult
+import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.UserSettings
 import org.springframework.stereotype.Service

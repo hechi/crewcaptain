@@ -7,8 +7,8 @@ import com.peoplemanager.adapters.web.dto.PaginatedNotificationResponse
 import com.peoplemanager.adapters.web.dto.UnreadCountResponse
 import com.peoplemanager.application.commands.MarkAllNotificationsReadCommand
 import com.peoplemanager.application.commands.MarkNotificationReadCommand
-import com.peoplemanager.application.ports.NotificationCommandPort
-import com.peoplemanager.application.ports.NotificationQueryPort
+import com.peoplemanager.application.port.input.NotificationCommandPort
+import com.peoplemanager.application.port.input.NotificationQueryPort
 import com.peoplemanager.application.queries.GetNotificationsQuery
 import com.peoplemanager.application.queries.GetUnreadCountQuery
 import com.peoplemanager.domain.NotificationId

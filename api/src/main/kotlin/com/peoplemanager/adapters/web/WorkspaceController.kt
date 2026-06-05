@@ -10,8 +10,8 @@ import com.peoplemanager.application.commands.AssignPersonToWorkspaceCommand
 import com.peoplemanager.application.commands.CreateWorkspaceCommand
 import com.peoplemanager.application.commands.DeleteWorkspaceCommand
 import com.peoplemanager.application.commands.UpdateWorkspaceCommand
-import com.peoplemanager.application.ports.WorkspaceCommandPort
-import com.peoplemanager.application.ports.WorkspaceQueryPort
+import com.peoplemanager.application.port.input.WorkspaceCommandPort
+import com.peoplemanager.application.port.input.WorkspaceQueryPort
 import com.peoplemanager.application.queries.GetWorkspaceQuery
 import com.peoplemanager.application.queries.ListWorkspacesQuery
 import com.peoplemanager.domain.PersonId

@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.domain.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

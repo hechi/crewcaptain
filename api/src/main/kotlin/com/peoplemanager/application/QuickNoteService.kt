@@ -1,12 +1,12 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
-import com.peoplemanager.application.ports.QuickNoteCommandPort
-import com.peoplemanager.application.ports.QuickNoteQueryPort
-import com.peoplemanager.application.ports.QuickNoteRepository
-import com.peoplemanager.application.ports.PersonRepository
-import com.peoplemanager.application.ports.OneOnOneEntryRepository
-import com.peoplemanager.application.ports.ActionItemRepository
+import com.peoplemanager.application.port.input.QuickNoteCommandPort
+import com.peoplemanager.application.port.input.QuickNoteQueryPort
+import com.peoplemanager.application.port.output.QuickNoteRepository
+import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.OneOnOneEntryRepository
+import com.peoplemanager.application.port.output.ActionItemRepository
 import com.peoplemanager.application.queries.GetQuickNoteQuery
 import com.peoplemanager.application.queries.ListQuickNotesQuery
 import com.peoplemanager.domain.*

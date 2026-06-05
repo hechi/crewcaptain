@@ -3,8 +3,8 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.*
 import com.peoplemanager.application.commands.*
-import com.peoplemanager.application.ports.PdpGoalCommandPort
-import com.peoplemanager.application.ports.PdpGoalQueryPort
+import com.peoplemanager.application.port.input.PdpGoalCommandPort
+import com.peoplemanager.application.port.input.PdpGoalQueryPort
 import com.peoplemanager.application.queries.CountActivePdpGoalsQuery
 import com.peoplemanager.application.queries.GetPdpGoalQuery
 import com.peoplemanager.application.queries.ListPdpGoalsByPersonQuery

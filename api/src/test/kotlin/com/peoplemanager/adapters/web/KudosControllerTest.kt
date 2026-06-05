@@ -7,8 +7,8 @@ import com.peoplemanager.adapters.web.dto.CreateKudosRequest
 import com.peoplemanager.application.KudosNotFoundException
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.KudosCommandPort
-import com.peoplemanager.application.ports.KudosQueryPort
+import com.peoplemanager.application.port.input.KudosCommandPort
+import com.peoplemanager.application.port.input.KudosQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

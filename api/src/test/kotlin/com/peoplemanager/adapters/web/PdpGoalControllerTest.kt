@@ -10,8 +10,8 @@ import com.peoplemanager.application.PdpGoalNotFoundException
 import com.peoplemanager.application.PdpUpdateNotFoundException
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.PdpGoalCommandPort
-import com.peoplemanager.application.ports.PdpGoalQueryPort
+import com.peoplemanager.application.port.input.PdpGoalCommandPort
+import com.peoplemanager.application.port.input.PdpGoalQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

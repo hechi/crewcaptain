@@ -6,8 +6,8 @@ import com.peoplemanager.adapters.web.dto.KudosResponse
 import com.peoplemanager.adapters.web.dto.PaginatedKudosResponse
 import com.peoplemanager.application.commands.CreateKudosCommand
 import com.peoplemanager.application.commands.DeleteKudosCommand
-import com.peoplemanager.application.ports.KudosCommandPort
-import com.peoplemanager.application.ports.KudosQueryPort
+import com.peoplemanager.application.port.input.KudosCommandPort
+import com.peoplemanager.application.port.input.KudosQueryPort
 import com.peoplemanager.application.queries.GetKudosQuery
 import com.peoplemanager.application.queries.ListAllKudosQuery
 import com.peoplemanager.application.queries.ListKudosByPersonQuery

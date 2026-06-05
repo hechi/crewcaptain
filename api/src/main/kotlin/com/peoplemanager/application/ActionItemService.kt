@@ -5,10 +5,10 @@ import com.peoplemanager.application.commands.CompleteActionItemCommand
 import com.peoplemanager.application.commands.CreateActionItemCommand
 import com.peoplemanager.application.commands.DeleteActionItemCommand
 import com.peoplemanager.application.commands.UpdateActionItemCommand
-import com.peoplemanager.application.ports.ActionItemCommandPort
-import com.peoplemanager.application.ports.ActionItemQueryPort
-import com.peoplemanager.application.ports.ActionItemRepository
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.input.ActionItemCommandPort
+import com.peoplemanager.application.port.input.ActionItemQueryPort
+import com.peoplemanager.application.port.output.ActionItemRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.queries.CountOpenActionItemsQuery
 import com.peoplemanager.application.queries.GetActionItemQuery
 import com.peoplemanager.application.queries.ListActionItemsByPersonQuery

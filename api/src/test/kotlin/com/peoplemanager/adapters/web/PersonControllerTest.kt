@@ -11,11 +11,11 @@ import com.peoplemanager.adapters.web.dto.SetMoraleRequest
 import com.peoplemanager.adapters.web.dto.UpdatePersonRequest
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.ActionItemQueryPort
-import com.peoplemanager.application.ports.OneOnOneQueryPort
-import com.peoplemanager.application.ports.PdpGoalQueryPort
-import com.peoplemanager.application.ports.PersonCommandPort
-import com.peoplemanager.application.ports.PersonQueryPort
+import com.peoplemanager.application.port.input.ActionItemQueryPort
+import com.peoplemanager.application.port.input.OneOnOneQueryPort
+import com.peoplemanager.application.port.input.PdpGoalQueryPort
+import com.peoplemanager.application.port.input.PersonCommandPort
+import com.peoplemanager.application.port.input.PersonQueryPort
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.Person
 import com.peoplemanager.domain.PersonId

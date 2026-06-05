@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.OneOnOneSeriesRepository
+import com.peoplemanager.application.port.output.OneOnOneSeriesRepository
 import com.peoplemanager.domain.CadenceType
 import com.peoplemanager.domain.OneOnOneSeries
 import com.peoplemanager.domain.OneOnOneSeriesId

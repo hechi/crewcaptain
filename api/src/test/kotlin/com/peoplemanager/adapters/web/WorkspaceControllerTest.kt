@@ -6,8 +6,8 @@ import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverte
 import com.peoplemanager.application.UserProvisioningService
 import com.peoplemanager.application.WorkspaceNotFoundException
 import com.peoplemanager.application.PersonNotFoundException
-import com.peoplemanager.application.ports.WorkspaceCommandPort
-import com.peoplemanager.application.ports.WorkspaceQueryPort
+import com.peoplemanager.application.port.input.WorkspaceCommandPort
+import com.peoplemanager.application.port.input.WorkspaceQueryPort
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.Person
 import com.peoplemanager.domain.PersonId

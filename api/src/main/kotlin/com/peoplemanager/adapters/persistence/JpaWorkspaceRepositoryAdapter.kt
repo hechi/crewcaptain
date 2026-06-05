@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.WorkspaceRepository
+import com.peoplemanager.application.port.output.WorkspaceRepository
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.Workspace
 import com.peoplemanager.domain.WorkspaceId

@@ -3,7 +3,7 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.GamificationQueryPort
+import com.peoplemanager.application.port.input.GamificationQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

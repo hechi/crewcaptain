@@ -1,11 +1,11 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
-import com.peoplemanager.application.ports.PdpGoalCommandPort
-import com.peoplemanager.application.ports.PdpGoalQueryPort
-import com.peoplemanager.application.ports.PdpGoalRepository
-import com.peoplemanager.application.ports.PdpUpdateRepository
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.input.PdpGoalCommandPort
+import com.peoplemanager.application.port.input.PdpGoalQueryPort
+import com.peoplemanager.application.port.output.PdpGoalRepository
+import com.peoplemanager.application.port.output.PdpUpdateRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.queries.CountActivePdpGoalsQuery
 import com.peoplemanager.application.queries.GetPdpGoalQuery
 import com.peoplemanager.application.queries.ListPdpGoalsByPersonQuery

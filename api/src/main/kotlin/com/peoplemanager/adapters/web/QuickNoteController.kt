@@ -3,8 +3,8 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.*
 import com.peoplemanager.application.commands.*
-import com.peoplemanager.application.ports.QuickNoteCommandPort
-import com.peoplemanager.application.ports.QuickNoteQueryPort
+import com.peoplemanager.application.port.input.QuickNoteCommandPort
+import com.peoplemanager.application.port.input.QuickNoteQueryPort
 import com.peoplemanager.application.queries.GetQuickNoteQuery
 import com.peoplemanager.application.queries.ListQuickNotesQuery
 import com.peoplemanager.domain.PersonId

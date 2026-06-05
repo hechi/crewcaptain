@@ -1,7 +1,7 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.SearchQueryPort
-import com.peoplemanager.application.ports.SearchRepository
+import com.peoplemanager.application.port.input.SearchQueryPort
+import com.peoplemanager.application.port.output.SearchRepository
 import com.peoplemanager.application.queries.SearchQuery
 import com.peoplemanager.domain.SearchResults
 import org.springframework.stereotype.Service

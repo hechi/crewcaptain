@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.SearchRepository
+import com.peoplemanager.application.port.output.SearchRepository
 import com.peoplemanager.domain.SearchResult
 import com.peoplemanager.domain.SearchResultType
 import com.peoplemanager.domain.UserId

@@ -3,7 +3,7 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.AuditLogQueryPort
+import com.peoplemanager.application.port.input.AuditLogQueryPort
 import com.peoplemanager.application.queries.GetAuditLogQuery
 import com.peoplemanager.domain.*
 import io.mockk.every

@@ -1,12 +1,13 @@
 # PROGRESS.md
 
 ## Last Updated
-2026-06-03T00:35:00Z — Fixed timezone inconsistency in DashboardService and NotificationGenerationService: changed `LocalDate.now()` to `LocalDate.now(ZoneOffset.UTC)` to match the UTC zone used for Instant-to-LocalDate conversions. Updated DashboardServiceTest person fixtures to also use UTC. All backend tests now pass (previously 5 failures in stale 1:1 and anniversary assertions due to off-by-one errors when system timezone differs from UTC).
+2026-06-06T00:40:00Z — Hexagonal architecture refactoring Phase 0+1: Added ArchUnit test suite (19 tests) enforcing layer boundaries (domain ↛ application, domain ↛ adapters, domain ↛ Spring/JPA, application ↛ adapters, no cycles). Restructured `application/ports/` into `application/port/input/` (CommandPort + QueryPort) and `application/port/output/` (Repository + external service ports). Moved domain services (CsvParser, MarkdownExportFormatter, ReviewPacketFormatter) into `domain/service/`. Added `api/ARCHITECTURE.md` migration guide. All 1347 backend tests pass (19 new ArchUnit + 1328 existing).
 
 ## Current Status
-All PRD features implemented plus AI Strategic Trend Radar, Strategy Hub with LLM-powered Link Suggestions, and Sticky Notes. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. Backend: 1328 tests all pass (timezone fix resolved 5 stale 1:1 / anniversary timing failures). Frontend: 1199 tests all pass. Frontend build succeeds.
+All PRD features implemented plus AI Strategic Trend Radar, Strategy Hub with LLM-powered Link Suggestions, and Sticky Notes. Docker Compose production file pulls pre-built images from `reg.root-base.de/poxy/crewcaptain/{api,frontend}:latest`. AI features: 1:1 Prep Assistant, Performance Narrative Generator, Coaching & Feedback Refinement, Outcome Extractor, Strategic Trend Radar, and AI Link Suggestions. Strategy Hub provides strategic layer with intelligent PDP goal alignment recommendations. **Architecture enforcement**: ArchUnit tests validate hexagonal layer boundaries at compile time. Port interfaces split into `port/input/` (use case interfaces) and `port/output/` (repository + external service interfaces). Domain services isolated in `domain/service/`. Backend: 1347 tests all pass. Frontend: 1199 tests all pass. Frontend build succeeds.
 
 ## Completed Features
+- [x] Architecture enforcement — ArchUnit test suite (19 tests), port/input + port/output split, domain/service isolation, ARCHITECTURE.md guide (2026-06-06)
 - [x] Backend project structure — Gradle Kotlin DSL, Spring Boot 3.3.5, Hexagonal/DDD package layout (2026-05-08)
 - [x] Frontend project structure — Next.js 14, React 18, Auth.js, TypeScript strict mode (2026-05-08)
 - [x] Backend Dockerfile — Multi-stage build (gradle:8-jdk21 → eclipse-temurin:21-jre-alpine) (2026-05-08)

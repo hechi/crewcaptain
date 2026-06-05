@@ -1,8 +1,8 @@
 package com.peoplemanager.integration
 
 import com.peoplemanager.adapters.persistence.*
-import com.peoplemanager.application.ports.OneOnOneEntryRepository
-import com.peoplemanager.application.ports.OneOnOneSeriesRepository
+import com.peoplemanager.application.port.output.OneOnOneEntryRepository
+import com.peoplemanager.application.port.output.OneOnOneSeriesRepository
 import com.peoplemanager.domain.*
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull

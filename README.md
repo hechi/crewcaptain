@@ -691,15 +691,25 @@ psql -h localhost -U crewcaptain -d crewcaptain < backup_20250508.sql
 │
 ├── api/                       ← Kotlin Spring Boot backend
 │   ├── src/main/kotlin/com/peoplemanager/
-│   │   ├── domain/            ← Aggregates, Value Objects (Person, User, PinnedRememberItem)
-│   │   ├── application/       ← Use Cases, Ports, Commands, Queries
+│   │   ├── domain/            ← Aggregates, Value Objects, Enums (pure Kotlin, no framework deps)
+│   │   │   └── service/       ← Domain services (CsvParser, formatters — pure logic)
+│   │   ├── application/       ← Use Cases, Commands, Queries
+│   │   │   ├── port/
+│   │   │   │   ├── input/    ← Input Ports (CommandPort + QueryPort interfaces)
+│   │   │   │   └── output/   ← Output Ports (Repositories, AI, Encryption)
+│   │   │   ├── commands/      ← Command objects (write DTOs)
+│   │   │   └── queries/       ← Query objects (read DTOs)
 │   │   └── adapters/
 │   │       ├── web/           ← REST Controllers + DTOs
 │   │       ├── persistence/   ← JPA Repositories + Entities
+│   │       ├── ai/            ← LLM/AI client adapter
 │   │       ├── auth/          ← OIDC/JWT verification + user provisioning
+│   │       ├── encryption/    ← AES-GCM encryption adapter
+│   │       ├── metrics/       ← Prometheus custom metrics
 │   │       └── scheduler/     ← Notification generation (hourly scheduled)
 │   ├── src/main/resources/db/migration/ ← Flyway migrations
-│   ├── src/test/kotlin/       ← Tests (domain, application, web, integration)
+│   ├── src/test/kotlin/       ← Tests (domain, application, web, integration, architecture)
+│   ├── ARCHITECTURE.md        ← Detailed architecture guide & migration playbook
 │   ├── build.gradle.kts
 │   └── Dockerfile
 │
@@ -765,9 +775,11 @@ See [Next.js Telemetry](https://nextjs.org/telemetry) for details on what would 
 ## Contributing
 
 1. Read `AGENTS.md` for the full development workflow and architecture rules
-2. Follow the mandatory workflow: Branch → Read → Plan → Test → Code → Verify → Docs → Log → Commit
-3. Every change must include tests — no exceptions
-4. All data queries must be scoped by `userId` (security invariant)
+2. Read `api/ARCHITECTURE.md` for hexagonal architecture guide and migration playbook
+3. Follow the mandatory workflow: Branch → Read → Plan → Test → Code → Verify → Docs → Log → Commit
+4. Every change must include tests — no exceptions
+5. All data queries must be scoped by `userId` (security invariant)
+6. Architecture boundaries are enforced by ArchUnit tests — the build will fail if violated
 5. Update `README.md` and `PROGRESS.md` with every change
 6. Use conventional commits (see `AGENTS.md` §4.3)
 

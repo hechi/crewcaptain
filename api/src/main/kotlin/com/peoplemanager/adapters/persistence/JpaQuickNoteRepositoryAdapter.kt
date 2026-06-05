@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.EncryptionPort
-import com.peoplemanager.application.ports.QuickNoteRepository
+import com.peoplemanager.application.port.output.EncryptionPort
+import com.peoplemanager.application.port.output.QuickNoteRepository
 import com.peoplemanager.domain.*
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page

@@ -9,8 +9,8 @@ import com.peoplemanager.adapters.web.dto.UpdateQuickNoteRequest
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.QuickNoteNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.QuickNoteCommandPort
-import com.peoplemanager.application.ports.QuickNoteQueryPort
+import com.peoplemanager.application.port.input.QuickNoteCommandPort
+import com.peoplemanager.application.port.input.QuickNoteQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

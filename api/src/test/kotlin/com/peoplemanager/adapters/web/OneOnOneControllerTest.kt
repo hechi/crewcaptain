@@ -10,8 +10,8 @@ import com.peoplemanager.adapters.web.dto.UpsertSeriesRequest
 import com.peoplemanager.application.OneOnOneEntryNotFoundException
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.OneOnOneCommandPort
-import com.peoplemanager.application.ports.OneOnOneQueryPort
+import com.peoplemanager.application.port.input.OneOnOneCommandPort
+import com.peoplemanager.application.port.input.OneOnOneQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

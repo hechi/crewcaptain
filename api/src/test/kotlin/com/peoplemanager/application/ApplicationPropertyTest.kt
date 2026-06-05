@@ -3,8 +3,8 @@ package com.peoplemanager.application
 import com.peoplemanager.application.commands.CreatePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
-import com.peoplemanager.application.ports.PersonRepository
-import com.peoplemanager.application.ports.UserRepository
+import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.UserRepository
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.OidcIdentity
 import com.peoplemanager.domain.Person

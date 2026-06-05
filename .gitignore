@@ -37,3 +37,4 @@ Thumbs.db
 coverage/
 test-results/
 playwright-report/
+.omo/

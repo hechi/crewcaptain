@@ -3,8 +3,8 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.OneOnOneCommandPort
-import com.peoplemanager.application.ports.OneOnOneQueryPort
+import com.peoplemanager.application.port.input.OneOnOneCommandPort
+import com.peoplemanager.application.port.input.OneOnOneQueryPort
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.uuid
 import io.kotest.property.checkAll

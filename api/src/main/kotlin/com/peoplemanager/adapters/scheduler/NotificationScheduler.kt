@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.scheduler
 
 import com.peoplemanager.application.NotificationGenerationService
-import com.peoplemanager.application.ports.UserRepository
+import com.peoplemanager.application.port.output.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component

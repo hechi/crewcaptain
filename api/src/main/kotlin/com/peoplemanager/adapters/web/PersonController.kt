@@ -20,11 +20,11 @@ import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
 import com.peoplemanager.application.commands.UpdateRememberItemCommand
-import com.peoplemanager.application.ports.ActionItemQueryPort
-import com.peoplemanager.application.ports.OneOnOneQueryPort
-import com.peoplemanager.application.ports.PdpGoalQueryPort
-import com.peoplemanager.application.ports.PersonCommandPort
-import com.peoplemanager.application.ports.PersonQueryPort
+import com.peoplemanager.application.port.input.ActionItemQueryPort
+import com.peoplemanager.application.port.input.OneOnOneQueryPort
+import com.peoplemanager.application.port.input.PdpGoalQueryPort
+import com.peoplemanager.application.port.input.PersonCommandPort
+import com.peoplemanager.application.port.input.PersonQueryPort
 import com.peoplemanager.application.queries.CountOpenActionItemsQuery
 import com.peoplemanager.application.queries.CountActivePdpGoalsQuery
 import com.peoplemanager.application.queries.GetLastOneOnOneDateQuery

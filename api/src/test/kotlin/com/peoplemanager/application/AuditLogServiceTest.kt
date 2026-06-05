@@ -1,6 +1,6 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.AuditLogRepository
+import com.peoplemanager.application.port.output.AuditLogRepository
 import com.peoplemanager.application.queries.GetAuditLogQuery
 import com.peoplemanager.domain.*
 import io.kotest.matchers.shouldBe

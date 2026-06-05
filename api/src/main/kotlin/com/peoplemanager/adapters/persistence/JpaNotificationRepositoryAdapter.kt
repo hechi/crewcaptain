@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.NotificationRepository
+import com.peoplemanager.application.port.output.NotificationRepository
 import com.peoplemanager.domain.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

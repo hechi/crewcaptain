@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.EncryptionPort
-import com.peoplemanager.application.ports.OneOnOneEntryRepository
+import com.peoplemanager.application.port.output.EncryptionPort
+import com.peoplemanager.application.port.output.OneOnOneEntryRepository
 import com.peoplemanager.domain.AgendaItem
 import com.peoplemanager.domain.AgendaItemId
 import com.peoplemanager.domain.OneOnOneEntry

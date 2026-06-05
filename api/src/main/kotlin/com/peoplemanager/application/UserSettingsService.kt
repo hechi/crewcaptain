@@ -1,6 +1,6 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.UserSettingsRepository
+import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.AiWritingStyle
 import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.domain.Theme

@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.StrategyGoalPdpGoalLinkRepository
+import com.peoplemanager.application.port.output.StrategyGoalPdpGoalLinkRepository
 import com.peoplemanager.domain.PdpGoalId
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.StrategyGoalId

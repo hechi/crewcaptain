@@ -4,7 +4,7 @@ import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.PersonExportPort
+import com.peoplemanager.application.port.output.PersonExportPort
 import com.peoplemanager.application.queries.ExportPersonDataQuery
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId

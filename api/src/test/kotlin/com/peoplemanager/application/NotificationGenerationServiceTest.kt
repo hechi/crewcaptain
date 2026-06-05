@@ -1,6 +1,7 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.*
+import com.peoplemanager.application.port.input.*
+import com.peoplemanager.application.port.output.*
 import com.peoplemanager.domain.*
 import io.kotest.matchers.shouldBe
 import io.mockk.*

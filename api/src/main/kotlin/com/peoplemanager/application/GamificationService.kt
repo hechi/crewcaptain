@@ -1,11 +1,11 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.ActionItemRepository
-import com.peoplemanager.application.ports.GamificationQueryPort
-import com.peoplemanager.application.ports.KudosRepository
-import com.peoplemanager.application.ports.OneOnOneEntryRepository
-import com.peoplemanager.application.ports.OneOnOneSeriesRepository
-import com.peoplemanager.application.ports.PdpGoalRepository
+import com.peoplemanager.application.port.output.ActionItemRepository
+import com.peoplemanager.application.port.input.GamificationQueryPort
+import com.peoplemanager.application.port.output.KudosRepository
+import com.peoplemanager.application.port.output.OneOnOneEntryRepository
+import com.peoplemanager.application.port.output.OneOnOneSeriesRepository
+import com.peoplemanager.application.port.output.PdpGoalRepository
 import com.peoplemanager.application.queries.GetGamificationStatsQuery
 import com.peoplemanager.domain.*
 import org.springframework.stereotype.Service

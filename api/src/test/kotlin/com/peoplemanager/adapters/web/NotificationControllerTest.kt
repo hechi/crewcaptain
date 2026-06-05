@@ -4,8 +4,8 @@ import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
 import com.peoplemanager.application.NotificationNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.NotificationCommandPort
-import com.peoplemanager.application.ports.NotificationQueryPort
+import com.peoplemanager.application.port.input.NotificationCommandPort
+import com.peoplemanager.application.port.input.NotificationQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.KudosRepository
+import com.peoplemanager.application.port.output.KudosRepository
 import com.peoplemanager.domain.Kudos
 import com.peoplemanager.domain.KudosId
 import com.peoplemanager.domain.PersonId

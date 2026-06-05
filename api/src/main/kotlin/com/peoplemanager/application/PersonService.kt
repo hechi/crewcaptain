@@ -11,9 +11,9 @@ import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
 import com.peoplemanager.application.commands.UpdateRememberItemCommand
 import com.peoplemanager.domain.AuditLogEntry
-import com.peoplemanager.application.ports.PersonCommandPort
-import com.peoplemanager.application.ports.PersonQueryPort
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.input.PersonCommandPort
+import com.peoplemanager.application.port.input.PersonQueryPort
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.queries.GetPersonQuery
 import com.peoplemanager.application.queries.ListDeletedPersonsQuery
 import com.peoplemanager.application.queries.ListPersonsQuery

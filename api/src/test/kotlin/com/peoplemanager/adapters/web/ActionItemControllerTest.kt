@@ -8,8 +8,8 @@ import com.peoplemanager.adapters.web.dto.UpdateActionItemRequest
 import com.peoplemanager.application.ActionItemNotFoundException
 import com.peoplemanager.application.PersonNotFoundException
 import com.peoplemanager.application.UserProvisioningService
-import com.peoplemanager.application.ports.ActionItemCommandPort
-import com.peoplemanager.application.ports.ActionItemQueryPort
+import com.peoplemanager.application.port.input.ActionItemCommandPort
+import com.peoplemanager.application.port.input.ActionItemQueryPort
 import com.peoplemanager.domain.*
 import io.mockk.every
 import io.mockk.mockk

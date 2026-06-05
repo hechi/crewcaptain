@@ -1,11 +1,11 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.AiClientPort
-import com.peoplemanager.application.ports.AiCompletionResult
-import com.peoplemanager.application.ports.PdpGoalRepository
-import com.peoplemanager.application.ports.PersonRepository
-import com.peoplemanager.application.ports.StrategyGoalRepository
-import com.peoplemanager.application.ports.UserSettingsRepository
+import com.peoplemanager.application.port.output.AiClientPort
+import com.peoplemanager.application.port.output.AiCompletionResult
+import com.peoplemanager.application.port.output.PdpGoalRepository
+import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.StrategyGoalRepository
+import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.PdpGoalId
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.StrategyGoalId

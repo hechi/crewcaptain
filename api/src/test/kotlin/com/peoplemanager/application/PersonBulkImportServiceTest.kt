@@ -1,7 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.BulkImportPersonsCommand
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.Person
 import com.peoplemanager.domain.PersonId

@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.EncryptionPort
-import com.peoplemanager.application.ports.PdpUpdateRepository
+import com.peoplemanager.application.port.output.EncryptionPort
+import com.peoplemanager.application.port.output.PdpUpdateRepository
 import com.peoplemanager.domain.PdpGoalId
 import com.peoplemanager.domain.PdpUpdate
 import com.peoplemanager.domain.PdpUpdateId

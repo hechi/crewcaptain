@@ -10,7 +10,7 @@ import com.peoplemanager.application.commands.RestorePersonCommand
 import com.peoplemanager.application.commands.SetMoraleCommand
 import com.peoplemanager.application.commands.UpdatePersonCommand
 import com.peoplemanager.application.commands.UpdateRememberItemCommand
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.queries.GetPersonQuery
 import com.peoplemanager.application.queries.ListDeletedPersonsQuery
 import com.peoplemanager.application.queries.ListPersonsQuery

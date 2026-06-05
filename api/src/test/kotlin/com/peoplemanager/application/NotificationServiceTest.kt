@@ -2,7 +2,7 @@ package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.MarkAllNotificationsReadCommand
 import com.peoplemanager.application.commands.MarkNotificationReadCommand
-import com.peoplemanager.application.ports.NotificationRepository
+import com.peoplemanager.application.port.output.NotificationRepository
 import com.peoplemanager.application.queries.GetNotificationsQuery
 import com.peoplemanager.application.queries.GetUnreadCountQuery
 import com.peoplemanager.domain.*

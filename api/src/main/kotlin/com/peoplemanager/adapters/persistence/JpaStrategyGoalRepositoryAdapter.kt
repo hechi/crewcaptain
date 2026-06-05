@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.persistence
 
-import com.peoplemanager.application.ports.EncryptionPort
-import com.peoplemanager.application.ports.StrategyGoalRepository
+import com.peoplemanager.application.port.output.EncryptionPort
+import com.peoplemanager.application.port.output.StrategyGoalRepository
 import com.peoplemanager.domain.StrategyGoal
 import com.peoplemanager.domain.StrategyGoalId
 import com.peoplemanager.domain.StrategyGoalStatus

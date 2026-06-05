@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.auth.AuthenticatedUser
-import com.peoplemanager.application.ports.PersonExportPort
+import com.peoplemanager.application.port.output.PersonExportPort
 import com.peoplemanager.application.queries.ExportPersonDataQuery
 import com.peoplemanager.domain.PersonId
 import org.springframework.http.HttpHeaders

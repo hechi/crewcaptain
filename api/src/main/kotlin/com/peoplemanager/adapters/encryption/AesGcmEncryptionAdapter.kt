@@ -1,6 +1,6 @@
 package com.peoplemanager.adapters.encryption
 
-import com.peoplemanager.application.ports.EncryptionPort
+import com.peoplemanager.application.port.output.EncryptionPort
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component

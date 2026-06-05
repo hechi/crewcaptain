@@ -2,7 +2,7 @@ package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.DashboardResponse
-import com.peoplemanager.application.ports.DashboardQueryPort
+import com.peoplemanager.application.port.input.DashboardQueryPort
 import com.peoplemanager.application.queries.GetDashboardQuery
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

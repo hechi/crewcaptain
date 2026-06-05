@@ -1,10 +1,10 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.*
-import com.peoplemanager.application.ports.PdpGoalRepository
-import com.peoplemanager.application.ports.PersonRepository
-import com.peoplemanager.application.ports.StrategyGoalPdpGoalLinkRepository
-import com.peoplemanager.application.ports.StrategyGoalRepository
+import com.peoplemanager.application.port.output.PdpGoalRepository
+import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.StrategyGoalPdpGoalLinkRepository
+import com.peoplemanager.application.port.output.StrategyGoalRepository
 import com.peoplemanager.domain.AuditLogEntry
 import com.peoplemanager.domain.PdpGoalId
 import com.peoplemanager.domain.StrategyGoalId

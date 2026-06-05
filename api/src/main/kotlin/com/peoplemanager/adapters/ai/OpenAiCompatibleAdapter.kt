@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.ai
 
-import com.peoplemanager.application.ports.AiClientPort
-import com.peoplemanager.application.ports.AiCompletionResult
+import com.peoplemanager.application.port.output.AiClientPort
+import com.peoplemanager.application.port.output.AiCompletionResult
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory

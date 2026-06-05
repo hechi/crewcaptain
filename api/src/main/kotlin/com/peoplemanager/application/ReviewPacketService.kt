@@ -1,19 +1,19 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.ActionItemRepository
-import com.peoplemanager.application.ports.KudosRepository
-import com.peoplemanager.application.ports.OneOnOneEntryRepository
-import com.peoplemanager.application.ports.PdpGoalRepository
-import com.peoplemanager.application.ports.PdpUpdateRepository
-import com.peoplemanager.application.ports.PersonRepository
-import com.peoplemanager.application.ports.ReviewPacketPort
+import com.peoplemanager.application.port.output.ActionItemRepository
+import com.peoplemanager.application.port.output.KudosRepository
+import com.peoplemanager.application.port.output.OneOnOneEntryRepository
+import com.peoplemanager.application.port.output.PdpGoalRepository
+import com.peoplemanager.application.port.output.PdpUpdateRepository
+import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.ReviewPacketPort
 import com.peoplemanager.application.queries.GenerateReviewPacketQuery
 import com.peoplemanager.domain.ActionItem
 import com.peoplemanager.domain.Kudos
 import com.peoplemanager.domain.OneOnOneEntry
 import com.peoplemanager.domain.PdpGoalWithUpdates
 import com.peoplemanager.domain.ReviewPacketData
-import com.peoplemanager.domain.ReviewPacketFormatter
+import com.peoplemanager.domain.service.ReviewPacketFormatter
 import com.peoplemanager.domain.ReviewPacketSummary
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort

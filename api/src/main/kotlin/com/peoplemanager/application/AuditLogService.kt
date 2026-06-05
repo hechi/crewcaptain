@@ -1,7 +1,7 @@
 package com.peoplemanager.application
 
-import com.peoplemanager.application.ports.AuditLogQueryPort
-import com.peoplemanager.application.ports.AuditLogRepository
+import com.peoplemanager.application.port.input.AuditLogQueryPort
+import com.peoplemanager.application.port.output.AuditLogRepository
 import com.peoplemanager.application.queries.GetAuditLogQuery
 import com.peoplemanager.domain.AuditLogEntry
 import org.springframework.data.domain.Page

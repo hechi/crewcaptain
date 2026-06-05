@@ -2,8 +2,8 @@ package com.peoplemanager.application
 
 import com.peoplemanager.application.commands.CreateKudosCommand
 import com.peoplemanager.application.commands.DeleteKudosCommand
-import com.peoplemanager.application.ports.KudosRepository
-import com.peoplemanager.application.ports.PersonRepository
+import com.peoplemanager.application.port.output.KudosRepository
+import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.queries.GetKudosQuery
 import com.peoplemanager.application.queries.ListAllKudosQuery
 import com.peoplemanager.application.queries.ListKudosByPersonQuery
