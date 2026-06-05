@@ -7,7 +7,7 @@
 ## 🔐 Golden Rules (Non-Negotiable)
 
 1. **No code change without tests** → Write tests first.
-2. **Update `README.md`/`PROGRESS.md`** after every task.
+2. **Update `README.md`/`PROGRESS.md`/`api/ARCHITECTURE.md`** after every task.
 3. **Never break the build** → Run full test suite.
 4. **Enforce `userId` scoping** on all queries (no cross-manager data access).
 5. **No exceptions for "small" changes** → Follow full workflow.
