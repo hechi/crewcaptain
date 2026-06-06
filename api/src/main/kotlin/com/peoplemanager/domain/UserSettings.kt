@@ -34,6 +34,8 @@ data class UserSettings(
     val linkSuggestionsPrompt: String? = null,
     val strategyOptimizationPrompt: String? = null,
     val triageHintPrompt: String? = null,
+    val aiAutoExecuteCommands: Boolean = false,
+    val commandTerminalPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -154,6 +156,12 @@ data class UserSettings(
     fun effectiveTriageHintPrompt(): String =
         triageHintPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_TRIAGE_HINT_PROMPT
 
+    /**
+     * Returns the effective command terminal prompt (custom or default).
+     */
+    fun effectiveCommandTerminalPrompt(): String =
+        commandTerminalPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_COMMAND_TERMINAL_PROMPT
+
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
         const val DEFAULT_STALE_ONE_ON_ONE_DAYS = 14
@@ -269,6 +277,28 @@ data class UserSettings(
             "- Do NOT include any preamble, explanation, or formatting. " +
             "- Focus on actionable advice: suggest a due date, owner change, agenda intro, or follow-up text. " +
             "- Be specific and practical."
+
+        const val DEFAULT_COMMAND_TERMINAL_PROMPT =
+            "You are a system command parser for a people management application. " +
+            "Parse the user's natural language input and return ONLY a valid JSON object. " +
+            "Do NOT include any text before or after the JSON. No markdown code fences. " +
+            "The JSON must match this exact schema: " +
+            "{\"intent\": \"create_action_item\" | \"create_kudo\" | \"create_quick_note\", " +
+            "\"target_person_id\": \"UUID from the person directory or null if unassigned\", " +
+            "\"content\": \"The parsed title or note text\", " +
+            "\"due_date\": \"YYYY-MM-DD format or null\", " +
+            "\"tags\": [\"array\", \"of\", \"tags\"], " +
+            "\"sensitive\": false} " +
+            "RULES: " +
+            "- Match person names from the provided directory to resolve target_person_id. " +
+            "- If no person is mentioned, set target_person_id to null. " +
+            "- For action items, extract a clear title for 'content'. " +
+            "- For kudos, extract recognition text for 'content'. " +
+            "- For quick notes, use the full input as 'content'. " +
+            "- Parse relative dates (e.g. 'next Friday', 'in 3 days') into YYYY-MM-DD. " +
+            "- If no due date is mentioned, set due_date to null. " +
+            "- Extract any hashtags or category words as tags. " +
+            "- Set sensitive to true only if the user explicitly marks content as sensitive or private."
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

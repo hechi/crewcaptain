@@ -49,6 +49,8 @@ class JpaUserSettingsRepositoryAdapter(
         linkSuggestionsPrompt = this.linkSuggestionsPrompt,
         strategyOptimizationPrompt = this.strategyOptimizationPrompt,
         triageHintPrompt = this.triageHintPrompt,
+        aiAutoExecuteCommands = this.aiAutoExecuteCommands,
+        commandTerminalPrompt = this.commandTerminalPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -79,6 +81,8 @@ class JpaUserSettingsRepositoryAdapter(
         linkSuggestionsPrompt = this.linkSuggestionsPrompt,
         strategyOptimizationPrompt = this.strategyOptimizationPrompt,
         triageHintPrompt = this.triageHintPrompt,
+        aiAutoExecuteCommands = this.aiAutoExecuteCommands,
+        commandTerminalPrompt = this.commandTerminalPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

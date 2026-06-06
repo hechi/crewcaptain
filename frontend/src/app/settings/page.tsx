@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const [aiModelName, setAiModelName] = useState('');
   const [aiPrivacyMode, setAiPrivacyMode] = useState(true);
   const [aiWritingStyle, setAiWritingStyle] = useState<AiWritingStyle>('NARRATIVE');
+  const [aiAutoExecuteCommands, setAiAutoExecuteCommands] = useState(false);
   const [kudosRefinementPrompt, setKudosRefinementPrompt] = useState('');
   const [pdpOptimizationPrompt, setPdpOptimizationPrompt] = useState('');
   const [agendaPrepPrompt, setAgendaPrepPrompt] = useState('');
@@ -40,6 +41,7 @@ export default function SettingsPage() {
   const [trendRadarPrompt, setTrendRadarPrompt] = useState('');
   const [linkSuggestionsPrompt, setLinkSuggestionsPrompt] = useState('');
   const [triageHintPrompt, setTriageHintPrompt] = useState('');
+  const [commandTerminalPrompt, setCommandTerminalPrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -65,6 +67,7 @@ export default function SettingsPage() {
       setAiModelName(result.aiModelName || '');
       setAiPrivacyMode(result.aiPrivacyMode);
       setAiWritingStyle(result.aiWritingStyle || 'NARRATIVE');
+      setAiAutoExecuteCommands(result.aiAutoExecuteCommands);
       setKudosRefinementPrompt(result.kudosRefinementPrompt || '');
       setPdpOptimizationPrompt(result.pdpOptimizationPrompt || '');
       setAgendaPrepPrompt(result.agendaPrepPrompt || '');
@@ -73,6 +76,7 @@ export default function SettingsPage() {
       setTrendRadarPrompt(result.trendRadarPrompt || '');
       setLinkSuggestionsPrompt(result.linkSuggestionsPrompt || '');
       setTriageHintPrompt(result.triageHintPrompt || '');
+      setCommandTerminalPrompt(result.commandTerminalPrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -108,6 +112,7 @@ export default function SettingsPage() {
         aiModelName: aiModelName || null,
         aiPrivacyMode,
         aiWritingStyle,
+        aiAutoExecuteCommands,
         kudosRefinementPrompt: kudosRefinementPrompt || null,
         pdpOptimizationPrompt: pdpOptimizationPrompt || null,
         agendaPrepPrompt: agendaPrepPrompt || null,
@@ -116,6 +121,7 @@ export default function SettingsPage() {
         trendRadarPrompt: trendRadarPrompt || null,
         linkSuggestionsPrompt: linkSuggestionsPrompt || null,
         triageHintPrompt: triageHintPrompt || null,
+        commandTerminalPrompt: commandTerminalPrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -535,6 +541,12 @@ export default function SettingsPage() {
                   checked={aiPrivacyMode}
                   onChange={setAiPrivacyMode}
                 />
+                <ToggleRow
+                  testId="toggle-ai-auto-execute"
+                  label="Auto-Execute AI Commands (skip confirmation in Command Terminal)"
+                  checked={aiAutoExecuteCommands}
+                  onChange={setAiAutoExecuteCommands}
+                />
 
                 {/* AI Writing Style */}
                 <div style={{ marginTop: 'var(--space-4)' }}>
@@ -658,6 +670,16 @@ export default function SettingsPage() {
                     value={triageHintPrompt}
                     onChange={setTriageHintPrompt}
                     onReset={() => setTriageHintPrompt('')}
+                  />
+                </div>
+                <div style={{ marginTop: 'var(--space-4)' }}>
+                  <PromptTextarea
+                    testId="ai-command-terminal-prompt"
+                    label="Command Terminal Prompt"
+                    placeholder="You are a system command parser for a people management application. Parse the user's natural language input..."
+                    value={commandTerminalPrompt}
+                    onChange={setCommandTerminalPrompt}
+                    onReset={() => setCommandTerminalPrompt('')}
                   />
                 </div>
               </>

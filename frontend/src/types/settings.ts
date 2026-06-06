@@ -17,6 +17,7 @@ export interface UserSettings {
   aiModelName: string | null;
   aiPrivacyMode: boolean;
   aiWritingStyle: AiWritingStyle;
+  aiAutoExecuteCommands: boolean;
   kudosRefinementPrompt: string | null;
   pdpOptimizationPrompt: string | null;
   agendaPrepPrompt: string | null;
@@ -25,6 +26,7 @@ export interface UserSettings {
   trendRadarPrompt: string | null;
   linkSuggestionsPrompt: string | null;
   triageHintPrompt: string | null;
+  commandTerminalPrompt: string | null;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -43,6 +45,7 @@ export interface UpdateUserSettingsRequest {
   aiModelName?: string | null;
   aiPrivacyMode: boolean;
   aiWritingStyle: AiWritingStyle;
+  aiAutoExecuteCommands: boolean;
   kudosRefinementPrompt?: string | null;
   pdpOptimizationPrompt?: string | null;
   agendaPrepPrompt?: string | null;
@@ -51,6 +54,7 @@ export interface UpdateUserSettingsRequest {
   trendRadarPrompt?: string | null;
   linkSuggestionsPrompt?: string | null;
   triageHintPrompt?: string | null;
+  commandTerminalPrompt?: string | null;
 }
 
 export interface AiPrepResponse {
@@ -108,4 +112,19 @@ export interface TrendRadarInsight {
   description: string;
   dimension: 'MORALE' | 'WORK_GROWTH_BALANCE' | 'RECOGNITION' | 'MEETING_EFFICACY';
   confidenceScore: number;
+}
+
+export interface AiCommandResponse {
+  intent: string | null;
+  targetPersonId: string | null;
+  content: string | null;
+  dueDate: string | null;
+  tags: string[];
+  sensitive: boolean;
+  error: string | null;
+}
+
+export interface PersonDirectoryEntry {
+  id: string;
+  preferredName: string;
 }

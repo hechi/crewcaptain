@@ -83,6 +83,12 @@ class UserSettingsEntity(
     @Column(name = "triage_hint_prompt", columnDefinition = "TEXT")
     val triageHintPrompt: String? = null,
 
+    @Column(name = "ai_auto_execute_commands", nullable = false)
+    val aiAutoExecuteCommands: Boolean = false,
+
+    @Column(name = "command_terminal_prompt", columnDefinition = "TEXT")
+    val commandTerminalPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

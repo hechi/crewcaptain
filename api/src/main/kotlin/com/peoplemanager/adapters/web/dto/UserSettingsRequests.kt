@@ -36,5 +36,7 @@ data class UpdateUserSettingsRequest(
     val trendRadarPrompt: String? = null,
     val linkSuggestionsPrompt: String? = null,
     val strategyOptimizationPrompt: String? = null,
-    val triageHintPrompt: String? = null
+    val triageHintPrompt: String? = null,
+    val aiAutoExecuteCommands: Boolean = false,
+    val commandTerminalPrompt: String? = null
 )

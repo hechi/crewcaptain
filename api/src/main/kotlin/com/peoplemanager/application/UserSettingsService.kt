@@ -51,6 +51,8 @@ class UserSettingsService(
             linkSuggestionsPrompt = command.linkSuggestionsPrompt,
             strategyOptimizationPrompt = command.strategyOptimizationPrompt,
             triageHintPrompt = command.triageHintPrompt,
+            aiAutoExecuteCommands = command.aiAutoExecuteCommands,
+            commandTerminalPrompt = command.commandTerminalPrompt,
             updatedAt = java.time.Instant.now()
         )
 
@@ -84,5 +86,7 @@ data class UpdateUserSettingsCommand(
     val trendRadarPrompt: String? = null,
     val linkSuggestionsPrompt: String? = null,
     val strategyOptimizationPrompt: String? = null,
-    val triageHintPrompt: String? = null
+    val triageHintPrompt: String? = null,
+    val aiAutoExecuteCommands: Boolean = false,
+    val commandTerminalPrompt: String? = null
 )

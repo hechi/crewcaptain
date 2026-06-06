@@ -4,6 +4,7 @@ import SessionErrorHandler from '@/components/SessionErrorHandler'
 import Navigation from '@/components/Navigation'
 import ThemeProvider from '@/components/ThemeProvider'
 import QuickNoteOverlay from '@/components/quick-notes/QuickNoteOverlay'
+import AiCommandTerminal from '@/components/ai-terminal/AiCommandTerminal'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -40,6 +41,7 @@ export default function RootLayout({
             <Navigation />
             <main>{children}</main>
             <QuickNoteOverlay />
+            <AiCommandTerminal />
           </ThemeProvider>
         </SessionProvider>
       </body>

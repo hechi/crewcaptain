@@ -1114,7 +1114,6 @@ export async function generateAiLinkSuggestions(token: string): Promise<AiLinkSu
 // --- Triage Queue ---
 
 import { TriageQueueResponse, TriageHintResponse, SnoozeActionItemRequest, TriageFilters } from '@/types/triage';
-import { ActionItem } from '@/types/action-item';
 
 export async function getTriageQueue(
   token: string,
@@ -1158,5 +1157,22 @@ export async function snoozeTriageItem(
     },
     token
   );
+  return response.json();
+}
+
+// --- AI Command Terminal ---
+
+import { AiCommandResponse, PersonDirectoryEntry } from '@/types/settings';
+
+export async function parseAiCommand(token: string, input: string): Promise<AiCommandResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/ai/command`, {
+    method: 'POST',
+    body: JSON.stringify({ input }),
+  }, token);
+  return response.json();
+}
+
+export async function getPersonDirectory(token: string): Promise<PersonDirectoryEntry[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/ai/command/directory`, {}, token);
   return response.json();
 }

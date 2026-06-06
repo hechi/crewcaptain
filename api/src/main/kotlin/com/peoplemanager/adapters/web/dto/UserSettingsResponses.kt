@@ -25,7 +25,9 @@ data class UserSettingsResponse(
     val trendRadarPrompt: String?,
     val linkSuggestionsPrompt: String?,
     val strategyOptimizationPrompt: String?,
-    val triageHintPrompt: String?
+    val triageHintPrompt: String?,
+    val aiAutoExecuteCommands: Boolean,
+    val commandTerminalPrompt: String?
 ) {
     companion object {
         fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
@@ -51,7 +53,9 @@ data class UserSettingsResponse(
             trendRadarPrompt = settings.trendRadarPrompt,
             linkSuggestionsPrompt = settings.linkSuggestionsPrompt,
             strategyOptimizationPrompt = settings.strategyOptimizationPrompt,
-            triageHintPrompt = settings.triageHintPrompt
+            triageHintPrompt = settings.triageHintPrompt,
+            aiAutoExecuteCommands = settings.aiAutoExecuteCommands,
+            commandTerminalPrompt = settings.commandTerminalPrompt
         )
     }
 }
