@@ -144,12 +144,36 @@ class AiCommandTerminalService(
                 return CommandParseResult.error("Could not extract content from your command. Please try rephrasing.")
             }
 
+            // For 1:1 entries, enforce today's date if LLM returned null or a clearly wrong date
+            val effectiveMeetingDate = if (intent == "create_one_on_one_entry") {
+                val today = java.time.LocalDate.now()
+                when {
+                    meetingDate == null -> today.toString()
+                    else -> {
+                        // Validate date is parseable and not absurdly far from today
+                        try {
+                            val parsed = java.time.LocalDate.parse(meetingDate)
+                            val daysDiff = java.time.temporal.ChronoUnit.DAYS.between(parsed, today)
+                            // If date is more than 30 days in the past or future, likely hallucinated — use today
+                            if (daysDiff > 30 || daysDiff < -30) {
+                                logger.warn("AI returned suspicious meeting_date $meetingDate (${daysDiff}d from today). Overriding with today.")
+                                today.toString()
+                            } else {
+                                meetingDate
+                            }
+                        } catch (e: Exception) {
+                            today.toString()
+                        }
+                    }
+                }
+            } else meetingDate
+
             CommandParseResult(
                 intent = intent,
                 targetPersonId = targetPersonId,
                 content = parsedContent,
                 dueDate = dueDate,
-                meetingDate = meetingDate,
+                meetingDate = effectiveMeetingDate,
                 tags = tags,
                 sensitive = sensitive,
                 error = null

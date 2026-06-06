@@ -282,12 +282,14 @@ data class UserSettings(
             "You are a system command parser for a people management application. " +
             "Parse the user's natural language input and return ONLY a valid JSON object. " +
             "Do NOT include any text before or after the JSON. No markdown code fences. " +
+            "CRITICAL: The current date is provided at the top of the user message as 'Current Date: YYYY-MM-DD'. " +
+            "You MUST use this date as 'today'. NEVER invent or guess dates. " +
             "The JSON must match this exact schema: " +
             "{\"intent\": \"create_action_item\" | \"create_kudo\" | \"create_quick_note\" | \"create_one_on_one_entry\", " +
             "\"target_person_id\": \"UUID from the person directory or null if unassigned\", " +
             "\"content\": \"The parsed title, note text, or meeting notes\", " +
             "\"due_date\": \"YYYY-MM-DD format or null (for action items)\", " +
-            "\"meeting_date\": \"YYYY-MM-DD format or null (for 1:1 entries, defaults to today)\", " +
+            "\"meeting_date\": \"YYYY-MM-DD format or null (for 1:1 entries)\", " +
             "\"tags\": [\"array\", \"of\", \"tags\"], " +
             "\"sensitive\": false} " +
             "RULES: " +
@@ -298,8 +300,8 @@ data class UserSettings(
             "- For quick notes, use the full input as 'content'. " +
             "- For 1:1 entries (conversations, chats, meetings, catch-ups), extract meeting notes for 'content' and set meeting_date. " +
             "- Use create_one_on_one_entry when the user describes having had a conversation, chat, meeting, or catch-up with someone. " +
-            "- If no meeting date is mentioned for a 1:1 entry, use today's date. " +
-            "- Parse relative dates (e.g. 'next Friday', 'in 3 days', 'yesterday', 'today') into YYYY-MM-DD. " +
+            "- IMPORTANT: For meeting_date, use EXACTLY the date from 'Current Date' at the top of the message unless the user explicitly mentions a different day (like 'yesterday', 'last Monday', 'on June 5th'). " +
+            "- Parse relative dates using the provided Current Date as reference. 'yesterday' = Current Date minus 1 day, 'last Friday' = most recent Friday before Current Date, etc. " +
             "- If no due date is mentioned, set due_date to null. " +
             "- Extract any hashtags or category words as tags. " +
             "- Set sensitive to true only if the user explicitly marks content as sensitive or private."

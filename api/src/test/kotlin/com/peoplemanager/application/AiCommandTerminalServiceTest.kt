@@ -172,6 +172,40 @@ class AiCommandTerminalServiceTest {
     }
 
     @Test
+    fun `parseCommand should override hallucinated meeting date with today`() {
+        val today = java.time.LocalDate.now().toString()
+        // LLM returns 2024-02-20 which is >30 days from today (2026-06-07) — clearly hallucinated
+        val aiResponse = """
+            {"intent": "create_one_on_one_entry", "target_person_id": "${personId.value}", "content": "Discussed project", "due_date": null, "meeting_date": "2024-02-20", "tags": [], "sensitive": false}
+        """.trimIndent()
+
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success(aiResponse)
+
+        val result = service.parseCommand(userId, "I just talked to Alice about the project")
+
+        result.error shouldBe null
+        result.intent shouldBe "create_one_on_one_entry"
+        result.meetingDate shouldBe today
+    }
+
+    @Test
+    fun `parseCommand should use null meeting date as today for 1-1 entries`() {
+        val today = java.time.LocalDate.now().toString()
+        val aiResponse = """
+            {"intent": "create_one_on_one_entry", "target_person_id": "${personId.value}", "content": "Sync notes", "due_date": null, "meeting_date": null, "tags": [], "sensitive": false}
+        """.trimIndent()
+
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success(aiResponse)
+
+        val result = service.parseCommand(userId, "Had a chat with Alice")
+
+        result.error shouldBe null
+        result.meetingDate shouldBe today
+    }
+
+    @Test
     fun `parseCommand should handle sensitive flag`() {
         val aiResponse = """
             {"intent": "create_quick_note", "target_person_id": "${personId.value}", "content": "PIP discussion notes", "due_date": null, "tags": [], "sensitive": true}
