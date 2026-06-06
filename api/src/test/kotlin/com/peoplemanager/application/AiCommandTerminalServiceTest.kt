@@ -269,7 +269,31 @@ class AiCommandTerminalServiceTest {
                 apiKey = null,
                 model = "llama3",
                 systemPrompt = UserSettings.DEFAULT_COMMAND_TERMINAL_PROMPT,
-                userMessage = match { it.contains("Alice") && it.contains(personId.value.toString()) }
+                userMessage = match { it.contains("Alice") && it.contains(personId.value.toString()) && it.contains("Current Date:") }
+            )
+        }
+    }
+
+    @Test
+    fun `parseCommand should inject current date and time into user message`() {
+        val aiResponse = """
+            {"intent": "create_quick_note", "target_person_id": null, "content": "Test", "due_date": null, "tags": [], "sensitive": false}
+        """.trimIndent()
+
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success(aiResponse)
+
+        service.parseCommand(userId, "Test")
+
+        val today = java.time.LocalDate.now().toString()
+
+        verify {
+            aiClientPort.chatCompletion(
+                baseUrl = any(),
+                apiKey = any(),
+                model = any(),
+                systemPrompt = any(),
+                userMessage = match { it.contains("Current Date: $today") && it.contains("Current Time:") }
             )
         }
     }

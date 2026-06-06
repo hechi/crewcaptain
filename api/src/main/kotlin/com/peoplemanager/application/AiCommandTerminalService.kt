@@ -79,7 +79,14 @@ class AiCommandTerminalService(
 
         val systemPrompt = settings.effectiveCommandTerminalPrompt()
 
+        val now = java.time.LocalDate.now()
+        val nowTime = java.time.LocalTime.now()
+        val dayOfWeek = now.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+
         val userMessage = buildString {
+            appendLine("Current Date: $now ($dayOfWeek)")
+            appendLine("Current Time: ${nowTime.hour.toString().padStart(2, '0')}:${nowTime.minute.toString().padStart(2, '0')}")
+            appendLine()
             appendLine("Person Directory:")
             appendLine(directoryJson)
             appendLine()
