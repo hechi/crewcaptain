@@ -39,6 +39,7 @@ export default function SettingsPage() {
   const [outcomeExtractorPrompt, setOutcomeExtractorPrompt] = useState('');
   const [trendRadarPrompt, setTrendRadarPrompt] = useState('');
   const [linkSuggestionsPrompt, setLinkSuggestionsPrompt] = useState('');
+  const [triageHintPrompt, setTriageHintPrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -71,6 +72,7 @@ export default function SettingsPage() {
       setOutcomeExtractorPrompt(result.outcomeExtractorPrompt || '');
       setTrendRadarPrompt(result.trendRadarPrompt || '');
       setLinkSuggestionsPrompt(result.linkSuggestionsPrompt || '');
+      setTriageHintPrompt(result.triageHintPrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -113,6 +115,7 @@ export default function SettingsPage() {
         outcomeExtractorPrompt: outcomeExtractorPrompt || null,
         trendRadarPrompt: trendRadarPrompt || null,
         linkSuggestionsPrompt: linkSuggestionsPrompt || null,
+        triageHintPrompt: triageHintPrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -646,6 +649,15 @@ export default function SettingsPage() {
                     value={linkSuggestionsPrompt}
                     onChange={setLinkSuggestionsPrompt}
                     onReset={() => setLinkSuggestionsPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-triage-hint-prompt"
+                    label="Triage Hint Prompt"
+                    placeholder="You are a productivity coach for a people manager. Given a triage item, suggest a single short next-best-action..."
+                    value={triageHintPrompt}
+                    onChange={setTriageHintPrompt}
+                    onReset={() => setTriageHintPrompt('')}
                   />
                 </div>
               </>

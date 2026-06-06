@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { TriageItem } from '@/types/triage';
 
 interface TriageItemRowProps {
@@ -8,6 +9,8 @@ interface TriageItemRowProps {
   onSelect: () => void;
   onComplete: () => void;
   onSnooze: (days: number) => void;
+  onRequestHint: (itemId: string) => Promise<string | null>;
+  aiEnabled: boolean;
 }
 
 export default function TriageItemRow({
@@ -16,7 +19,13 @@ export default function TriageItemRow({
   onSelect,
   onComplete,
   onSnooze,
+  onRequestHint,
+  aiEnabled,
 }: TriageItemRowProps) {
+  const [hint, setHint] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
+  const [hintError, setHintError] = useState(false);
+
   const getIcon = () => {
     switch (item.type) {
       case 'ACTION_ITEM_OVERDUE':
@@ -61,7 +70,25 @@ export default function TriageItemRow({
     return null;
   };
 
+  const handleHintClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hintLoading || hint) return;
+
+    setHintLoading(true);
+    setHintError(false);
+    try {
+      const result = await onRequestHint(item.id);
+      setHint(result);
+      if (!result) setHintError(true);
+    } catch {
+      setHintError(true);
+    } finally {
+      setHintLoading(false);
+    }
+  };
+
   const badge = getStatusBadge();
+  const showHintButton = aiEnabled && !item.sensitive && !hint && !hintError;
 
   return (
     <div
@@ -150,10 +177,32 @@ export default function TriageItemRow({
               {item.ownerType === 'MANAGER' ? '→ you' : '→ them'}
             </span>
           )}
+          {/* AI Hint pill (displayed after generation) */}
+          {hint && (
+            <span
+              data-testid="triage-hint-pill"
+              style={{
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                padding: '1px 8px',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--color-primary)',
+                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-primary-muted)',
+                maxWidth: '200px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={hint}
+            >
+              ✦ {hint}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Right section: badge + actions */}
+      {/* Right section: badge + hint button + actions */}
       <div
         style={{
           display: 'flex',
@@ -162,6 +211,32 @@ export default function TriageItemRow({
           flexShrink: 0,
         }}
       >
+        {/* AI Hint button */}
+        {showHintButton && (
+          <button
+            data-testid="triage-hint-btn"
+            onClick={handleHintClick}
+            disabled={hintLoading}
+            title="Get AI suggestion"
+            aria-label="Get AI suggestion"
+            style={{
+              background: 'none',
+              border: '1px solid var(--color-primary)',
+              borderRadius: 'var(--radius-full)',
+              padding: '2px 8px',
+              cursor: hintLoading ? 'wait' : 'pointer',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-primary)',
+              opacity: hintLoading ? 0.6 : 1,
+              animation: hintLoading ? 'pulse 1.5s infinite' : 'none',
+              transition: 'opacity 0.2s, box-shadow 0.2s',
+            }}
+          >
+            {hintLoading ? '✦ ...' : '✦'}
+          </button>
+        )}
+
         {badge && (
           <span
             data-testid="triage-item-badge"

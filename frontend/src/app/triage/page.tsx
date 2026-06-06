@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useStableToken } from '@/lib/useStableToken';
-import { getTriageQueue, getTriageHint, snoozeTriageItem, completeActionItem, cancelActionItem } from '@/lib/api-client';
+import { getTriageQueue, getTriageHint, snoozeTriageItem, completeActionItem, cancelActionItem, getUserSettings } from '@/lib/api-client';
 import { TriageItem, TriageQueueResponse, TriageFilters, OwnerScope, TriageItemType } from '@/types/triage';
 import LoadingScreen from '@/components/LoadingScreen';
 import TriageItemRow from '@/components/triage/TriageItemRow';
@@ -17,6 +17,7 @@ export default function TriagePage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filters, setFilters] = useState<TriageFilters>({ scope: 'ALL' });
   const [toast, setToast] = useState<string | null>(null);
+  const [aiEnabled, setAiEnabled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchQueue = useCallback(async () => {
@@ -26,8 +27,12 @@ export default function TriagePage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await getTriageQueue(token, filters);
+      const [result, settings] = await Promise.all([
+        getTriageQueue(token, filters),
+        getUserSettings(token),
+      ]);
       setItems(result.items);
+      setAiEnabled(settings.aiEnabled);
       setSelectedIndex(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load triage queue');
@@ -165,6 +170,18 @@ export default function TriagePage() {
     }
   };
 
+  const handleRequestHint = async (itemId: string): Promise<string | null> => {
+    const token = getToken();
+    if (!token) return null;
+
+    try {
+      const result = await getTriageHint(token, itemId);
+      return result.hint;
+    } catch {
+      return null;
+    }
+  };
+
   if (status === 'loading' || loading) {
     return <LoadingScreen message="Loading triage queue" />;
   }
@@ -251,6 +268,8 @@ export default function TriagePage() {
               onSelect={() => setSelectedIndex(index)}
               onComplete={() => handleComplete(item)}
               onSnooze={(days) => handleSnoozeItem(item, days)}
+              onRequestHint={handleRequestHint}
+              aiEnabled={aiEnabled}
             />
           ))}
         </div>

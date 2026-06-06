@@ -35,5 +35,6 @@ data class UpdateUserSettingsRequest(
     val outcomeExtractorPrompt: String? = null,
     val trendRadarPrompt: String? = null,
     val linkSuggestionsPrompt: String? = null,
-    val strategyOptimizationPrompt: String? = null
+    val strategyOptimizationPrompt: String? = null,
+    val triageHintPrompt: String? = null
 )

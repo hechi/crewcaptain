@@ -24,6 +24,7 @@ export interface UserSettings {
   outcomeExtractorPrompt: string | null;
   trendRadarPrompt: string | null;
   linkSuggestionsPrompt: string | null;
+  triageHintPrompt: string | null;
 }
 
 export interface UpdateUserSettingsRequest {
@@ -49,6 +50,7 @@ export interface UpdateUserSettingsRequest {
   outcomeExtractorPrompt?: string | null;
   trendRadarPrompt?: string | null;
   linkSuggestionsPrompt?: string | null;
+  triageHintPrompt?: string | null;
 }
 
 export interface AiPrepResponse {
