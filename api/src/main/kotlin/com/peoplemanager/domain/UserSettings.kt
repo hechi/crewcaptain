@@ -283,10 +283,11 @@ data class UserSettings(
             "Parse the user's natural language input and return ONLY a valid JSON object. " +
             "Do NOT include any text before or after the JSON. No markdown code fences. " +
             "The JSON must match this exact schema: " +
-            "{\"intent\": \"create_action_item\" | \"create_kudo\" | \"create_quick_note\", " +
+            "{\"intent\": \"create_action_item\" | \"create_kudo\" | \"create_quick_note\" | \"create_one_on_one_entry\", " +
             "\"target_person_id\": \"UUID from the person directory or null if unassigned\", " +
-            "\"content\": \"The parsed title or note text\", " +
-            "\"due_date\": \"YYYY-MM-DD format or null\", " +
+            "\"content\": \"The parsed title, note text, or meeting notes\", " +
+            "\"due_date\": \"YYYY-MM-DD format or null (for action items)\", " +
+            "\"meeting_date\": \"YYYY-MM-DD format or null (for 1:1 entries, defaults to today)\", " +
             "\"tags\": [\"array\", \"of\", \"tags\"], " +
             "\"sensitive\": false} " +
             "RULES: " +
@@ -295,7 +296,10 @@ data class UserSettings(
             "- For action items, extract a clear title for 'content'. " +
             "- For kudos, extract recognition text for 'content'. " +
             "- For quick notes, use the full input as 'content'. " +
-            "- Parse relative dates (e.g. 'next Friday', 'in 3 days') into YYYY-MM-DD. " +
+            "- For 1:1 entries (conversations, chats, meetings, catch-ups), extract meeting notes for 'content' and set meeting_date. " +
+            "- Use create_one_on_one_entry when the user describes having had a conversation, chat, meeting, or catch-up with someone. " +
+            "- If no meeting date is mentioned for a 1:1 entry, use today's date. " +
+            "- Parse relative dates (e.g. 'next Friday', 'in 3 days', 'yesterday', 'today') into YYYY-MM-DD. " +
             "- If no due date is mentioned, set due_date to null. " +
             "- Extract any hashtags or category words as tags. " +
             "- Set sensitive to true only if the user explicitly marks content as sensitive or private."

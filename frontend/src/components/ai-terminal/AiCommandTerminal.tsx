@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { parseAiCommand, getPersonDirectory, createQuickNote, createActionItem, createKudos } from '@/lib/api-client';
+import { parseAiCommand, getPersonDirectory, createQuickNote, createActionItem, createKudos, createOneOnOneEntry } from '@/lib/api-client';
 import { getUserSettings } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { AiCommandResponse, PersonDirectoryEntry, UserSettings } from '@/types/settings';
@@ -213,6 +213,22 @@ export default function AiCommandTerminal() {
           await createQuickNote(token, {
             text: command.content!,
             personId: command.targetPersonId || undefined,
+            sensitive: command.sensitive,
+          });
+          break;
+        case 'create_one_on_one_entry':
+          if (!command.targetPersonId) {
+            setMessages(prev => [...prev, {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: '⚠️ 1:1 entries require a target person. Please specify who the meeting was with.',
+            }]);
+            return;
+          }
+          const meetingDate = command.meetingDate || new Date().toISOString().split('T')[0];
+          await createOneOnOneEntry(token, command.targetPersonId, {
+            meetingDate: `${meetingDate}T00:00:00Z`,
+            notesMarkdown: command.content!,
             sensitive: command.sensitive,
           });
           break;
@@ -639,6 +655,9 @@ function formatPreview(command: AiCommandResponse): string {
   if (command.dueDate) {
     lines.push(`Due: ${command.dueDate}`);
   }
+  if (command.meetingDate) {
+    lines.push(`Meeting Date: ${command.meetingDate}`);
+  }
   if (command.tags.length > 0) {
     lines.push(`Tags: ${command.tags.join(', ')}`);
   }
@@ -653,6 +672,7 @@ function formatIntentLabel(intent: string): string {
     case 'create_action_item': return 'Action Item';
     case 'create_kudo': return 'Kudos';
     case 'create_quick_note': return 'Quick Note';
+    case 'create_one_on_one_entry': return '1:1 Entry';
     default: return intent;
   }
 }

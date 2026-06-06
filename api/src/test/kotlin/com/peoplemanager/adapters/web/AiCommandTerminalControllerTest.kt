@@ -81,6 +81,7 @@ class AiCommandTerminalControllerTest {
                 targetPersonId = UUID.randomUUID().toString(),
                 content = "Follow up on deadline",
                 dueDate = "2026-06-13",
+                meetingDate = null,
                 tags = listOf("project"),
                 sensitive = false,
                 error = null

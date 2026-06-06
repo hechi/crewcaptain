@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AiCommandTerminal from '@/components/ai-terminal/AiCommandTerminal';
-import { parseAiCommand, getPersonDirectory, getUserSettings, createQuickNote, createActionItem, createKudos } from '@/lib/api-client';
+import { parseAiCommand, getPersonDirectory, getUserSettings, createQuickNote, createActionItem, createKudos, createOneOnOneEntry } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 
 jest.mock('@/lib/api-client', () => ({
@@ -12,6 +12,7 @@ jest.mock('@/lib/api-client', () => ({
   createQuickNote: jest.fn(),
   createActionItem: jest.fn(),
   createKudos: jest.fn(),
+  createOneOnOneEntry: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -35,6 +36,7 @@ const mockGetUserSettings = getUserSettings as jest.MockedFunction<typeof getUse
 const mockCreateQuickNote = createQuickNote as jest.MockedFunction<typeof createQuickNote>;
 const mockCreateActionItem = createActionItem as jest.MockedFunction<typeof createActionItem>;
 const mockCreateKudos = createKudos as jest.MockedFunction<typeof createKudos>;
+const mockCreateOneOnOneEntry = createOneOnOneEntry as jest.MockedFunction<typeof createOneOnOneEntry>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 const aiEnabledSettings = {
@@ -407,6 +409,95 @@ describe('AiCommandTerminal', () => {
     await waitFor(() => {
       const fab = screen.getByTestId('ai-terminal-fab');
       expect(fab).toHaveAttribute('aria-label', 'AI Command Terminal (Ctrl+K)');
+    });
+  });
+
+  it('should execute 1:1 entry creation on confirm', async () => {
+    mockParseAiCommand.mockResolvedValue({
+      intent: 'create_one_on_one_entry',
+      targetPersonId: 'person-1',
+      content: 'Discussed project timeline and blockers',
+      dueDate: null,
+      meetingDate: '2026-06-06',
+      tags: ['project'],
+      sensitive: false,
+      error: null,
+    });
+    mockCreateOneOnOneEntry.mockResolvedValue({
+      id: 'entry-1',
+      personId: 'person-1',
+      meetingDate: '2026-06-06T00:00:00Z',
+      agendaItems: [],
+      notesMarkdown: 'Discussed project timeline and blockers',
+      outcomesMarkdown: null,
+      sensitive: false,
+      createdAt: '2026-06-06T00:00:00Z',
+      updatedAt: '2026-06-06T00:00:00Z',
+    });
+
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-fab'));
+    fireEvent.change(screen.getByTestId('ai-terminal-input'), {
+      target: { value: 'Had a chat with Alice about the project timeline' },
+    });
+    fireEvent.click(screen.getByTestId('ai-terminal-submit'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/1:1 Entry/)).toBeInTheDocument();
+      expect(screen.getByTestId('ai-terminal-confirm')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-confirm'));
+
+    await waitFor(() => {
+      expect(mockCreateOneOnOneEntry).toHaveBeenCalledWith('test-token', 'person-1', {
+        meetingDate: '2026-06-06T00:00:00Z',
+        notesMarkdown: 'Discussed project timeline and blockers',
+        sensitive: false,
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/1:1 Entry created/)).toBeInTheDocument();
+    });
+  });
+
+  it('should show error when 1:1 entry has no target person', async () => {
+    mockParseAiCommand.mockResolvedValue({
+      intent: 'create_one_on_one_entry',
+      targetPersonId: null,
+      content: 'Some meeting notes',
+      dueDate: null,
+      meetingDate: '2026-06-06',
+      tags: [],
+      sensitive: false,
+      error: null,
+    });
+
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-fab'));
+    fireEvent.change(screen.getByTestId('ai-terminal-input'), {
+      target: { value: 'Had a meeting about stuff' },
+    });
+    fireEvent.click(screen.getByTestId('ai-terminal-submit'));
+
+    // Preview shown, user confirms
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-confirm')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-confirm'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/1:1 entries require a target person/)).toBeInTheDocument();
     });
   });
 });

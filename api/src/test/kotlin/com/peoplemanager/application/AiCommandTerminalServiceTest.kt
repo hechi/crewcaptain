@@ -121,7 +121,7 @@ class AiCommandTerminalServiceTest {
     @Test
     fun `parseCommand should return parsed quick note on success`() {
         val aiResponse = """
-            {"intent": "create_quick_note", "target_person_id": null, "content": "Remember to schedule team offsite", "due_date": null, "tags": [], "sensitive": false}
+            {"intent": "create_quick_note", "target_person_id": null, "content": "Remember to schedule team offsite", "due_date": null, "meeting_date": null, "tags": [], "sensitive": false}
         """.trimIndent()
 
         every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
@@ -133,6 +133,42 @@ class AiCommandTerminalServiceTest {
         result.intent shouldBe "create_quick_note"
         result.targetPersonId shouldBe null
         result.content shouldBe "Remember to schedule team offsite"
+    }
+
+    @Test
+    fun `parseCommand should return parsed 1-1 entry on success`() {
+        val aiResponse = """
+            {"intent": "create_one_on_one_entry", "target_person_id": "${personId.value}", "content": "Discussed project timeline and blockers", "due_date": null, "meeting_date": "2026-06-06", "tags": ["project"], "sensitive": false}
+        """.trimIndent()
+
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success(aiResponse)
+
+        val result = service.parseCommand(userId, "I just had a chat with Alice about the project timeline and blockers")
+
+        result.error shouldBe null
+        result.intent shouldBe "create_one_on_one_entry"
+        result.targetPersonId shouldBe personId.value.toString()
+        result.content shouldBe "Discussed project timeline and blockers"
+        result.meetingDate shouldBe "2026-06-06"
+        result.tags shouldContainExactly listOf("project")
+    }
+
+    @Test
+    fun `parseCommand should handle 1-1 entry with today as default meeting date`() {
+        val today = java.time.LocalDate.now().toString()
+        val aiResponse = """
+            {"intent": "create_one_on_one_entry", "target_person_id": "${personId.value}", "content": "Quick sync about sprint planning", "due_date": null, "meeting_date": "$today", "tags": [], "sensitive": false}
+        """.trimIndent()
+
+        every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
+            AiCompletionResult.Success(aiResponse)
+
+        val result = service.parseCommand(userId, "Had a quick sync with Alice about sprint planning")
+
+        result.error shouldBe null
+        result.intent shouldBe "create_one_on_one_entry"
+        result.meetingDate shouldBe today
     }
 
     @Test

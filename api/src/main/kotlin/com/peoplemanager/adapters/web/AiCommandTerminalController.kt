@@ -27,6 +27,7 @@ class AiCommandTerminalController(
                 targetPersonId = result.targetPersonId,
                 content = result.content,
                 dueDate = result.dueDate,
+                meetingDate = result.meetingDate,
                 tags = result.tags,
                 sensitive = result.sensitive,
                 error = result.error
@@ -56,6 +57,7 @@ data class AiCommandResponse(
     val targetPersonId: String?,
     val content: String?,
     val dueDate: String?,
+    val meetingDate: String?,
     val tags: List<String>,
     val sensitive: Boolean,
     val error: String?

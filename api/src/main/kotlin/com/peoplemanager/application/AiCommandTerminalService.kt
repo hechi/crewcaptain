@@ -36,6 +36,7 @@ class AiCommandTerminalService(
         val targetPersonId: String?,
         val content: String?,
         val dueDate: String?,
+        val meetingDate: String?,
         val tags: List<String>,
         val sensitive: Boolean,
         val error: String?
@@ -46,6 +47,7 @@ class AiCommandTerminalService(
                 targetPersonId = null,
                 content = null,
                 dueDate = null,
+                meetingDate = null,
                 tags = emptyList(),
                 sensitive = false,
                 error = message
@@ -121,11 +123,12 @@ class AiCommandTerminalService(
             val targetPersonId = parsed["target_person_id"] as? String
             val parsedContent = parsed["content"] as? String
             val dueDate = parsed["due_date"] as? String
+            val meetingDate = parsed["meeting_date"] as? String
             val tags = (parsed["tags"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
             val sensitive = parsed["sensitive"] as? Boolean ?: false
 
             // Validate intent
-            val validIntents = setOf("create_action_item", "create_kudo", "create_quick_note")
+            val validIntents = setOf("create_action_item", "create_kudo", "create_quick_note", "create_one_on_one_entry")
             if (intent == null || intent !in validIntents) {
                 return CommandParseResult.error("Could not determine the action. Please try rephrasing your command.")
             }
@@ -139,6 +142,7 @@ class AiCommandTerminalService(
                 targetPersonId = targetPersonId,
                 content = parsedContent,
                 dueDate = dueDate,
+                meetingDate = meetingDate,
                 tags = tags,
                 sensitive = sensitive,
                 error = null

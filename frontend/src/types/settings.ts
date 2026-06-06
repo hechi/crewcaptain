@@ -119,6 +119,7 @@ export interface AiCommandResponse {
   targetPersonId: string | null;
   content: string | null;
   dueDate: string | null;
+  meetingDate: string | null;
   tags: string[];
   sensitive: boolean;
   error: string | null;
