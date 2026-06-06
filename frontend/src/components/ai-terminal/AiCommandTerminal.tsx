@@ -476,12 +476,28 @@ export default function AiCommandTerminal() {
                     alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
                   }}
                 >
+                  {/* Role label */}
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-mono, monospace)',
+                      color: 'var(--color-text-muted, #4A5568)',
+                      marginBottom: '3px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {msg.role === 'user' ? 'You' : msg.role === 'system' ? 'System' : '✦ AI'}
+                  </span>
+
                   {/* Message bubble */}
                   <div
                     style={{
-                      maxWidth: '90%',
+                      maxWidth: '85%',
                       padding: '10px 14px',
-                      borderRadius: 'var(--radius-medium, 8px)',
+                      borderRadius: msg.role === 'user'
+                        ? '12px 12px 4px 12px'
+                        : '12px 12px 12px 4px',
                       fontSize: '13px',
                       fontFamily: msg.role === 'user' ? 'var(--font-ui, sans-serif)' : 'var(--font-mono, monospace)',
                       backgroundColor: msg.role === 'user'
@@ -499,6 +515,7 @@ export default function AiCommandTerminal() {
                           : '1px solid var(--color-border, #2A3040)',
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
+                      lineHeight: '1.5',
                     }}
                   >
                     {msg.content}
@@ -546,6 +563,46 @@ export default function AiCommandTerminal() {
                   )}
                 </div>
               ))}
+
+              {/* Thinking indicator */}
+              {loading && (
+                <div
+                  data-testid="ai-terminal-thinking"
+                  style={{
+                    marginBottom: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-mono, monospace)',
+                      color: 'var(--color-text-muted, #4A5568)',
+                      marginBottom: '3px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    ✦ AI
+                  </span>
+                  <div
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '12px 12px 12px 4px',
+                      fontSize: '13px',
+                      fontFamily: 'var(--font-mono, monospace)',
+                      backgroundColor: 'var(--color-bg-elevated, #1E2330)',
+                      border: '1px solid var(--color-border, #2A3040)',
+                      color: 'var(--color-secondary, #A855F7)',
+                      animation: 'ai-terminal-pulse 1.5s ease-in-out infinite',
+                    }}
+                  >
+                    thinking...
+                  </div>
+                </div>
+              )}
 
               <div ref={messagesEndRef} />
             </div>
@@ -650,6 +707,11 @@ export default function AiCommandTerminal() {
           }
         }
 
+        @keyframes ai-terminal-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           @keyframes ai-terminal-fade-in {
             from { opacity: 1; }
@@ -658,6 +720,10 @@ export default function AiCommandTerminal() {
           @keyframes ai-terminal-slide-up {
             from { opacity: 1; transform: none; }
             to { opacity: 1; transform: none; }
+          }
+          @keyframes ai-terminal-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 1; }
           }
         }
       `}</style>

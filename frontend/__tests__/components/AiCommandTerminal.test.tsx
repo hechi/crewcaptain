@@ -425,6 +425,40 @@ describe('AiCommandTerminal', () => {
     });
   });
 
+  it('should show thinking indicator while processing', async () => {
+    // Make parseAiCommand hang so we can see loading state
+    let resolveCommand: (value: any) => void;
+    const pendingPromise = new Promise((resolve) => { resolveCommand = resolve; });
+    mockParseAiCommand.mockReturnValue(pendingPromise as any);
+
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-fab'));
+    fireEvent.change(screen.getByTestId('ai-terminal-input'), {
+      target: { value: 'Do something' },
+    });
+    fireEvent.click(screen.getByTestId('ai-terminal-submit'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-thinking')).toBeInTheDocument();
+      expect(screen.getByText('thinking...')).toBeInTheDocument();
+    });
+
+    // Resolve to clean up
+    resolveCommand!({
+      intent: null, targetPersonId: null, content: null,
+      dueDate: null, meetingDate: null, tags: [], sensitive: false,
+      error: 'test done',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('ai-terminal-thinking')).not.toBeInTheDocument();
+    });
+  });
+
   it('should execute 1:1 entry creation on confirm', async () => {
     mockParseAiCommand.mockResolvedValue({
       intent: 'create_one_on_one_entry',
