@@ -4,6 +4,7 @@ export const config = {
   matcher: [
     '/people/:path*',
     '/dashboard/:path*',
+    '/triage/:path*',
     '/quick-notes/:path*',
     '/search/:path*',
     '/settings/:path*',

@@ -36,6 +36,9 @@ class ActionItemEntity(
     @Column(name = "originating_entry_id")
     var originatingEntryId: UUID? = null,
 
+    @Column(name = "snoozed_until")
+    var snoozedUntil: Instant? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

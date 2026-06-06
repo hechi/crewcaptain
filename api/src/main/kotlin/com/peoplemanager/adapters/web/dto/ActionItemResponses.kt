@@ -17,6 +17,7 @@ data class ActionItemResponse(
     val dueDate: LocalDate?,
     val status: ActionItemStatus,
     val originatingEntryId: UUID?,
+    val snoozedUntil: Instant?,
     val createdAt: Instant,
     val updatedAt: Instant
 ) {
@@ -30,6 +31,7 @@ data class ActionItemResponse(
             dueDate = item.dueDate,
             status = item.status,
             originatingEntryId = item.originatingEntryId?.value,
+            snoozedUntil = item.snoozedUntil,
             createdAt = item.createdAt,
             updatedAt = item.updatedAt
         )

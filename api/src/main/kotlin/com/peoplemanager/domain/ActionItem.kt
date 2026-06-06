@@ -13,6 +13,7 @@ data class ActionItem(
     val dueDate: LocalDate? = null,
     val status: ActionItemStatus = ActionItemStatus.OPEN,
     val originatingEntryId: OneOnOneEntryId? = null,
+    val snoozedUntil: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -54,4 +55,14 @@ data class ActionItem(
     fun isOverdue(referenceDate: LocalDate = LocalDate.now()): Boolean {
         return status == ActionItemStatus.OPEN && dueDate != null && dueDate.isBefore(referenceDate)
     }
+
+    fun snooze(until: Instant): ActionItem {
+        require(status == ActionItemStatus.OPEN) {
+            "Can only snooze an action item with status OPEN, current status is $status"
+        }
+        return copy(snoozedUntil = until, updatedAt = Instant.now())
+    }
+
+    val isSnoozed: Boolean
+        get() = snoozedUntil != null && snoozedUntil.isAfter(Instant.now())
 }

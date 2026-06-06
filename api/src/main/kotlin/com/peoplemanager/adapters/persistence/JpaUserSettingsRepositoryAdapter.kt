@@ -48,6 +48,7 @@ class JpaUserSettingsRepositoryAdapter(
         trendRadarPrompt = this.trendRadarPrompt,
         linkSuggestionsPrompt = this.linkSuggestionsPrompt,
         strategyOptimizationPrompt = this.strategyOptimizationPrompt,
+        triageHintPrompt = this.triageHintPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -77,6 +78,7 @@ class JpaUserSettingsRepositoryAdapter(
         trendRadarPrompt = this.trendRadarPrompt,
         linkSuggestionsPrompt = this.linkSuggestionsPrompt,
         strategyOptimizationPrompt = this.strategyOptimizationPrompt,
+        triageHintPrompt = this.triageHintPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

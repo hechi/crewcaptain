@@ -1109,3 +1109,54 @@ export async function generateAiLinkSuggestions(token: string): Promise<AiLinkSu
   );
   return response.json();
 }
+
+
+// --- Triage Queue ---
+
+import { TriageQueueResponse, TriageHintResponse, SnoozeActionItemRequest, TriageFilters } from '@/types/triage';
+import { ActionItem } from '@/types/action-item';
+
+export async function getTriageQueue(
+  token: string,
+  filters?: TriageFilters
+): Promise<TriageQueueResponse> {
+  const searchParams = new URLSearchParams();
+  if (filters?.type) searchParams.set('type', filters.type);
+  if (filters?.scope) searchParams.set('scope', filters.scope);
+  if (filters?.personId) searchParams.set('personId', filters.personId);
+  if (filters?.workspaceId && filters.workspaceId.length > 0) {
+    filters.workspaceId.forEach((id) => searchParams.append('workspaceId', id));
+  }
+
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/triage${queryString ? `?${queryString}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function getTriageHint(
+  token: string,
+  itemId: string
+): Promise<TriageHintResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/triage/items/${itemId}/hint`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function snoozeTriageItem(
+  token: string,
+  personId: string,
+  actionItemId: string,
+  request: SnoozeActionItemRequest
+): Promise<ActionItem> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/triage/persons/${personId}/action-items/${actionItemId}/snooze`,
+    {
+      method: 'POST',
+      body: JSON.stringify(request),
+    },
+    token
+  );
+  return response.json();
+}

@@ -126,6 +126,7 @@ class JpaActionItemRepositoryAdapter(
         dueDate = this.dueDate,
         status = ActionItemStatus.valueOf(this.status),
         originatingEntryId = this.originatingEntryId?.let { OneOnOneEntryId(it) },
+        snoozedUntil = this.snoozedUntil,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -140,6 +141,7 @@ class JpaActionItemRepositoryAdapter(
         dueDate = this.dueDate,
         status = this.status.name,
         originatingEntryId = this.originatingEntryId?.value,
+        snoozedUntil = this.snoozedUntil,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

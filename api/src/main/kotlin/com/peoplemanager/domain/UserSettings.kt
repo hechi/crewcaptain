@@ -33,6 +33,7 @@ data class UserSettings(
     val trendRadarPrompt: String? = null,
     val linkSuggestionsPrompt: String? = null,
     val strategyOptimizationPrompt: String? = null,
+    val triageHintPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -147,6 +148,12 @@ data class UserSettings(
     fun effectiveStrategyOptimizationPrompt(): String =
         strategyOptimizationPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_STRATEGY_OPTIMIZATION_PROMPT
 
+    /**
+     * Returns the effective triage hint prompt (custom or default).
+     */
+    fun effectiveTriageHintPrompt(): String =
+        triageHintPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_TRIAGE_HINT_PROMPT
+
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
         const val DEFAULT_STALE_ONE_ON_ONE_DAYS = 14
@@ -253,6 +260,15 @@ data class UserSettings(
             "Title: <improved title>\n" +
             "Description: <improved description>\n" +
             "Explanation: <why it is better>"
+
+        const val DEFAULT_TRIAGE_HINT_PROMPT =
+            "You are a productivity coach for a people manager. " +
+            "Given the following triage item context, suggest a single short next-best-action. " +
+            "RULES: " +
+            "- Output ONLY the suggestion text (one sentence, max 80 characters). " +
+            "- Do NOT include any preamble, explanation, or formatting. " +
+            "- Focus on actionable advice: suggest a due date, owner change, agenda intro, or follow-up text. " +
+            "- Be specific and practical."
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

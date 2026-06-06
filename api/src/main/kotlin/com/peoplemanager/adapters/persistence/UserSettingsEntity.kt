@@ -80,6 +80,9 @@ class UserSettingsEntity(
     @Column(name = "strategy_optimization_prompt", columnDefinition = "TEXT")
     val strategyOptimizationPrompt: String? = null,
 
+    @Column(name = "triage_hint_prompt", columnDefinition = "TEXT")
+    val triageHintPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
