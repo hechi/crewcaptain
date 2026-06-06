@@ -671,8 +671,7 @@ export default function SettingsPage() {
                     onChange={setTriageHintPrompt}
                     onReset={() => setTriageHintPrompt('')}
                   />
-                </div>
-                <div style={{ marginTop: 'var(--space-4)' }}>
+
                   <PromptTextarea
                     testId="ai-command-terminal-prompt"
                     label="Command Terminal Prompt"
