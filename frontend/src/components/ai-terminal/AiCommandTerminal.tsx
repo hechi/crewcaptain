@@ -341,6 +341,7 @@ export default function AiCommandTerminal() {
           {/* Backdrop */}
           <div
             data-testid="ai-terminal-backdrop"
+            onClick={close}
             style={{
               position: 'absolute',
               top: 0,
@@ -403,18 +404,39 @@ export default function AiCommandTerminal() {
               >
                 ✦ AI Command Terminal
               </h2>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono, monospace)',
-                  color: 'var(--color-text-muted, #4A5568)',
-                  padding: '2px 8px',
-                  border: '1px solid var(--color-border, #2A3040)',
-                  borderRadius: 'var(--radius-small, 4px)',
-                }}
-              >
-                Ctrl+K
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono, monospace)',
+                    color: 'var(--color-text-muted, #4A5568)',
+                    padding: '2px 8px',
+                    border: '1px solid var(--color-border, #2A3040)',
+                    borderRadius: 'var(--radius-small, 4px)',
+                  }}
+                >
+                  Ctrl+K
+                </span>
+                <button
+                  type="button"
+                  onClick={close}
+                  data-testid="ai-terminal-close"
+                  aria-label="Close AI Command Terminal"
+                  style={{
+                    background: 'none',
+                    border: '1px solid var(--color-border, #2A3040)',
+                    borderRadius: 'var(--radius-small, 4px)',
+                    color: 'var(--color-text-muted, #4A5568)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    lineHeight: 1,
+                    transition: 'color 0.2s, border-color 0.2s',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Messages area */}

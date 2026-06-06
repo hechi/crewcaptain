@@ -152,7 +152,20 @@ describe('AiCommandTerminal', () => {
     fireEvent.click(screen.getByTestId('ai-terminal-fab'));
     expect(screen.getByTestId('ai-terminal-overlay')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('ai-terminal-overlay'));
+    fireEvent.click(screen.getByTestId('ai-terminal-backdrop'));
+    expect(screen.queryByTestId('ai-terminal-overlay')).not.toBeInTheDocument();
+  });
+
+  it('should close overlay when X button is clicked', async () => {
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-fab'));
+    expect(screen.getByTestId('ai-terminal-overlay')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('ai-terminal-close'));
     expect(screen.queryByTestId('ai-terminal-overlay')).not.toBeInTheDocument();
   });
 
