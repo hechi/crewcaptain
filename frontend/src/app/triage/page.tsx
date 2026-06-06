@@ -2,12 +2,17 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useStableToken } from '@/lib/useStableToken';
-import { getTriageQueue, getTriageHint, snoozeTriageItem, completeActionItem, cancelActionItem, getUserSettings } from '@/lib/api-client';
-import { TriageItem, TriageQueueResponse, TriageFilters, OwnerScope, TriageItemType } from '@/types/triage';
+import {
+  getTriageQueue, getTriageHint, snoozeTriageItem,
+  completeActionItem, cancelActionItem, updateActionItem,
+  createQuickNote, getUserSettings,
+} from '@/lib/api-client';
+import { TriageItem, TriageFilters } from '@/types/triage';
 import LoadingScreen from '@/components/LoadingScreen';
 import TriageItemRow from '@/components/triage/TriageItemRow';
 import TriageFilterBar from '@/components/triage/TriageFilterBar';
 import TriageEmptyState from '@/components/triage/TriageEmptyState';
+import QuickPeekDrawer from '@/components/triage/QuickPeekDrawer';
 
 export default function TriagePage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -16,9 +21,12 @@ export default function TriagePage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filters, setFilters] = useState<TriageFilters>({ scope: 'ALL' });
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; undoAction?: () => void } | null>(null);
   const [aiEnabled, setAiEnabled] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dueDateInput, setDueDateInput] = useState<{ itemIndex: number; value: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchQueue = useCallback(async () => {
     const token = getToken();
@@ -48,7 +56,6 @@ export default function TriagePage() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is in an input/textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       switch (e.key) {
@@ -70,6 +77,14 @@ export default function TriagePage() {
           e.preventDefault();
           setSelectedIndex(items.length - 1);
           break;
+        case 'Enter':
+          e.preventDefault();
+          setDrawerOpen(true);
+          break;
+        case 'Escape':
+          e.preventDefault();
+          setDrawerOpen(false);
+          break;
         case 'd':
           e.preventDefault();
           handleMarkDone();
@@ -82,6 +97,23 @@ export default function TriagePage() {
           e.preventDefault();
           handleSnooze(3);
           break;
+        case 'a':
+          e.preventDefault();
+          handleAddTo1on1();
+          break;
+        case 'q':
+          e.preventDefault();
+          handleSaveAsNote();
+          break;
+        case 'r':
+        case 'o':
+          e.preventDefault();
+          handleToggleOwner();
+          break;
+        case 't':
+          e.preventDefault();
+          setDueDateInput({ itemIndex: selectedIndex, value: '' });
+          break;
       }
     };
 
@@ -92,9 +124,23 @@ export default function TriagePage() {
     }
   }, [items, selectedIndex]);
 
-  const showToast = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
+  // Global Cmd/Ctrl+J shortcut
+  useEffect(() => {
+    const handleGlobalShortcut = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault();
+        containerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleGlobalShortcut);
+    return () => document.removeEventListener('keydown', handleGlobalShortcut);
+  }, []);
+
+  const showToast = (message: string, undoAction?: () => void) => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast({ message, undoAction });
+    const timeout = undoAction ? 10000 : 3000;
+    toastTimeoutRef.current = setTimeout(() => setToast(null), timeout);
   };
 
   const handleMarkDone = async () => {
@@ -142,11 +188,82 @@ export default function TriagePage() {
     }
   };
 
-  const handleComplete = async (item: TriageItem) => {
-    if (!item.sourceActionItemId) return;
+  const handleToggleOwner = async () => {
+    const item = items[selectedIndex];
+    if (!item || !item.sourceActionItemId || !item.ownerType) return;
     const token = getToken();
     if (!token) return;
 
+    const newOwner = item.ownerType === 'MANAGER' ? 'PERSON' : 'MANAGER';
+    try {
+      await updateActionItem(token, item.personId, item.sourceActionItemId, { ownerType: newOwner });
+      showToast(`Reassigned to ${newOwner === 'MANAGER' ? 'you' : 'them'}`);
+      fetchQueue();
+    } catch {
+      showToast('Failed to reassign');
+    }
+  };
+
+  const handleSetDue = async (dateStr: string) => {
+    const item = items[selectedIndex];
+    if (!item || !item.sourceActionItemId || !dateStr) return;
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      await updateActionItem(token, item.personId, item.sourceActionItemId, { dueDate: dateStr });
+      showToast(`Due date set to ${dateStr}`);
+      setDueDateInput(null);
+      fetchQueue();
+    } catch {
+      showToast('Failed to set due date');
+    }
+  };
+
+  const handleAddTo1on1 = async () => {
+    const item = items[selectedIndex];
+    if (!item) return;
+    // Navigate to person's 1:1 page — the full "find or create draft" logic
+    // would require complex API orchestration. For now, we create a quick note
+    // prefixed with [Triage] that links to the person.
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      await createQuickNote(token, {
+        text: `[Triage] ${item.title}`,
+        personId: item.personId,
+        sensitive: item.sensitive,
+      });
+      showToast('Added to next 1:1 (via Quick Note)');
+    } catch {
+      showToast('Failed to add to 1:1');
+    }
+  };
+
+  const handleSaveAsNote = async () => {
+    const item = items[selectedIndex];
+    if (!item) return;
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      await createQuickNote(token, {
+        text: `[Triage] ${item.title} — ${item.personName}`,
+        personId: item.personId,
+        sensitive: item.sensitive,
+      });
+      showToast('Saved as Quick Note');
+    } catch {
+      showToast('Failed to save as note');
+    }
+  };
+
+  // Item-level handlers (for click actions on rows)
+  const handleItemComplete = async (item: TriageItem) => {
+    if (!item.sourceActionItemId) return;
+    const token = getToken();
+    if (!token) return;
     try {
       await completeActionItem(token, item.personId, item.sourceActionItemId);
       showToast('Marked as done');
@@ -156,11 +273,23 @@ export default function TriagePage() {
     }
   };
 
-  const handleSnoozeItem = async (item: TriageItem, days: number) => {
+  const handleItemCancel = async (item: TriageItem) => {
     if (!item.sourceActionItemId) return;
     const token = getToken();
     if (!token) return;
+    try {
+      await cancelActionItem(token, item.personId, item.sourceActionItemId);
+      showToast('Cancelled');
+      fetchQueue();
+    } catch {
+      showToast('Failed to cancel');
+    }
+  };
 
+  const handleItemSnooze = async (item: TriageItem, days: number) => {
+    if (!item.sourceActionItemId) return;
+    const token = getToken();
+    if (!token) return;
     try {
       await snoozeTriageItem(token, item.personId, item.sourceActionItemId, { days });
       showToast(`Snoozed for ${days}d`);
@@ -170,10 +299,58 @@ export default function TriagePage() {
     }
   };
 
+  const handleItemToggleOwner = async (item: TriageItem) => {
+    if (!item.sourceActionItemId || !item.ownerType) return;
+    const token = getToken();
+    if (!token) return;
+    const newOwner = item.ownerType === 'MANAGER' ? 'PERSON' : 'MANAGER';
+    try {
+      await updateActionItem(token, item.personId, item.sourceActionItemId, { ownerType: newOwner });
+      showToast(`Reassigned to ${newOwner === 'MANAGER' ? 'you' : 'them'}`);
+      fetchQueue();
+    } catch {
+      showToast('Failed to reassign');
+    }
+  };
+
+  const handleItemAddTo1on1 = async (item: TriageItem) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await createQuickNote(token, {
+        text: `[Triage] ${item.title}`,
+        personId: item.personId,
+        sensitive: item.sensitive,
+      });
+      showToast('Added to next 1:1 (via Quick Note)');
+    } catch {
+      showToast('Failed to add to 1:1');
+    }
+  };
+
+  const handleItemSaveAsNote = async (item: TriageItem) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await createQuickNote(token, {
+        text: `[Triage] ${item.title} — ${item.personName}`,
+        personId: item.personId,
+        sensitive: item.sensitive,
+      });
+      showToast('Saved as Quick Note');
+    } catch {
+      showToast('Failed to save as note');
+    }
+  };
+
+  const handleItemSetDue = (item: TriageItem) => {
+    const idx = items.indexOf(item);
+    if (idx >= 0) setDueDateInput({ itemIndex: idx, value: '' });
+  };
+
   const handleRequestHint = async (itemId: string): Promise<string | null> => {
     const token = getToken();
     if (!token) return null;
-
     try {
       const result = await getTriageHint(token, itemId);
       return result.hint;
@@ -185,6 +362,8 @@ export default function TriagePage() {
   if (status === 'loading' || loading) {
     return <LoadingScreen message="Loading triage queue" />;
   }
+
+  const selectedItem = items[selectedIndex] || null;
 
   return (
     <div
@@ -219,7 +398,7 @@ export default function TriagePage() {
           margin: 0,
           fontFamily: 'var(--font-mono)',
         }}>
-          {items.length} {items.length === 1 ? 'item' : 'items'} · j/k to navigate · d/c/s for actions
+          {items.length} {items.length === 1 ? 'item' : 'items'} · j/k navigate · Enter peek · d done · c cancel · s snooze · a 1:1 · q note · r reassign · t due
         </p>
       </div>
 
@@ -241,6 +420,79 @@ export default function TriagePage() {
           }}
         >
           {error}
+        </div>
+      )}
+
+      {/* Inline Date Picker */}
+      {dueDateInput !== null && (
+        <div
+          data-testid="triage-due-date-input"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            marginBottom: 'var(--space-3)',
+            padding: 'var(--space-3)',
+            borderRadius: 'var(--radius-medium)',
+            border: '1px solid var(--color-border-glow)',
+            backgroundColor: 'var(--color-bg-surface)',
+          }}
+        >
+          <label style={{ fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)' }}>
+            Set due date:
+          </label>
+          <input
+            type="date"
+            autoFocus
+            value={dueDateInput.value}
+            onChange={(e) => setDueDateInput({ ...dueDateInput, value: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && dueDateInput.value) {
+                handleSetDue(dueDateInput.value);
+              } else if (e.key === 'Escape') {
+                setDueDateInput(null);
+              }
+            }}
+            style={{
+              padding: '4px 8px',
+              borderRadius: 'var(--radius-small)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          />
+          <button
+            onClick={() => dueDateInput.value && handleSetDue(dueDateInput.value)}
+            disabled={!dueDateInput.value}
+            style={{
+              padding: '4px 12px',
+              borderRadius: 'var(--radius-small)',
+              border: '1px solid var(--color-primary)',
+              backgroundColor: 'var(--color-primary-muted)',
+              color: 'var(--color-primary)',
+              cursor: 'pointer',
+              fontSize: 'var(--text-small)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            Set
+          </button>
+          <button
+            onClick={() => setDueDateInput(null)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: 'var(--radius-small)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              fontSize: 'var(--text-small)',
+            }}
+          >
+            Cancel
+          </button>
         </div>
       )}
 
@@ -266,8 +518,13 @@ export default function TriagePage() {
               item={item}
               isSelected={index === selectedIndex}
               onSelect={() => setSelectedIndex(index)}
-              onComplete={() => handleComplete(item)}
-              onSnooze={(days) => handleSnoozeItem(item, days)}
+              onComplete={() => handleItemComplete(item)}
+              onCancel={() => handleItemCancel(item)}
+              onSnooze={(days) => handleItemSnooze(item, days)}
+              onToggleOwner={() => handleItemToggleOwner(item)}
+              onAddTo1on1={() => handleItemAddTo1on1(item)}
+              onSaveAsNote={() => handleItemSaveAsNote(item)}
+              onSetDue={() => handleItemSetDue(item)}
               onRequestHint={handleRequestHint}
               aiEnabled={aiEnabled}
             />
@@ -275,7 +532,16 @@ export default function TriagePage() {
         </div>
       )}
 
-      {/* Toast */}
+      {/* QuickPeek Drawer */}
+      {drawerOpen && selectedItem && (
+        <QuickPeekDrawer
+          item={selectedItem}
+          token={getToken() || ''}
+          onClose={() => setDrawerOpen(false)}
+        />
+      )}
+
+      {/* Toast with optional Undo */}
       {toast && (
         <div
           data-testid="triage-toast"
@@ -283,6 +549,9 @@ export default function TriagePage() {
             position: 'fixed',
             bottom: 'var(--space-6)',
             right: 'var(--space-6)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-3)',
             padding: 'var(--space-3) var(--space-5)',
             borderRadius: 'var(--radius-medium)',
             background: 'var(--glass-elevated-bg)',
@@ -295,7 +564,24 @@ export default function TriagePage() {
             zIndex: 1000,
           }}
         >
-          {toast}
+          <span>{toast.message}</span>
+          {toast.undoAction && (
+            <button
+              onClick={() => { toast.undoAction?.(); setToast(null); }}
+              style={{
+                padding: '2px 8px',
+                borderRadius: 'var(--radius-small)',
+                border: '1px solid var(--color-primary)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-primary)',
+                cursor: 'pointer',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              Undo
+            </button>
+          )}
         </div>
       )}
     </div>

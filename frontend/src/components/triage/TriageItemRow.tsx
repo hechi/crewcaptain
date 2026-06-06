@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Clock, Lock, Sparkles } from 'lucide-react';
+import { Check, X, Clock, Lock, Sparkles, ArrowLeftRight, Calendar, MessageSquare, StickyNote } from 'lucide-react';
 import { TriageItem } from '@/types/triage';
 
 interface TriageItemRowProps {
@@ -9,7 +9,12 @@ interface TriageItemRowProps {
   isSelected: boolean;
   onSelect: () => void;
   onComplete: () => void;
+  onCancel: () => void;
   onSnooze: (days: number) => void;
+  onToggleOwner: () => void;
+  onAddTo1on1: () => void;
+  onSaveAsNote: () => void;
+  onSetDue: () => void;
   onRequestHint: (itemId: string) => Promise<string | null>;
   aiEnabled: boolean;
 }
@@ -19,13 +24,19 @@ export default function TriageItemRow({
   isSelected,
   onSelect,
   onComplete,
+  onCancel,
   onSnooze,
+  onToggleOwner,
+  onAddTo1on1,
+  onSaveAsNote,
+  onSetDue,
   onRequestHint,
   aiEnabled,
 }: TriageItemRowProps) {
   const [hint, setHint] = useState<string | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
   const [hintError, setHintError] = useState(false);
+  const [showSnoozeMenu, setShowSnoozeMenu] = useState(false);
 
   const getIcon = () => {
     switch (item.type) {
@@ -91,6 +102,7 @@ export default function TriageItemRow({
 
   const badge = getStatusBadge();
   const showHintButton = aiEnabled && !item.sensitive && !hint && !hintError;
+  const isActionItem = item.sourceActionItemId != null;
 
   return (
     <div
@@ -124,13 +136,7 @@ export default function TriageItemRow({
 
       {/* Body */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <span
             data-testid="triage-item-title"
             style={{
@@ -149,14 +155,7 @@ export default function TriageItemRow({
             ) : item.title}
           </span>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            marginTop: '2px',
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '2px', flexWrap: 'wrap' }}>
           {/* Person chip */}
           <span
             data-testid="triage-item-person"
@@ -171,6 +170,22 @@ export default function TriageItemRow({
           >
             {item.personName}
           </span>
+          {/* Workspace chip */}
+          {item.workspaceName && (
+            <span
+              data-testid="triage-item-workspace"
+              style={{
+                fontSize: 'var(--text-caption)',
+                color: 'var(--color-secondary)',
+                padding: '1px 6px',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'var(--color-secondary-muted)',
+                border: '1px solid rgba(168, 85, 247, 0.2)',
+              }}
+            >
+              {item.workspaceName}
+            </span>
+          )}
           {/* Owner type */}
           {item.ownerType && (
             <span
@@ -183,7 +198,7 @@ export default function TriageItemRow({
               {item.ownerType === 'MANAGER' ? '→ you' : '→ them'}
             </span>
           )}
-          {/* AI Hint pill (displayed after generation) */}
+          {/* AI Hint pill */}
           {hint && (
             <span
               data-testid="triage-hint-pill"
@@ -211,15 +226,8 @@ export default function TriageItemRow({
         </div>
       </div>
 
-      {/* Right section: badge + hint button + actions */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-2)',
-          flexShrink: 0,
-        }}
-      >
+      {/* Right section */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
         {/* AI Hint button */}
         {showHintButton && (
           <button
@@ -267,75 +275,130 @@ export default function TriageItemRow({
           </span>
         )}
 
-        {/* Inline action buttons (visible on hover/selected) */}
-        {isSelected && item.sourceActionItemId && (
+        {/* Inline action menu (visible when selected) */}
+        {isSelected && (
           <div
             data-testid="triage-item-actions"
-            style={{
-              display: 'flex',
-              gap: '4px',
-            }}
+            style={{ display: 'flex', gap: '3px', position: 'relative' }}
           >
+            {isActionItem && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onComplete(); }}
+                  title="Mark Done (d)"
+                  aria-label="Mark Done"
+                  style={actionBtnStyle('var(--color-success)')}
+                >
+                  <Check size={12} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onCancel(); }}
+                  title="Cancel (c)"
+                  aria-label="Cancel"
+                  style={actionBtnStyle('var(--color-alert)')}
+                >
+                  <X size={12} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowSnoozeMenu(!showSnoozeMenu); }}
+                  title="Snooze (s)"
+                  aria-label="Snooze"
+                  data-testid="triage-snooze-btn"
+                  style={actionBtnStyle('var(--color-warning)')}
+                >
+                  <Clock size={12} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleOwner(); }}
+                  title="Reassign (r)"
+                  aria-label="Reassign Owner"
+                  style={actionBtnStyle('var(--color-text-secondary)')}
+                >
+                  <ArrowLeftRight size={12} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSetDue(); }}
+                  title="Set Due (t)"
+                  aria-label="Set Due Date"
+                  style={actionBtnStyle('var(--color-text-secondary)')}
+                >
+                  <Calendar size={12} />
+                </button>
+              </>
+            )}
             <button
-              onClick={(e) => { e.stopPropagation(); onComplete(); }}
-              title="Mark Done (d)"
-              aria-label="Mark Done"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
-                background: 'none',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                padding: '3px 6px',
-                cursor: 'pointer',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--color-success)',
-              }}
+              onClick={(e) => { e.stopPropagation(); onAddTo1on1(); }}
+              title="Add to 1:1 (a)"
+              aria-label="Add to next 1:1"
+              style={actionBtnStyle('var(--color-primary)')}
             >
-              <Check size={12} />
+              <MessageSquare size={12} />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onSnooze(1); }}
-              title="Snooze 1d"
-              aria-label="Snooze 1 day"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
-                background: 'none',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                padding: '3px 6px',
-                cursor: 'pointer',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--color-warning)',
-              }}
+              onClick={(e) => { e.stopPropagation(); onSaveAsNote(); }}
+              title="Save as Note (q)"
+              aria-label="Save as Quick Note"
+              style={actionBtnStyle('var(--color-secondary)')}
             >
-              <Clock size={12} /> 1d
+              <StickyNote size={12} />
             </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onSnooze(3); }}
-              title="Snooze 3d"
-              aria-label="Snooze 3 days"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
-                background: 'none',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                padding: '3px 6px',
-                cursor: 'pointer',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--color-warning)',
-              }}
-            >
-              <Clock size={12} /> 3d
-            </button>
+
+            {/* Snooze sub-menu */}
+            {showSnoozeMenu && (
+              <div
+                data-testid="triage-snooze-menu"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '4px',
+                  padding: '4px',
+                  background: 'var(--glass-elevated-bg)',
+                  backdropFilter: 'var(--glass-elevated-blur)',
+                  border: '1px solid var(--color-border-glow)',
+                  borderRadius: 'var(--radius-medium)',
+                  boxShadow: 'var(--glow-primary)',
+                  zIndex: 10,
+                  display: 'flex',
+                  gap: '4px',
+                }}
+              >
+                {[1, 3, 7].map((d) => (
+                  <button
+                    key={d}
+                    onClick={(e) => { e.stopPropagation(); onSnooze(d); setShowSnoozeMenu(false); }}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: 'var(--text-caption)',
+                      fontFamily: 'var(--font-mono)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-small)',
+                      background: 'transparent',
+                      color: 'var(--color-warning)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {d}d
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
   );
+}
+
+function actionBtnStyle(color: string): React.CSSProperties {
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    background: 'none',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-small)',
+    padding: '3px 5px',
+    cursor: 'pointer',
+    color,
+  };
 }

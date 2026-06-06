@@ -31,10 +31,16 @@ const mockGetTriageHint = jest.fn();
 jest.mock('@/lib/api-client', () => ({
   getTriageQueue: (...args: unknown[]) => mockGetTriageQueue(...args),
   completeActionItem: (...args: unknown[]) => mockCompleteActionItem(...args),
-  cancelActionItem: jest.fn(),
+  cancelActionItem: jest.fn().mockResolvedValue({}),
+  updateActionItem: jest.fn().mockResolvedValue({}),
+  createQuickNote: jest.fn().mockResolvedValue({}),
   snoozeTriageItem: (...args: unknown[]) => mockSnoozeTriageItem(...args),
   getUserSettings: (...args: unknown[]) => mockGetUserSettings(...args),
   getTriageHint: (...args: unknown[]) => mockGetTriageHint(...args),
+  getPerson: jest.fn().mockResolvedValue({ id: 'p1', name: 'Alice', moraleStatus: 'GREEN' }),
+  listOneOnOneEntries: jest.fn().mockResolvedValue({ content: [] }),
+  listActionItemsByPerson: jest.fn().mockResolvedValue({ content: [] }),
+  listKudosByPerson: jest.fn().mockResolvedValue({ content: [] }),
 }));
 
 describe('TriagePage', () => {
@@ -281,5 +287,73 @@ describe('TriagePage', () => {
       expect(screen.getByTestId('triage-hint-pill')).toBeInTheDocument();
     });
     expect(screen.getByText(/Set due to Friday/)).toBeInTheDocument();
+  });
+
+  it('shows inline action menu with all buttons when item is selected', async () => {
+    mockGetTriageQueue.mockResolvedValue({
+      items: [
+        {
+          id: 'ai-1', type: 'ACTION_ITEM_OVERDUE', criticality: 'OVERDUE',
+          title: 'Task', personId: 'p1', personName: 'Alice',
+          workspaceId: null, workspaceName: null, sensitive: false,
+          dueDate: null, daysOverdue: 1, daysUntilDue: null,
+          ownerType: 'MANAGER', sourceActionItemId: 'action-1', snoozedUntil: null,
+          createdAt: '2026-05-01T00:00:00Z',
+        },
+      ],
+      totalCount: 1,
+    });
+    await act(async () => { render(<TriagePage />); });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('triage-item-actions')).toBeInTheDocument();
+    });
+    // Verify all action buttons present
+    expect(screen.getByLabelText('Mark Done')).toBeInTheDocument();
+    expect(screen.getByLabelText('Cancel')).toBeInTheDocument();
+    expect(screen.getByLabelText('Snooze')).toBeInTheDocument();
+    expect(screen.getByLabelText('Reassign Owner')).toBeInTheDocument();
+    expect(screen.getByLabelText('Set Due Date')).toBeInTheDocument();
+    expect(screen.getByLabelText('Add to next 1:1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Save as Quick Note')).toBeInTheDocument();
+  });
+
+  it('shows snooze submenu with 1d, 3d, 7d options', async () => {
+    mockGetTriageQueue.mockResolvedValue({
+      items: [
+        {
+          id: 'ai-1', type: 'ACTION_ITEM_OVERDUE', criticality: 'OVERDUE',
+          title: 'Task', personId: 'p1', personName: 'Alice',
+          workspaceId: null, workspaceName: null, sensitive: false,
+          dueDate: null, daysOverdue: 1, daysUntilDue: null,
+          ownerType: 'MANAGER', sourceActionItemId: 'action-1', snoozedUntil: null,
+          createdAt: '2026-05-01T00:00:00Z',
+        },
+      ],
+      totalCount: 1,
+    });
+    await act(async () => { render(<TriagePage />); });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('triage-snooze-btn')).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('triage-snooze-btn'));
+    });
+
+    expect(screen.getByTestId('triage-snooze-menu')).toBeInTheDocument();
+    expect(screen.getByText('1d')).toBeInTheDocument();
+    expect(screen.getByText('3d')).toBeInTheDocument();
+    expect(screen.getByText('7d')).toBeInTheDocument();
+  });
+
+  it('shows keyboard shortcut help in subtitle', async () => {
+    mockGetTriageQueue.mockResolvedValue({ items: [], totalCount: 0 });
+    await act(async () => { render(<TriagePage />); });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Enter peek/)).toBeInTheDocument();
+    });
   });
 });
