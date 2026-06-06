@@ -213,14 +213,15 @@ export default function TriageItemRow({
                 border: '1px solid var(--color-primary)',
                 color: 'var(--color-primary)',
                 backgroundColor: 'var(--color-primary-muted)',
-                maxWidth: '200px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
+                cursor: 'default',
               }}
               title={hint}
             >
-              <Sparkles size={10} /> {hint}
+              <Sparkles size={10} style={{ flexShrink: 0 }} />
+              <span style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {hint}
+              </span>
             </span>
           )}
         </div>
