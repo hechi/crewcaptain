@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Check, Clock, Lock, Sparkles } from 'lucide-react';
 import { TriageItem } from '@/types/triage';
 
 interface TriageItemRowProps {
@@ -29,10 +30,11 @@ export default function TriageItemRow({
   const getIcon = () => {
     switch (item.type) {
       case 'ACTION_ITEM_OVERDUE':
+        return '⚠️';
       case 'ACTION_ITEM_DUE_SOON':
-        return '☐';
-      case 'STALE_ONE_ON_ONE':
         return '⏰';
+      case 'STALE_ONE_ON_ONE':
+        return '📅';
       case 'UPCOMING_ANNIVERSARY':
         return '🎉';
     }
@@ -140,7 +142,11 @@ export default function TriageItemRow({
               textOverflow: 'ellipsis',
             }}
           >
-            {item.sensitive ? '🔒 [Sensitive]' : item.title}
+            {item.sensitive ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Lock size={12} /> [Sensitive]
+              </span>
+            ) : item.title}
           </span>
         </div>
         <div
@@ -182,6 +188,9 @@ export default function TriageItemRow({
             <span
               data-testid="triage-hint-pill"
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
                 fontSize: 'var(--text-caption)',
                 fontFamily: 'var(--font-mono)',
                 padding: '1px 8px',
@@ -196,7 +205,7 @@ export default function TriageItemRow({
               }}
               title={hint}
             >
-              ✦ {hint}
+              <Sparkles size={10} /> {hint}
             </span>
           )}
         </div>
@@ -220,6 +229,9 @@ export default function TriageItemRow({
             title="Get AI suggestion"
             aria-label="Get AI suggestion"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
               background: 'none',
               border: '1px solid var(--color-primary)',
               borderRadius: 'var(--radius-full)',
@@ -233,7 +245,8 @@ export default function TriageItemRow({
               transition: 'opacity 0.2s, box-shadow 0.2s',
             }}
           >
-            {hintLoading ? '✦ ...' : '✦'}
+            <Sparkles size={12} />
+            {hintLoading && <span>...</span>}
           </button>
         )}
 
@@ -268,48 +281,57 @@ export default function TriageItemRow({
               title="Mark Done (d)"
               aria-label="Mark Done"
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
                 background: 'none',
                 border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-small)',
-                padding: '2px 6px',
+                padding: '3px 6px',
                 cursor: 'pointer',
                 fontSize: 'var(--text-caption)',
                 color: 'var(--color-success)',
               }}
             >
-              ✓
+              <Check size={12} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onSnooze(1); }}
               title="Snooze 1d"
               aria-label="Snooze 1 day"
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
                 background: 'none',
                 border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-small)',
-                padding: '2px 6px',
+                padding: '3px 6px',
                 cursor: 'pointer',
                 fontSize: 'var(--text-caption)',
                 color: 'var(--color-warning)',
               }}
             >
-              💤1d
+              <Clock size={12} /> 1d
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onSnooze(3); }}
               title="Snooze 3d"
               aria-label="Snooze 3 days"
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
                 background: 'none',
                 border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-small)',
-                padding: '2px 6px',
+                padding: '3px 6px',
                 cursor: 'pointer',
                 fontSize: 'var(--text-caption)',
                 color: 'var(--color-warning)',
               }}
             >
-              💤3d
+              <Clock size={12} /> 3d
             </button>
           </div>
         )}

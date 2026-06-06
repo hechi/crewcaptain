@@ -168,7 +168,7 @@ describe('TriagePage', () => {
     await act(async () => { render(<TriagePage />); });
 
     await waitFor(() => {
-      expect(screen.getByText('🔒 [Sensitive]')).toBeInTheDocument();
+      expect(screen.getByText('[Sensitive]')).toBeInTheDocument();
     });
     expect(screen.queryByText('Secret task')).not.toBeInTheDocument();
   });
