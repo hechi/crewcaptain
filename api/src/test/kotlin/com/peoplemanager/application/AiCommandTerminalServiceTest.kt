@@ -320,6 +320,7 @@ class AiCommandTerminalServiceTest {
         service.parseCommand(userId, "Test")
 
         val today = java.time.LocalDate.now().toString()
+        val tomorrow = java.time.LocalDate.now().plusDays(1).toString()
 
         verify {
             aiClientPort.chatCompletion(
@@ -327,7 +328,12 @@ class AiCommandTerminalServiceTest {
                 apiKey = any(),
                 model = any(),
                 systemPrompt = any(),
-                userMessage = match { it.contains("Current Date: $today") && it.contains("Current Time:") }
+                userMessage = match {
+                    it.contains("Current Date: $today") &&
+                    it.contains("Current Time:") &&
+                    it.contains("This week's dates:") &&
+                    it.contains(tomorrow)
+                }
             )
         }
     }

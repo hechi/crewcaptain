@@ -83,9 +83,17 @@ class AiCommandTerminalService(
         val nowTime = java.time.LocalTime.now()
         val dayOfWeek = now.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
 
+        // Provide upcoming week dates so LLM doesn't need to compute date math
+        val weekDates = (0..6).map { offset ->
+            val date = now.plusDays(offset.toLong())
+            val day = date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+            "$day = $date"
+        }
+
         val userMessage = buildString {
             appendLine("Current Date: $now ($dayOfWeek)")
             appendLine("Current Time: ${nowTime.hour.toString().padStart(2, '0')}:${nowTime.minute.toString().padStart(2, '0')}")
+            appendLine("This week's dates: ${weekDates.joinToString(", ")}")
             appendLine()
             appendLine("Person Directory:")
             appendLine(directoryJson)
