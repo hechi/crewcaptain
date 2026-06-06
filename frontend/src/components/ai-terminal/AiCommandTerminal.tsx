@@ -454,15 +454,33 @@ export default function AiCommandTerminal() {
                 <div
                   data-testid="ai-terminal-empty"
                   style={{
-                    textAlign: 'center',
-                    padding: '32px 16px',
+                    padding: '24px 16px',
                     color: 'var(--color-text-muted, #4A5568)',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontFamily: 'var(--font-mono, monospace)',
                   }}
                 >
-                  <p style={{ margin: '0 0 8px' }}>Type a command in natural language.</p>
-                  <p style={{ margin: 0, fontSize: '12px' }}>e.g. &quot;Create an action item for Alice to update the docs by Friday&quot;</p>
+                  <p style={{ margin: '0 0 12px', textAlign: 'center', fontSize: '13px', color: 'var(--color-text-secondary, #7A8599)' }}>
+                    Type a command in natural language
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ padding: '6px 10px', borderRadius: '6px', backgroundColor: 'var(--color-bg-elevated, #1E2330)', border: '1px solid var(--color-border, #2A3040)' }}>
+                      <span style={{ color: 'var(--color-primary, #00F0FF)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Action Item</span>
+                      <p style={{ margin: '2px 0 0', color: 'var(--color-text-secondary, #7A8599)' }}>&quot;Remind Alice to update the docs by Friday&quot;</p>
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRadius: '6px', backgroundColor: 'var(--color-bg-elevated, #1E2330)', border: '1px solid var(--color-border, #2A3040)' }}>
+                      <span style={{ color: 'var(--color-primary, #00F0FF)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Kudos</span>
+                      <p style={{ margin: '2px 0 0', color: 'var(--color-text-secondary, #7A8599)' }}>&quot;Give kudos to Bob for the great demo today&quot;</p>
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRadius: '6px', backgroundColor: 'var(--color-bg-elevated, #1E2330)', border: '1px solid var(--color-border, #2A3040)' }}>
+                      <span style={{ color: 'var(--color-primary, #00F0FF)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Note</span>
+                      <p style={{ margin: '2px 0 0', color: 'var(--color-text-secondary, #7A8599)' }}>&quot;Note: schedule team offsite for Q3&quot;</p>
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRadius: '6px', backgroundColor: 'var(--color-bg-elevated, #1E2330)', border: '1px solid var(--color-border, #2A3040)' }}>
+                      <span style={{ color: 'var(--color-primary, #00F0FF)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>1:1 Entry</span>
+                      <p style={{ margin: '2px 0 0', color: 'var(--color-text-secondary, #7A8599)' }}>&quot;Had a chat with Alice about career goals&quot;</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
