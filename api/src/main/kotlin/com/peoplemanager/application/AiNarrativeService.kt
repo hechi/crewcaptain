@@ -14,6 +14,7 @@ import com.peoplemanager.domain.AiWritingStyle
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.ReviewPacketSummary
 import com.peoplemanager.domain.UserId
+import com.peoplemanager.domain.UserSettings
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -31,7 +32,8 @@ class AiNarrativeService(
     private val pdpGoalRepository: PdpGoalRepository,
     private val pdpUpdateRepository: PdpUpdateRepository,
     private val kudosRepository: KudosRepository,
-    private val aiClientPort: AiClientPort
+    private val aiClientPort: AiClientPort,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     companion object {
@@ -57,11 +59,10 @@ class AiNarrativeService(
 
         // Load user settings to check AI configuration
         val settings = userSettingsRepository.findByUserId(userId)
-            ?: return AiNarrativeResult.Error("AI Assistant is not configured. Please configure it in Settings.")
+            ?: UserSettings.createDefault(userId)
 
-        if (!settings.isAiConfigured()) {
-            return AiNarrativeResult.Error("AI Assistant is not enabled or not fully configured. Please check Settings.")
-        }
+        val config = aiConfigResolver.resolve(settings)
+            ?: return AiNarrativeResult.Error("AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults.")
 
         val privacyMode = settings.aiPrivacyMode
         val writingStyle = settings.aiWritingStyle
@@ -80,9 +81,9 @@ class AiNarrativeService(
 
         // Call the LLM
         val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = settings.effectiveNarrativePrompt(),
             userMessage = userPrompt
         )

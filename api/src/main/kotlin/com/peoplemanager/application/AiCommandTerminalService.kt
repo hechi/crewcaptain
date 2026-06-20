@@ -5,6 +5,7 @@ import com.peoplemanager.application.port.output.AiCompletionResult
 import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.UserId
+import com.peoplemanager.domain.UserSettings
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
@@ -21,7 +22,8 @@ class AiCommandTerminalService(
     private val aiClientPort: AiClientPort,
     private val userSettingsRepository: UserSettingsRepository,
     private val personRepository: PersonRepository,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     private val logger = LoggerFactory.getLogger(AiCommandTerminalService::class.java)
@@ -65,11 +67,10 @@ class AiCommandTerminalService(
         }
 
         val settings = userSettingsRepository.findByUserId(userId)
-            ?: return CommandParseResult.error("AI Assistant is not configured. Please configure it in Settings.")
+            ?: UserSettings.createDefault(userId)
 
-        if (!settings.isAiConfigured()) {
-            return CommandParseResult.error("AI Assistant is not configured. Please configure it in Settings.")
-        }
+        val config = aiConfigResolver.resolve(settings)
+            ?: return CommandParseResult.error("AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults.")
 
         // Build the person directory context
         val personDirectory = personRepository.findAllByUserIdUnpaged(userId)
@@ -103,9 +104,9 @@ class AiCommandTerminalService(
         }
 
         return when (val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = systemPrompt,
             userMessage = userMessage
         )) {

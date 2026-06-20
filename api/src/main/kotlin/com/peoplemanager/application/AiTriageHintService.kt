@@ -6,12 +6,14 @@ import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.TriageItem
 import com.peoplemanager.domain.TriageItemType
 import com.peoplemanager.domain.UserId
+import com.peoplemanager.domain.UserSettings
 import org.springframework.stereotype.Service
 
 @Service
 class AiTriageHintService(
     private val aiClientPort: AiClientPort,
-    private val userSettingsRepository: UserSettingsRepository
+    private val userSettingsRepository: UserSettingsRepository,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     data class TriageHintResult(
@@ -27,11 +29,10 @@ class AiTriageHintService(
      */
     fun generateHint(userId: UserId, item: TriageItem): TriageHintResult {
         val settings = userSettingsRepository.findByUserId(userId)
-            ?: return TriageHintResult(error = "Settings not found")
+            ?: UserSettings.createDefault(userId)
 
-        if (!settings.isAiConfigured()) {
-            return TriageHintResult(error = "AI not configured")
-        }
+        val config = aiConfigResolver.resolve(settings)
+            ?: return TriageHintResult(error = "AI not configured")
 
         // Respect privacy mode: skip sensitive items
         if (settings.aiPrivacyMode && item.sensitive) {
@@ -42,9 +43,9 @@ class AiTriageHintService(
         val userMessage = buildUserMessage(item)
 
         return when (val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = systemPrompt,
             userMessage = userMessage
         )) {

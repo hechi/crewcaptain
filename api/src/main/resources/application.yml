@@ -46,3 +46,8 @@ app:
     cron: ${NOTIFICATION_CRON:0 0 * * * *}
     due-soon-days: ${NOTIFICATION_DUE_SOON_DAYS:3}
     anniversary-lookahead-days: ${NOTIFICATION_ANNIVERSARY_LOOKAHEAD_DAYS:7}
+  ai:
+    defaults:
+      base-url: ${AI_DEFAULT_BASE_URL:}
+      api-key: ${AI_DEFAULT_API_KEY:}
+      model: ${AI_DEFAULT_MODEL:}

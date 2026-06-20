@@ -19,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class AiCoachingService(
     private val userSettingsRepository: UserSettingsRepository,
-    private val aiClientPort: AiClientPort
+    private val aiClientPort: AiClientPort,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     /**
@@ -28,7 +29,7 @@ class AiCoachingService(
      */
     fun refineKudos(userId: UserId, draft: String): AiCoachingResult {
         val settings = loadAndValidateSettings(userId) ?: return AiCoachingResult.Error(
-            "AI Assistant is not configured. Please configure it in Settings."
+            "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
         )
 
         if (draft.isBlank()) {
@@ -47,7 +48,7 @@ class AiCoachingService(
      */
     fun optimizePdpGoal(userId: UserId, title: String, description: String?): AiCoachingResult {
         val settings = loadAndValidateSettings(userId) ?: return AiCoachingResult.Error(
-            "AI Assistant is not configured. Please configure it in Settings."
+            "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
         )
 
         if (title.isBlank()) {
@@ -71,7 +72,7 @@ class AiCoachingService(
      */
     fun optimizeStrategyGoal(userId: UserId, title: String, description: String?): AiCoachingResult {
         val settings = loadAndValidateSettings(userId) ?: return AiCoachingResult.Error(
-            "AI Assistant is not configured. Please configure it in Settings."
+            "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
         )
 
         if (title.isBlank()) {
@@ -91,9 +92,9 @@ class AiCoachingService(
 
     private fun loadAndValidateSettings(userId: UserId): UserSettings? {
         val settings = userSettingsRepository.findByUserId(userId)
-            ?: return null
+            ?: UserSettings.createDefault(userId)
 
-        if (!settings.isAiConfigured()) {
+        if (aiConfigResolver.resolve(settings) == null) {
             return null
         }
 
@@ -101,10 +102,11 @@ class AiCoachingService(
     }
 
     private fun callAi(settings: UserSettings, systemPrompt: String, userMessage: String): AiCoachingResult {
+        val config = aiConfigResolver.resolve(settings)!!
         val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = systemPrompt,
             userMessage = userMessage
         )

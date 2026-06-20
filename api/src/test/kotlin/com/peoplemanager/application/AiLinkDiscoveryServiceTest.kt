@@ -24,6 +24,7 @@ class AiLinkDiscoveryServiceTest {
     private val userSettingsRepository = mockk<UserSettingsRepository>()
     private val aiClientPort = mockk<AiClientPort>()
     private val objectMapper = jacksonObjectMapper()
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
     private lateinit var service: AiLinkDiscoveryService
 
@@ -39,7 +40,8 @@ class AiLinkDiscoveryServiceTest {
             linkService,
             userSettingsRepository,
             aiClientPort,
-            objectMapper
+            objectMapper,
+            aiConfigResolver
         )
     }
 
@@ -64,7 +66,7 @@ class AiLinkDiscoveryServiceTest {
         val result = service.generateLinkSuggestions(userId)
 
         assertTrue(result is AiLinkSuggestionsResult.Error)
-        assertTrue((result as AiLinkSuggestionsResult.Error).message.contains("not enabled"))
+        assertTrue((result as AiLinkSuggestionsResult.Error).message.contains("not configured"))
     }
 
     @Test

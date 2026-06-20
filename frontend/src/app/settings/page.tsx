@@ -459,6 +459,46 @@ export default function SettingsPage() {
           <p style={{ fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)', margin: '0 0 var(--space-4) 0' }}>
             Configure an OpenAI-compatible API to generate 1:1 agenda suggestions.
           </p>
+          {settings?.aiAvailable && settings?.aiConfigSource === 'ADMIN_DEFAULTS' && !aiEnabled && (
+            <div
+              data-testid="ai-admin-defaults-badge"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-success-muted)',
+                border: '1px solid var(--color-success)',
+                fontSize: 'var(--text-small)',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-success)',
+                marginBottom: 'var(--space-4)',
+              }}
+            >
+              ✓ AI available via team defaults
+            </div>
+          )}
+          {settings?.aiAvailable && settings?.aiConfigSource === 'USER_SETTINGS' && (
+            <div
+              data-testid="ai-user-config-badge"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-primary-muted)',
+                border: '1px solid var(--color-primary)',
+                fontSize: 'var(--text-small)',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-primary)',
+                marginBottom: 'var(--space-4)',
+              }}
+            >
+              ✓ Using your personal AI config
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <ToggleRow
               testId="toggle-ai-enabled"

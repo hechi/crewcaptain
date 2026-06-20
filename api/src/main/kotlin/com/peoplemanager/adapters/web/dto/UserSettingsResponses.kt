@@ -1,5 +1,6 @@
 package com.peoplemanager.adapters.web.dto
 
+import com.peoplemanager.application.ResolvedAiConfig
 import com.peoplemanager.domain.UserSettings
 
 data class UserSettingsResponse(
@@ -27,10 +28,12 @@ data class UserSettingsResponse(
     val strategyOptimizationPrompt: String?,
     val triageHintPrompt: String?,
     val aiAutoExecuteCommands: Boolean,
-    val commandTerminalPrompt: String?
+    val commandTerminalPrompt: String?,
+    val aiConfigSource: String?,
+    val aiAvailable: Boolean
 ) {
     companion object {
-        fun from(settings: UserSettings): UserSettingsResponse = UserSettingsResponse(
+        fun from(settings: UserSettings, resolvedConfig: ResolvedAiConfig? = null): UserSettingsResponse = UserSettingsResponse(
             dueSoonDays = settings.dueSoonDays,
             staleOneOnOneDays = settings.staleOneOnOneDays,
             anniversaryLookaheadDays = settings.anniversaryLookaheadDays,
@@ -55,7 +58,9 @@ data class UserSettingsResponse(
             strategyOptimizationPrompt = settings.strategyOptimizationPrompt,
             triageHintPrompt = settings.triageHintPrompt,
             aiAutoExecuteCommands = settings.aiAutoExecuteCommands,
-            commandTerminalPrompt = settings.commandTerminalPrompt
+            commandTerminalPrompt = settings.commandTerminalPrompt,
+            aiConfigSource = resolvedConfig?.source?.name,
+            aiAvailable = resolvedConfig != null
         )
     }
 }

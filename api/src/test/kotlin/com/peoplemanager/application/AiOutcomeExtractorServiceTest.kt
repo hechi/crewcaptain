@@ -30,6 +30,7 @@ class AiOutcomeExtractorServiceTest {
     private val actionItemRepository: ActionItemRepository = mockk()
     private val aiClientPort: AiClientPort = mockk()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
     private val service = AiOutcomeExtractorService(
         userSettingsRepository,
@@ -37,7 +38,8 @@ class AiOutcomeExtractorServiceTest {
         entryRepository,
         actionItemRepository,
         aiClientPort,
-        objectMapper
+        objectMapper,
+        aiConfigResolver
     )
 
     private val userId = UserId(UUID.randomUUID())
@@ -155,7 +157,7 @@ class AiOutcomeExtractorServiceTest {
         val result = service.extractOutcomes(userId, personId, entryId)
 
         result.shouldBeInstanceOf<AiExtractionResult.Error>()
-        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test
@@ -165,7 +167,7 @@ class AiOutcomeExtractorServiceTest {
         val result = service.extractOutcomes(userId, personId, entryId)
 
         result.shouldBeInstanceOf<AiExtractionResult.Error>()
-        result.message shouldBe "AI Assistant is not enabled or not fully configured. Please check Settings."
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test

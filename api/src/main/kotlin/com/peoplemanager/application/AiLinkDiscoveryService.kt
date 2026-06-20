@@ -27,7 +27,8 @@ class AiLinkDiscoveryService(
     private val linkService: StrategyGoalLinkService,
     private val userSettingsRepository: UserSettingsRepository,
     private val aiClientPort: AiClientPort,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     private val logger = LoggerFactory.getLogger(AiLinkDiscoveryService::class.java)
@@ -53,10 +54,11 @@ class AiLinkDiscoveryService(
                 return AiLinkSuggestionsResult.Error("AI Assistant is not configured. Please configure it in Settings.")
             }
 
-        if (!settings.isAiConfigured()) {
-            logger.warn("AI not configured for user: ${userId.value} - enabled: ${settings.aiEnabled}, baseUrl: ${settings.aiApiBaseUrl}, model: ${settings.aiModelName}")
-            return AiLinkSuggestionsResult.Error("AI Assistant is not enabled or not fully configured. Please check Settings.")
-        }
+        val config = aiConfigResolver.resolve(settings)
+            ?: run {
+                logger.warn("AI not configured for user: ${userId.value} - enabled: ${settings.aiEnabled}, baseUrl: ${settings.aiApiBaseUrl}, model: ${settings.aiModelName}")
+                return AiLinkSuggestionsResult.Error("AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults.")
+            }
 
         logger.info("AI configured with baseUrl: ${settings.aiApiBaseUrl}, model: ${settings.aiModelName}")
 
@@ -114,11 +116,11 @@ class AiLinkDiscoveryService(
         logger.debug("Built user prompt with ${strategyGoals.size} strategy goals and ${unlinkedPdpGoals.size} PDP goals")
 
         // Call the LLM
-        logger.info("Calling AI API at ${settings.aiApiBaseUrl} with model ${settings.aiModelName}")
+        logger.info("Calling AI API at ${config.baseUrl} with model ${config.model}")
         val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = settings.effectiveLinkSuggestionsPrompt(),
             userMessage = userPrompt
         )

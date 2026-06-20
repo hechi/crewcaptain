@@ -12,6 +12,7 @@ import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.ActionItemStatus
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId
+import com.peoplemanager.domain.UserSettings
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.springframework.data.domain.PageRequest
@@ -34,7 +35,8 @@ class AiTrendRadarService(
     private val pdpUpdateRepository: PdpUpdateRepository,
     private val kudosRepository: KudosRepository,
     private val aiClientPort: AiClientPort,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     companion object {
@@ -49,11 +51,10 @@ class AiTrendRadarService(
 
         // Load user settings to check AI configuration
         val settings = userSettingsRepository.findByUserId(userId)
-            ?: return AiTrendRadarResult.Error("AI Assistant is not configured. Please configure it in Settings.")
+            ?: UserSettings.createDefault(userId)
 
-        if (!settings.isAiConfigured()) {
-            return AiTrendRadarResult.Error("AI Assistant is not enabled or not fully configured. Please check Settings.")
-        }
+        val config = aiConfigResolver.resolve(settings)
+            ?: return AiTrendRadarResult.Error("AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults.")
 
         val privacyMode = settings.aiPrivacyMode
         val now = LocalDate.now()
@@ -74,9 +75,9 @@ class AiTrendRadarService(
 
         // Call the LLM
         val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = settings.effectiveTrendRadarPrompt(),
             userMessage = userPrompt
         )

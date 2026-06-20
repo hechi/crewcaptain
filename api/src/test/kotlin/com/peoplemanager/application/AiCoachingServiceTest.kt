@@ -20,7 +20,8 @@ class AiCoachingServiceTest {
 
     private val userSettingsRepository: UserSettingsRepository = mockk()
     private val aiClientPort: AiClientPort = mockk()
-    private val service = AiCoachingService(userSettingsRepository, aiClientPort)
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
+    private val service = AiCoachingService(userSettingsRepository, aiClientPort, aiConfigResolver)
 
     private val userId = UserId(UUID.randomUUID())
     private val configuredSettings = UserSettings(
@@ -95,7 +96,7 @@ class AiCoachingServiceTest {
         val result = service.refineKudos(userId, "Draft text")
 
         result.shouldBeInstanceOf<AiCoachingResult.Error>()
-        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test
@@ -105,7 +106,7 @@ class AiCoachingServiceTest {
         val result = service.refineKudos(userId, "Draft text")
 
         result.shouldBeInstanceOf<AiCoachingResult.Error>()
-        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test
@@ -212,7 +213,7 @@ class AiCoachingServiceTest {
         val result = service.optimizePdpGoal(userId, "My goal", "desc")
 
         result.shouldBeInstanceOf<AiCoachingResult.Error>()
-        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test
@@ -311,7 +312,7 @@ class AiCoachingServiceTest {
         val result = service.optimizeStrategyGoal(userId, "My strategy goal", "desc")
 
         result.shouldBeInstanceOf<AiCoachingResult.Error>()
-        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.message shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test

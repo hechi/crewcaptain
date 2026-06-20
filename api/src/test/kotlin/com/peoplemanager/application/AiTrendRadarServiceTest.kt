@@ -27,6 +27,7 @@ class AiTrendRadarServiceTest {
     private val kudosRepository = mockk<KudosRepository>()
     private val aiClientPort = mockk<AiClientPort>()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
     private lateinit var service: AiTrendRadarService
 
@@ -57,7 +58,8 @@ class AiTrendRadarServiceTest {
             pdpUpdateRepository,
             kudosRepository,
             aiClientPort,
-            objectMapper
+            objectMapper,
+            aiConfigResolver
         )
     }
 
@@ -90,7 +92,7 @@ class AiTrendRadarServiceTest {
         val result = service.generateInsights(userId, personId)
 
         assertTrue(result is AiTrendRadarResult.Error)
-        assertTrue((result as AiTrendRadarResult.Error).message.contains("not enabled"))
+        assertTrue((result as AiTrendRadarResult.Error).message.contains("not configured"))
     }
 
     @Test

@@ -22,6 +22,7 @@ class AiNarrativeServiceTest {
     private val pdpUpdateRepository = mockk<PdpUpdateRepository>()
     private val kudosRepository = mockk<KudosRepository>()
     private val aiClientPort = mockk<AiClientPort>()
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
     private lateinit var service: AiNarrativeService
 
@@ -57,7 +58,8 @@ class AiNarrativeServiceTest {
             pdpGoalRepository,
             pdpUpdateRepository,
             kudosRepository,
-            aiClientPort
+            aiClientPort,
+            aiConfigResolver
         )
     }
 
@@ -78,7 +80,7 @@ class AiNarrativeServiceTest {
         val result = service.generateNarrative(userId, personId, dateFrom, dateTo)
 
         assertTrue(result is AiNarrativeResult.Error)
-        assertTrue((result as AiNarrativeResult.Error).message.contains("not enabled"))
+        assertTrue((result as AiNarrativeResult.Error).message.contains("not configured"))
     }
 
     @Test

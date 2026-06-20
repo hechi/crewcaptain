@@ -23,9 +23,10 @@ class AiCommandTerminalServiceTest {
     private val userSettingsRepository: UserSettingsRepository = mockk()
     private val personRepository: PersonRepository = mockk()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
     private val service = AiCommandTerminalService(
-        aiClientPort, userSettingsRepository, personRepository, objectMapper
+        aiClientPort, userSettingsRepository, personRepository, objectMapper, aiConfigResolver
     )
 
     private val userId = UserId(UUID.randomUUID())
@@ -68,7 +69,7 @@ class AiCommandTerminalServiceTest {
 
         val result = service.parseCommand(userId, "Create a note about Alice")
 
-        result.error shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.error shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test
@@ -77,7 +78,7 @@ class AiCommandTerminalServiceTest {
 
         val result = service.parseCommand(userId, "Create a note about Alice")
 
-        result.error shouldBe "AI Assistant is not configured. Please configure it in Settings."
+        result.error shouldBe "AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults."
     }
 
     @Test

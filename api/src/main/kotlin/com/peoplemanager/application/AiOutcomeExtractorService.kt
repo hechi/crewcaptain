@@ -10,6 +10,7 @@ import com.peoplemanager.domain.ActionItemOwnerType
 import com.peoplemanager.domain.OneOnOneEntryId
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId
+import com.peoplemanager.domain.UserSettings
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.slf4j.LoggerFactory
@@ -25,7 +26,8 @@ class AiOutcomeExtractorService(
     private val entryRepository: OneOnOneEntryRepository,
     private val actionItemRepository: ActionItemRepository,
     private val aiClientPort: AiClientPort,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     private val logger = LoggerFactory.getLogger(AiOutcomeExtractorService::class.java)
@@ -45,11 +47,10 @@ class AiOutcomeExtractorService(
 
         // Load user settings
         val settings = userSettingsRepository.findByUserId(userId)
-            ?: return AiExtractionResult.Error("AI Assistant is not configured. Please configure it in Settings.")
+            ?: UserSettings.createDefault(userId)
 
-        if (!settings.isAiConfigured()) {
-            return AiExtractionResult.Error("AI Assistant is not enabled or not fully configured. Please check Settings.")
-        }
+        val config = aiConfigResolver.resolve(settings)
+            ?: return AiExtractionResult.Error("AI Assistant is not configured. Please configure it in Settings or ask your admin to set team defaults.")
 
         // Privacy check: refuse to process sensitive entries when privacy mode is ON
         if (entry.sensitive && settings.aiPrivacyMode) {
@@ -75,9 +76,9 @@ class AiOutcomeExtractorService(
 
         // Call the LLM
         val result = aiClientPort.chatCompletion(
-            baseUrl = settings.aiApiBaseUrl!!,
-            apiKey = settings.aiApiKey,
-            model = settings.aiModelName!!,
+            baseUrl = config.baseUrl,
+            apiKey = config.apiKey,
+            model = config.model,
             systemPrompt = settings.effectiveOutcomeExtractorPrompt(),
             userMessage = userMessage
         )

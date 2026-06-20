@@ -3,6 +3,7 @@ package com.peoplemanager.adapters.web
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.peoplemanager.adapters.auth.SecurityConfig
 import com.peoplemanager.adapters.auth.UserProvisioningJwtAuthenticationConverter
+import com.peoplemanager.application.AiConfigResolver
 import com.peoplemanager.application.UpdateUserSettingsCommand
 import com.peoplemanager.application.UserProvisioningService
 import com.peoplemanager.application.UserSettingsService
@@ -48,6 +49,9 @@ class UserSettingsControllerTest {
 
         @Bean
         fun userProvisioningService(): UserProvisioningService = mockk()
+
+        @Bean
+        fun aiConfigResolver(): AiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
     }
 
     @Autowired

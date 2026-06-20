@@ -23,6 +23,7 @@ class AiPrepServiceTest {
     private val pdpUpdateRepository = mockk<PdpUpdateRepository>()
     private val kudosRepository = mockk<KudosRepository>()
     private val aiClientPort = mockk<AiClientPort>()
+    private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
     private lateinit var service: AiPrepService
 
@@ -55,7 +56,8 @@ class AiPrepServiceTest {
             pdpGoalRepository,
             pdpUpdateRepository,
             kudosRepository,
-            aiClientPort
+            aiClientPort,
+            aiConfigResolver
         )
     }
 
@@ -76,7 +78,7 @@ class AiPrepServiceTest {
         val result = service.generateAgendaSuggestions(userId, personId)
 
         assertTrue(result is AiPrepResult.Error)
-        assertTrue((result as AiPrepResult.Error).message.contains("not enabled"))
+        assertTrue((result as AiPrepResult.Error).message.contains("not configured"))
     }
 
     @Test

@@ -3,6 +3,8 @@ package com.peoplemanager.adapters.web
 import com.peoplemanager.adapters.auth.AuthenticatedUser
 import com.peoplemanager.adapters.web.dto.UpdateUserSettingsRequest
 import com.peoplemanager.adapters.web.dto.UserSettingsResponse
+import com.peoplemanager.application.AiConfigResolver
+import com.peoplemanager.application.AiConfigSource
 import com.peoplemanager.application.UpdateUserSettingsCommand
 import com.peoplemanager.application.UserSettingsService
 import com.peoplemanager.domain.AiWritingStyle
@@ -14,14 +16,30 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1")
 class UserSettingsController(
-    private val userSettingsService: UserSettingsService
+    private val userSettingsService: UserSettingsService,
+    private val aiConfigResolver: AiConfigResolver
 ) {
 
     @GetMapping("/settings")
     fun getSettings(): ResponseEntity<UserSettingsResponse> {
         val userId = AuthenticatedUser.getUserId()
         val settings = userSettingsService.getSettings(userId)
-        return ResponseEntity.ok(UserSettingsResponse.from(settings))
+        val resolvedConfig = aiConfigResolver.resolve(settings)
+        return ResponseEntity.ok(UserSettingsResponse.from(settings, resolvedConfig))
+    }
+
+    @GetMapping("/settings/ai-status")
+    fun getAiStatus(): ResponseEntity<AiStatusResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val settings = userSettingsService.getSettings(userId)
+        val resolvedConfig = aiConfigResolver.resolve(settings)
+        return ResponseEntity.ok(
+            AiStatusResponse(
+                available = resolvedConfig != null,
+                source = resolvedConfig?.source?.name,
+                adminDefaultsConfigured = aiConfigResolver.hasDefaults()
+            )
+        )
     }
 
     @PutMapping("/settings")
@@ -72,6 +90,13 @@ class UserSettingsController(
         )
 
         val settings = userSettingsService.updateSettings(userId, command)
-        return ResponseEntity.ok(UserSettingsResponse.from(settings))
+        val resolvedConfig = aiConfigResolver.resolve(settings)
+        return ResponseEntity.ok(UserSettingsResponse.from(settings, resolvedConfig))
     }
 }
+
+data class AiStatusResponse(
+    val available: Boolean,
+    val source: String?,
+    val adminDefaultsConfigured: Boolean
+)
