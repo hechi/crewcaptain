@@ -110,6 +110,20 @@ export default function AiCommandTerminal() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const getHelpMessage = (): string => {
+    return [
+      '📋 Available Commands:',
+      '',
+      '• Action Item — "Remind Alice to update the docs by Friday"',
+      '• Kudos — "Give kudos to Bob for the great demo today"',
+      '• Quick Note — "Note: schedule team offsite for Q3"',
+      '• 1:1 Entry — "Had a chat with Alice about career goals"',
+      '',
+      'Type any natural language command and the AI will parse your intent.',
+      'Type "help" anytime to see this message again.',
+    ].join('\n');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
@@ -122,6 +136,18 @@ export default function AiCommandTerminal() {
       role: 'user',
       content: input.trim(),
     };
+
+    // Handle "help" command locally — no API call needed
+    if (userMessage.content.toLowerCase() === 'help') {
+      const helpMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: getHelpMessage(),
+      };
+      setMessages(prev => [...prev, userMessage, helpMsg]);
+      setInput('');
+      return;
+    }
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');

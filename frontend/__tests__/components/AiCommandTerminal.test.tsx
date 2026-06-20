@@ -513,6 +513,53 @@ describe('AiCommandTerminal', () => {
     });
   });
 
+  it('should show help message when user types "help"', async () => {
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-fab'));
+    fireEvent.change(screen.getByTestId('ai-terminal-input'), {
+      target: { value: 'help' },
+    });
+    fireEvent.click(screen.getByTestId('ai-terminal-submit'));
+
+    // Should NOT call the AI API
+    expect(mockParseAiCommand).not.toHaveBeenCalled();
+
+    // Should show the help content
+    await waitFor(() => {
+      expect(screen.getByText(/Available Commands/)).toBeInTheDocument();
+      expect(screen.getByText(/Action Item/)).toBeInTheDocument();
+      expect(screen.getByText(/Kudos/)).toBeInTheDocument();
+      expect(screen.getByText(/Quick Note/)).toBeInTheDocument();
+      expect(screen.getByText(/1:1 Entry/)).toBeInTheDocument();
+    });
+
+    // Empty state should no longer be visible (messages exist now)
+    expect(screen.queryByTestId('ai-terminal-empty')).not.toBeInTheDocument();
+  });
+
+  it('should show help message when user types "HELP" (case-insensitive)', async () => {
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('ai-terminal-fab'));
+    fireEvent.change(screen.getByTestId('ai-terminal-input'), {
+      target: { value: 'HELP' },
+    });
+    fireEvent.click(screen.getByTestId('ai-terminal-submit'));
+
+    expect(mockParseAiCommand).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Available Commands/)).toBeInTheDocument();
+    });
+  });
+
   it('should show error when 1:1 entry has no target person', async () => {
     mockParseAiCommand.mockResolvedValue({
       intent: 'create_one_on_one_entry',
