@@ -1,6 +1,9 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-06-29T00:00:00Z — Docs: README API reference brought in sync with controllers after a full controller-vs-README audit. Added 18 previously undocumented endpoints: `PUT /persons/{id}/remember-items/{itemId}` (update remember item), `POST /persons/{personId}/ai-prep`, `POST /persons/{personId}/ai-trend-radar`, two Strategy Goal endpoints (reverse lookup + `ai-suggestions`), `GET /settings/ai-status`, and new endpoint tables for Workspaces (6), Triage Queue (3), Gamification (1), Audit Log (1), and AI (5). Also refreshed the stale Database Migrations table (added 15 missing migrations V20250511120002–V20250607120000), relocated orphaned parameter/field blocks (Notifications, Quick Notes, 1:1, persons-list) from under User Settings into their correct sections, removed a stale duplicated Search query-params block, and fixed duplicate numbering in the Contributing list. Documentation-only change — no production code modified, build unaffected. Architecture review confirmed hexagonal/DDD boundaries are clean and ArchUnit-enforced (the Spring Data `Page`/`Pageable` leak into ports is documented as an accepted tradeoff in `api/ARCHITECTURE.md`).
+
+## Previously Updated
 2026-06-28T12:00:00Z — 1:1 Prep Notes Panel: New `OneOnOnePrepNotes` component surfaces INBOX quick notes assigned to a person directly on the 1:1 entry page. Collapsible panel with "Add to Agenda" (attaches note to entry) and "Dismiss" (archives note) actions. Rendered before the agenda items via `prepNotesSlot` on both create and edit 1:1 pages. No new backend code or migrations — leverages existing Quick Notes API (`listQuickNotes` with personId + INBOX filter). Frontend: 1256 tests pass. Build succeeds.
 
 ## Current Status

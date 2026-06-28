@@ -158,11 +158,14 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | GET    | `/api/v1/persons/trash`                 | List deleted persons (paginated) |
 | PUT    | `/api/v1/persons/{id}/morale`           | Set morale status              |
 | POST   | `/api/v1/persons/{id}/remember-items`   | Add a pinned remember item     |
+| PUT    | `/api/v1/persons/{id}/remember-items/{itemId}` | Update a remember item  |
 | DELETE | `/api/v1/persons/{id}/remember-items/{itemId}` | Remove a remember item  |
 | PUT    | `/api/v1/persons/{id}/remember-items/reorder` | Reorder remember items  |
 | GET    | `/api/v1/persons/{id}/export`           | Export person data as Markdown |
 | GET    | `/api/v1/persons/{id}/review-packet`    | Generate review packet as Markdown |
 | POST   | `/api/v1/persons/{id}/ai-narrative`     | Generate AI performance narrative  |
+| POST   | `/api/v1/persons/{personId}/ai-prep`    | Generate AI 1:1 agenda suggestions |
+| POST   | `/api/v1/persons/{personId}/ai-trend-radar` | Generate AI strategic trend insights |
 | POST   | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}/extract-outcomes` | AI-extract action items and decisions from notes |
 | POST   | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}/apply-outcomes`   | Bulk-create extracted action items and append decisions |
 | POST   | `/api/v1/persons/import`                | Bulk import persons from CSV   |
@@ -200,6 +203,13 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - Response: `{ "successCount": 2, "errorCount": 1, "errors": ["Row 3: Name must not be blank"] }`
 - Partial success: valid rows are imported even if some rows have errors
 
+**Query parameters for the persons list endpoint:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `tag` — Filter by tag
+- `morale` — Filter by morale status (GREEN, YELLOW, RED, UNKNOWN)
+- `workspace` — Filter by workspace UUID
+
 ### 1:1 Entry Management
 
 | Method | Endpoint                                                    | Description                        |
@@ -211,6 +221,22 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | GET    | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}`   | Get a 1:1 entry                    |
 | PUT    | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}`   | Update a 1:1 entry                 |
 | DELETE | `/api/v1/persons/{personId}/one-on-one-entries/{entryId}`   | Delete a 1:1 entry                 |
+
+**1:1 Series fields:**
+- `cadenceType` — WEEKLY, BIWEEKLY, MONTHLY, or CUSTOM
+- `customIntervalDays` — Required when cadenceType is CUSTOM (positive integer)
+- `templateMarkdown` — Markdown template to prefill new entries
+
+**1:1 Entry fields:**
+- `meetingDate` — Required (ISO 8601 timestamp)
+- `agendaItems` — List of `{ text, checked }` objects
+- `notesMarkdown` — Markdown notes (prefilled from template if not provided)
+- `outcomesMarkdown` — Markdown outcomes/decisions
+- `sensitive` — Boolean flag for sensitive content (default: false)
+
+**Query parameters for the entries list endpoint:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
 
 ### Action Items
 
@@ -316,6 +342,25 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | POST   | `/api/v1/quick-notes/{quickNoteId}/convert`             | Mark as converted (to action item)   |
 | POST   | `/api/v1/quick-notes/{quickNoteId}/archive`             | Archive the quick note               |
 
+**Quick Note fields:**
+- `text` — Required (Markdown text)
+- `personId` — Optional UUID to assign to a person
+- `sensitive` — Optional boolean (default: false)
+- `selfAssigned` — Optional boolean (default: false). When true, the note is a personal note for the manager. Mutually exclusive with `personId`.
+
+**Quick Note status transitions:**
+- INBOX → ATTACHED (via `/attach` with `entryId` — links to a specific 1:1 entry)
+- INBOX → CONVERTED (via `/convert`)
+- INBOX → ARCHIVED (via `/archive`)
+- No other transitions are allowed
+
+**Query parameters for the quick notes list endpoint:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `status` — Filter by status (INBOX, ATTACHED, CONVERTED, ARCHIVED)
+- `personId` — Filter by assigned person
+- `selfAssigned` — Filter by self-assigned flag (true/false)
+
 ### Dashboard
 
 | Method | Endpoint                | Description                                    |
@@ -334,6 +379,17 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | GET    | `/api/v1/notifications/unread-count`        | Get unread notification count        |
 | POST   | `/api/v1/notifications/{notificationId}/read` | Mark a notification as read        |
 | POST   | `/api/v1/notifications/read-all`            | Mark all notifications as read       |
+
+**Query parameters for the notifications list:**
+- `page` — Page number (default: 0)
+- `size` — Page size (default: 20)
+- `unreadOnly` — Only return unread notifications (default: false)
+
+**Notification types:**
+- `ACTION_ITEM_OVERDUE` — Action item past its due date
+- `ACTION_ITEM_DUE_SOON` — Action item due within the configured threshold
+- `STALE_ONE_ON_ONE` — 1:1 meeting overdue based on cadence
+- `UPCOMING_ANNIVERSARY` — Work anniversary approaching
 
 ### Search
 
@@ -354,6 +410,12 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - Encrypted sensitive fields are not searchable (trade-off for encryption at rest)
 - Strategy Goals follow the same rule: when a strategy goal is marked sensitive=true, its title and description are encrypted at rest and excluded from full-text search and GIN indexes. Queries against encrypted fields return no results by design.
 
+**Response fields:**
+- `results` — Array of search results with id, type, title, snippet, personId, personName, sensitive, createdAt, relevanceScore
+- `query` — The original search query
+- `totalCount` — Total number of matching results
+- `page` / `size` / `totalPages` — Pagination metadata
+
 ### Strategy Goals
 
 | Method | Endpoint                                                              | Description                          |
@@ -371,6 +433,8 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 | GET    | `/api/v1/strategy-goals/{id}/alignment`                               | Get alignment score for goal         |
 | GET    | `/api/v1/strategy-goals/alignment`                                    | Get all alignment scores             |
 | GET    | `/api/v1/strategy-goals/gap-analysis`                                 | Get gap analysis                     |
+| GET    | `/api/v1/persons/{personId}/pdp-goals/{pdpGoalId}/strategy-goals`     | Get strategy goals linked to a PDP goal |
+| POST   | `/api/v1/strategy-goals/ai-suggestions`                               | Generate AI link suggestions         |
 
 **Strategy Goal fields:**
 - `title` — Required (max 500 chars)
@@ -409,6 +473,7 @@ Encryption/Search trade-off:
 | Method | Endpoint          | Description                                    |
 |--------|-------------------|------------------------------------------------|
 | GET    | `/api/v1/settings` | Get current user settings (returns defaults if none saved) |
+| GET    | `/api/v1/settings/ai-status` | Get resolved AI availability and config source (personal vs team defaults) |
 | PUT    | `/api/v1/settings` | Update user settings                          |
 
 **Settings fields:**
@@ -422,75 +487,65 @@ Encryption/Search trade-off:
 - `notifyStaleOneOnOne` — Enable stale 1:1 notifications (default: true)
 - `notifyUpcomingAnniversary` — Enable anniversary notifications (default: true)
 
+### Workspaces
+
+| Method | Endpoint                                          | Description                          |
+|--------|---------------------------------------------------|--------------------------------------|
+| POST   | `/api/v1/workspaces`                              | Create a workspace                   |
+| GET    | `/api/v1/workspaces`                              | List workspaces                      |
+| GET    | `/api/v1/workspaces/{workspaceId}`                | Get a workspace                      |
+| PUT    | `/api/v1/workspaces/{workspaceId}`                | Update a workspace                   |
+| DELETE | `/api/v1/workspaces/{workspaceId}`                | Delete a workspace                   |
+| PUT    | `/api/v1/workspaces/persons/{personId}/workspace` | Assign a person to a workspace (or clear with empty body) |
+
+### Triage Queue
+
+| Method | Endpoint                                                                  | Description                          |
+|--------|---------------------------------------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/triage`                                                          | Get the unified triage queue         |
+| POST   | `/api/v1/triage/items/{itemId}/hint`                                      | Get AI "next best action" hint for an item |
+| POST   | `/api/v1/triage/persons/{personId}/action-items/{actionItemId}/snooze`    | Snooze an action item                |
+
+**Query parameters for the triage queue:**
+- `type` — Filter by item type: ACTION_ITEM_OVERDUE, ACTION_ITEM_DUE_SOON, STALE_ONE_ON_ONE, UPCOMING_ANNIVERSARY
+- `workspaceId` — Filter by workspace (repeatable)
+- `personId` — Filter by person
+- `scope` — Owner scope: `ALL` (default) or `MINE`
+
+### Gamification
+
+| Method | Endpoint                       | Description                          |
+|--------|--------------------------------|--------------------------------------|
+| GET    | `/api/v1/gamification/stats`   | Get gamification stats (PDP completion %, 1:1 streak, badges, activity heatmap) |
+
 **Query parameters:**
-- `q` — Search query (required)
-- `type` — Filter by result type (repeatable): PERSON, ONE_ON_ONE_ENTRY, QUICK_NOTE, ACTION_ITEM, PDP_GOAL, PDP_UPDATE, KUDOS
-- `page` — Page number (default: 0)
-- `size` — Page size (default: 20, max: 100)
+- `heatmapDays` — Number of days of activity history for the heatmap (default: 90)
 
-**Response fields:**
-- `results` — Array of search results with id, type, title, snippet, personId, personName, sensitive, createdAt, relevanceScore
-- `query` — The original search query
-- `totalCount` — Total number of matching results
-- `page` / `size` / `totalPages` — Pagination metadata
+### Audit Log
 
-**Notes:**
-- All results are scoped by the authenticated user (security invariant)
-- Sensitive content snippets are hidden in search results (only title shown)
-- Uses PostgreSQL full-text search with GIN indexes, prefix matching, and relevance ranking
-- Encrypted sensitive fields are not searchable (trade-off for encryption at rest)
+| Method | Endpoint                | Description                          |
+|--------|-------------------------|--------------------------------------|
+| GET    | `/api/v1/audit-log`     | List audit log entries (paginated)   |
 
-**Query parameters for notifications list:**
-- `page` — Page number (default: 0)
-- `size` — Page size (default: 20)
-- `unreadOnly` — Only return unread notifications (default: false)
-
-**Notification types:**
-- `ACTION_ITEM_OVERDUE` — Action item past its due date
-- `ACTION_ITEM_DUE_SOON` — Action item due within the configured threshold
-- `STALE_ONE_ON_ONE` — 1:1 meeting overdue based on cadence
-- `UPCOMING_ANNIVERSARY` — Work anniversary approaching
-
-**Quick Note fields:**
-- `text` — Required (Markdown text)
-- `personId` — Optional UUID to assign to a person
-- `sensitive` — Optional boolean (default: false)
-- `selfAssigned` — Optional boolean (default: false). When true, the note is a personal note for the manager. Mutually exclusive with `personId`.
-
-**Quick Note status transitions:**
-- INBOX → ATTACHED (via `/attach` with `entryId` — links to a specific 1:1 entry)
-- INBOX → CONVERTED (via `/convert`)
-- INBOX → ARCHIVED (via `/archive`)
-- No other transitions are allowed
-
-**Query parameters for quick notes list endpoint:**
-- `page` — Page number (default: 0)
-- `size` — Page size (default: 20)
-- `status` — Filter by status (INBOX, ATTACHED, CONVERTED, ARCHIVED)
-- `personId` — Filter by assigned person
-- `selfAssigned` — Filter by self-assigned flag (true/false)
-
-**Query parameters for entries list endpoint:**
+**Query parameters:**
+- `entityType` — Filter by entity type (e.g., PERSON, ACTION_ITEM, PDP_GOAL, ...)
+- `action` — Filter by action (CREATE, UPDATE, DELETE, RESTORE, ...)
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
 
-**1:1 Series fields:**
-- `cadenceType` — WEEKLY, BIWEEKLY, MONTHLY, or CUSTOM
-- `customIntervalDays` — Required when cadenceType is CUSTOM (positive integer)
-- `templateMarkdown` — Markdown template to prefill new entries
+### AI Endpoints
 
-**1:1 Entry fields:**
-- `meetingDate` — Required (ISO 8601 timestamp)
-- `agendaItems` — List of `{ text, checked }` objects
-- `notesMarkdown` — Markdown notes (prefilled from template if not provided)
-- `outcomesMarkdown` — Markdown outcomes/decisions
-- `sensitive` — Boolean flag for sensitive content (default: false)
+All AI endpoints require AI to be enabled and configured (personal config or team defaults) and respect Privacy Mode.
 
-**Query parameters for list endpoint:**
-- `page` — Page number (default: 0)
-- `size` — Page size (default: 20)
-- `tag` — Filter by tag
-- `morale` — Filter by morale status (GREEN, YELLOW, RED, UNKNOWN)
+| Method | Endpoint                              | Description                          |
+|--------|---------------------------------------|--------------------------------------|
+| POST   | `/api/v1/ai/refine-kudos`             | Refine kudos draft using the SBI framework |
+| POST   | `/api/v1/ai/optimize-pdp-goal`        | SMART-check and improve a PDP goal   |
+| POST   | `/api/v1/ai/optimize-strategy-goal`   | Optimize a strategy goal             |
+| POST   | `/api/v1/ai/command`                  | Parse a natural-language command into typed actions |
+| GET    | `/api/v1/ai/command/directory`        | Get person directory for command micro-context |
+
+> Person-scoped AI endpoints (1:1 prep, performance narrative, trend radar, outcome extraction) are listed in the **Person Directory** table above.
 
 ---
 
@@ -637,6 +692,21 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250510120010` | Add soft-delete support to persons table (deleted_at column + indexes) |
 | `V20250511120000` | Create audit_log table with indexes |
 | `V20250511120001` | Cascade person delete to child tables (action_items, pdp_goals, kudos, quick_notes) |
+| `V20250511120002` | Create workspaces table |
+| `V20250515120000` | Add self_assigned flag to quick_notes |
+| `V20250517120000` | Add AI settings to user_settings |
+| `V20250517130000` | Add AI writing style to user_settings |
+| `V20250518120000` | Add custom AI prompts to user_settings |
+| `V20250518130000` | Add outcome extractor prompt to user_settings |
+| `V20250519120000` | Add trend radar prompt to user_settings |
+| `V20250524120000` | Create strategy_goals table |
+| `V20250524120001` | Create strategy_goal_pdp_goal_links table |
+| `V20250524120002` | Add GIN index for strategy_goals full-text search |
+| `V20250525100000` | Add link suggestions prompt to user_settings |
+| `V20250525120000` | Add strategy optimization prompt to user_settings |
+| `V20250602120000` | Add sticky-note fields to pinned_remember_items |
+| `V20250606120000` | Add snoozed_until to action_items |
+| `V20250607120000` | Add AI auto-execute flag and command terminal prompt to user_settings |
 
 New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
 
@@ -788,8 +858,8 @@ See [Next.js Telemetry](https://nextjs.org/telemetry) for details on what would 
 4. Every change must include tests — no exceptions
 5. All data queries must be scoped by `userId` (security invariant)
 6. Architecture boundaries are enforced by ArchUnit tests — the build will fail if violated
-5. Update `README.md` and `PROGRESS.md` with every change
-6. Use conventional commits (see `AGENTS.md` §4.3)
+7. Update `README.md` and `PROGRESS.md` with every change
+8. Use conventional commits (see `AGENTS.md` §4.3)
 
 ---
 
