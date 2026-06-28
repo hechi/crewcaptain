@@ -14,6 +14,7 @@ import { OneOnOneSeries } from '@/types/one-on-one';
 import { UserSettings } from '@/types/settings';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
+import OneOnOnePrepNotes from '@/components/one-on-one/OneOnOnePrepNotes';
 import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
 import LoadingScreen from '@/components/LoadingScreen';
 import { Sparkles } from 'lucide-react';
@@ -224,6 +225,15 @@ export default function CreateOneOnOneEntryPage() {
           const token = getToken();
           return token ? (
             <OneOnOneActionItems
+              token={token}
+              personId={personId}
+            />
+          ) : null;
+        })()}
+        prepNotesSlot={(() => {
+          const token = getToken();
+          return token ? (
+            <OneOnOnePrepNotes
               token={token}
               personId={personId}
             />

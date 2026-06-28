@@ -16,6 +16,7 @@ import { OneOnOneEntry } from '@/types/one-on-one';
 import { UserSettings } from '@/types/settings';
 import OneOnOneEntryForm, { OneOnOneEntryFormData } from '@/components/one-on-one/OneOnOneEntryForm';
 import OneOnOneActionItems from '@/components/one-on-one/OneOnOneActionItems';
+import OneOnOnePrepNotes from '@/components/one-on-one/OneOnOnePrepNotes';
 import AiPrepAssistant from '@/components/one-on-one/AiPrepAssistant';
 import OutcomeExtractionModal from '@/components/one-on-one/OutcomeExtractionModal';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -365,6 +366,16 @@ export default function OneOnOneEntryDetailPage() {
           const formToken = getToken();
           return formToken ? (
             <OneOnOneActionItems
+              token={formToken}
+              personId={personId}
+              entryId={entryId}
+            />
+          ) : null;
+        })()}
+        prepNotesSlot={(() => {
+          const formToken = getToken();
+          return formToken ? (
+            <OneOnOnePrepNotes
               token={formToken}
               personId={personId}
               entryId={entryId}

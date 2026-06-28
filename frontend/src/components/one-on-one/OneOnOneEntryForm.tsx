@@ -19,6 +19,8 @@ interface OneOnOneEntryFormProps {
   isSubmitting?: boolean;
   /** Optional slot rendered between agenda items and notes (e.g., inline action items) */
   actionItemsSlot?: React.ReactNode;
+  /** Optional slot rendered before agenda items (e.g., prep notes from quick notes inbox) */
+  prepNotesSlot?: React.ReactNode;
   /** Externally added agenda item text — appended to the list when it changes */
   externalAgendaItem?: string | null;
 }
@@ -43,6 +45,7 @@ export default function OneOnOneEntryForm({
   onCancel,
   isSubmitting = false,
   actionItemsSlot,
+  prepNotesSlot,
   externalAgendaItem,
 }: OneOnOneEntryFormProps) {
   const isEditMode = !!entry;
@@ -176,6 +179,9 @@ export default function OneOnOneEntryForm({
           </p>
         )}
       </div>
+
+      {/* Prep Notes Slot (injected by parent page — shows collected quick notes) */}
+      {prepNotesSlot}
 
       {/* Agenda Items */}
       <AgendaItemList items={agendaItems} onChange={setAgendaItems} />
