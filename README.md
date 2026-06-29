@@ -76,7 +76,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 - **Docker** 24+ and **Docker Compose** v2+
 - **Java 21** (for local backend development)
 - **Node.js 20+** and **npm** (for local frontend development)
-- **authentik** instance (or any OIDC provider) for authentication
+- **authentik** instance (or any OIDC provider) for authentication — or use the bundled local authentik via the dev-auth overlay (see [Local OAuth (Authentik)](#local-oauth-authentik))
 
 ---
 
@@ -120,6 +120,33 @@ docker compose up --build
 ```
 
 The override exposes the database port (5432), mounts source volumes for hot-reload, and sets development environment variables.
+
+### Local OAuth (Authentik)
+
+CrewCaptain authenticates via OIDC, so trying it out normally requires an external identity provider. For development and evaluation, the `docker-compose.dev-auth.yml` overlay runs a **self-contained [authentik](https://goauthentik.io/) instance that is preconfigured with a demo user and a ready-to-use OIDC application** — no clicking through setup wizards.
+
+> ⚠️ **Development only.** This overlay ships well-known, committed credentials (`demo` / `demo12345`) via a blueprint. Never enable it in production — use your own real authentik (or any OIDC provider) there.
+
+**One-time setup** — add this line to your `/etc/hosts` so the browser and the containers resolve authentik at the same hostname (this is what keeps the OIDC token issuer consistent):
+
+```text
+127.0.0.1 authentik
+```
+
+**Start the stack with the overlay:**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev-auth.yml up
+```
+
+First boot takes ~30–60s while authentik migrates its database and applies the bootstrap blueprint. Then:
+
+- **App:** http://localhost:3000 — sign in with **`demo` / `demo12345`**
+- **authentik admin:** http://authentik:9000/if/admin/ — sign in with **`akadmin` / `admin12345`**
+
+The demo OIDC application (`client_id: crewcaptain`), the demo user, and the provider are all created automatically by `authentik/blueprints/crewcaptain-dev.yaml`. Default secrets can be overridden via the `AUTHENTIK_*` variables documented in `.env.example`.
+
+> **Note:** The frontend container sets `AUTH_TRUST_HOST=true` (in `docker-compose.yml`). Auth.js v5 requires this when running self-hosted behind Docker/a proxy; without it you'll see `UntrustedHost: Host must be trusted`. If you change compose env, recreate the container with `docker compose ... up -d --force-recreate frontend` so it's picked up.
 
 ### Local Development
 

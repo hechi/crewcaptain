@@ -1,0 +1,84 @@
+# CrewCaptain local development bootstrap blueprint.
+#
+# Mounted into the authentik worker at /blueprints/custom and applied
+# automatically on startup. It declaratively creates everything needed to log
+# in to CrewCaptain locally with zero manual clicking:
+#   - a demo manager user (username: demo / password: demo12345)
+#   - a confidential OAuth2/OIDC provider (client_id: crewcaptain)
+#   - an application with slug "crewcaptain" so the issuer becomes
+#     http://authentik:9000/application/o/crewcaptain/
+#
+# ⚠️  DEV ONLY. These are well-known, committed credentials. Never apply this
+#     blueprint to a production authentik instance.
+#
+# Schema: https://goauthentik.io/blueprints/schema.json
+version: 1
+metadata:
+  name: crewcaptain-dev-bootstrap
+  labels:
+    blueprints.goauthentik.io/description: CrewCaptain local dev login (demo user + OIDC app)
+
+context:
+  # Must match OIDC_CLIENT_ID / OIDC_CLIENT_SECRET in docker-compose.dev-auth.yml
+  client_id: crewcaptain
+  client_secret: crewcaptain-dev-secret
+  # Auth.js callback for the "oidc" provider id (see frontend/src/auth.ts)
+  redirect_uri: http://localhost:3000/api/auth/callback/oidc
+
+entries:
+  # --- Demo manager user --------------------------------------------------
+  - model: authentik_core.user
+    state: present
+    identifiers:
+      username: demo
+    attrs:
+      name: Demo Manager
+      email: demo@crewcaptain.local
+      # Blueprints may set a user's password directly (unlike the public API).
+      password: demo12345
+      is_active: true
+      path: users
+      type: internal
+
+  # --- OAuth2 / OIDC provider --------------------------------------------
+  - model: authentik_providers_oauth2.oauth2provider
+    state: present
+    id: crewcaptain-provider
+    identifiers:
+      name: crewcaptain
+    attrs:
+      client_type: confidential
+      client_id: !Context client_id
+      client_secret: !Context client_secret
+      sub_mode: hashed_user_id
+      include_claims_in_id_token: true
+      authorization_flow:
+        !Find [
+          authentik_flows.flow,
+          [slug, default-provider-authorization-implicit-consent],
+        ]
+      invalidation_flow:
+        !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key:
+        !Find [
+          authentik_crypto.certificatekeypair,
+          [name, authentik Self-signed Certificate],
+        ]
+      redirect_uris:
+        - matching_mode: strict
+          url: !Context redirect_uri
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+
+  # --- Application (slug drives the OIDC issuer path) --------------------
+  - model: authentik_core.application
+    state: present
+    identifiers:
+      slug: crewcaptain
+    attrs:
+      name: CrewCaptain
+      provider: !KeyOf crewcaptain-provider
+      meta_launch_url: http://localhost:3000
+      meta_description: CrewCaptain local development instance

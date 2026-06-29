@@ -1,0 +1,108 @@
+# Local OAuth provider overlay — a self-contained authentik instance for
+# development and for trying out CrewCaptain without an external IdP.
+#
+# ⚠️  DEV ONLY. Ships a preconfigured demo user and well-known secrets via the
+#     blueprint in ./authentik/blueprints. Never use this overlay in production.
+#
+# Usage:
+#   1. One-time: add this line to /etc/hosts so the browser and the containers
+#      resolve authentik at the SAME hostname (avoids OIDC issuer mismatch):
+#         127.0.0.1 authentik
+#   2. Start the stack with both compose files:
+#         docker compose -f docker-compose.yml -f docker-compose.dev-auth.yml up
+#   3. Log in at http://localhost:3000 with demo / demo12345
+#      authentik admin UI: http://authentik:9000/if/admin/ (akadmin / admin12345)
+#
+# The demo OIDC app is provisioned automatically by the blueprint; no clicks
+# required. First boot takes ~30-60s while authentik migrates and applies it.
+
+services:
+  authentik-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: authentik
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: ${AUTHENTIK_DB_PASSWORD:-authentik-dev}
+    volumes:
+      - authentik-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authentik"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  authentik-redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  authentik:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8}
+    command: server
+    networks:
+      default:
+        aliases:
+          - authentik
+    environment:
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-dev-only-insecure-authentik-secret-key-change-me}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD:-authentik-dev}
+      # Bootstrap the built-in admin so you can reach the admin UI.
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD:-admin12345}
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    volumes:
+      - ./authentik/blueprints:/blueprints/custom:ro
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8}
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-dev-only-insecure-authentik-secret-key-change-me}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD:-authentik-dev}
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD:-admin12345}
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    volumes:
+      - ./authentik/blueprints:/blueprints/custom:ro
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+
+  # Point CrewCaptain at the local authentik instance. The issuer host
+  # (authentik:9000) is identical inside the docker network and from the
+  # browser (via the /etc/hosts entry), so the token "iss" claim always matches.
+  api:
+    environment:
+      OIDC_ISSUER_URI: http://authentik:9000/application/o/crewcaptain/
+      OIDC_JWKS_URI: http://authentik:9000/application/o/crewcaptain/jwks/
+
+  frontend:
+    environment:
+      OIDC_ISSUER: http://authentik:9000/application/o/crewcaptain/
+      OIDC_CLIENT_ID: crewcaptain
+      OIDC_CLIENT_SECRET: crewcaptain-dev-secret
+      NEXTAUTH_URL: http://localhost:3000
+
+volumes:
+  authentik-pgdata:

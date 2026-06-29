@@ -44,10 +44,17 @@ services:
     environment:
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-in-production}
+      # Auth.js v5 refuses to infer the host from request headers in production
+      # unless the host is explicitly trusted. Required for self-hosted/Docker.
+      AUTH_TRUST_HOST: "true"
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-crewcaptain}
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-changeme}
       OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:9000/application/o/crewcaptain/}
-      API_BASE_URL: ${API_BASE_URL:-http://api:8080}
+      # In-network address of the api service. This proxy hop is always
+      # container-to-container, so it must use the compose service name — never
+      # the host's localhost (which would resolve to the frontend itself).
+      # For running the frontend OUTSIDE docker, see API_BASE_URL in .env.example.
+      API_BASE_URL: http://api:8080
     depends_on:
       api:
         condition: service_healthy
