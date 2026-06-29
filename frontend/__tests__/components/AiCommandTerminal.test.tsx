@@ -64,6 +64,8 @@ const aiEnabledSettings = {
   linkSuggestionsPrompt: null,
   triageHintPrompt: null,
   commandTerminalPrompt: null,
+  aiConfigSource: 'USER_SETTINGS' as const,
+  aiAvailable: true,
 };
 
 describe('AiCommandTerminal', () => {
@@ -95,11 +97,25 @@ describe('AiCommandTerminal', () => {
   });
 
   it('should not render when AI is disabled', async () => {
-    mockGetUserSettings.mockResolvedValue({ ...aiEnabledSettings, aiEnabled: false });
+    mockGetUserSettings.mockResolvedValue({ ...aiEnabledSettings, aiEnabled: false, aiAvailable: false, aiConfigSource: null });
 
     const { container } = render(<AiCommandTerminal />);
     await waitFor(() => {
       expect(screen.queryByTestId('ai-terminal-fab')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should render FAB when AI is available via admin defaults (aiEnabled false)', async () => {
+    mockGetUserSettings.mockResolvedValue({
+      ...aiEnabledSettings,
+      aiEnabled: false,
+      aiAvailable: true,
+      aiConfigSource: 'ADMIN_DEFAULTS' as const,
+    });
+
+    render(<AiCommandTerminal />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-terminal-fab')).toBeInTheDocument();
     });
   });
 

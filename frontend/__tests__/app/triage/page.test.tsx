@@ -46,7 +46,7 @@ jest.mock('@/lib/api-client', () => ({
 describe('TriagePage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetUserSettings.mockResolvedValue({ aiEnabled: false });
+    mockGetUserSettings.mockResolvedValue({ aiEnabled: false, aiAvailable: false });
   });
 
   it('renders loading state initially', () => {
@@ -190,7 +190,31 @@ describe('TriagePage', () => {
   });
 
   it('shows AI hint button when AI is enabled and item is not sensitive', async () => {
-    mockGetUserSettings.mockResolvedValue({ aiEnabled: true });
+    mockGetUserSettings.mockResolvedValue({ aiEnabled: true, aiAvailable: true });
+    mockGetTriageQueue.mockResolvedValue({
+      items: [
+        {
+          id: 'ai-1', type: 'ACTION_ITEM_OVERDUE', criticality: 'OVERDUE',
+          title: 'Task', personId: 'p1', personName: 'Alice',
+          workspaceId: null, workspaceName: null, sensitive: false,
+          dueDate: null, daysOverdue: 1, daysUntilDue: null,
+          ownerType: 'MANAGER', sourceActionItemId: 'action-1', snoozedUntil: null,
+          createdAt: '2026-05-01T00:00:00Z',
+        },
+      ],
+      totalCount: 1,
+    });
+    await act(async () => { render(<TriagePage />); });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('triage-hint-btn')).toBeInTheDocument();
+    });
+  });
+
+  it('shows AI hint button when AI is available via admin defaults (aiEnabled false)', async () => {
+    // Admin provided team-wide defaults: user has not enabled their own AI,
+    // but AI is effectively available. Features must still be visible.
+    mockGetUserSettings.mockResolvedValue({ aiEnabled: false, aiAvailable: true });
     mockGetTriageQueue.mockResolvedValue({
       items: [
         {
@@ -212,7 +236,7 @@ describe('TriagePage', () => {
   });
 
   it('does not show AI hint button when item is sensitive', async () => {
-    mockGetUserSettings.mockResolvedValue({ aiEnabled: true });
+    mockGetUserSettings.mockResolvedValue({ aiEnabled: true, aiAvailable: true });
     mockGetTriageQueue.mockResolvedValue({
       items: [
         {
@@ -235,7 +259,7 @@ describe('TriagePage', () => {
   });
 
   it('does not show AI hint button when AI is disabled', async () => {
-    mockGetUserSettings.mockResolvedValue({ aiEnabled: false });
+    mockGetUserSettings.mockResolvedValue({ aiEnabled: false, aiAvailable: false });
     mockGetTriageQueue.mockResolvedValue({
       items: [
         {
@@ -258,7 +282,7 @@ describe('TriagePage', () => {
   });
 
   it('shows hint pill after clicking hint button', async () => {
-    mockGetUserSettings.mockResolvedValue({ aiEnabled: true });
+    mockGetUserSettings.mockResolvedValue({ aiEnabled: true, aiAvailable: true });
     mockGetTriageHint.mockResolvedValue({ hint: 'Set due to Friday', error: null });
     mockGetTriageQueue.mockResolvedValue({
       items: [

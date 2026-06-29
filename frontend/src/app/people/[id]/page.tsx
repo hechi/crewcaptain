@@ -763,7 +763,7 @@ export default function PersonDetailPage() {
             >
               <FileText size={16} />
             </button>
-            {userSettings?.aiEnabled && (
+            {userSettings?.aiAvailable && (
               <button
                 type="button"
                 onClick={() => {
@@ -922,7 +922,7 @@ export default function PersonDetailPage() {
         >
           Kudos
         </button>
-        {userSettings?.aiEnabled && (
+        {userSettings?.aiAvailable && (
           <button
             type="button"
             role="tab"
@@ -1358,7 +1358,7 @@ export default function PersonDetailPage() {
               onDeleteGoal={handleDeletePdpGoal}
               statusFilter={pdpGoalsStatusFilter}
               onStatusFilterChange={setPdpGoalsStatusFilter}
-              aiEnabled={userSettings?.aiEnabled ?? false}
+              aiEnabled={userSettings?.aiAvailable ?? false}
             />
           )}
         </div>
@@ -1377,14 +1377,14 @@ export default function PersonDetailPage() {
               onCreateKudos={handleCreateKudos}
               onDeleteKudos={handleDeleteKudos}
               isSubmitting={kudosSubmitting}
-              aiEnabled={userSettings?.aiEnabled ?? false}
+              aiEnabled={userSettings?.aiAvailable ?? false}
             />
           )}
         </div>
       )}
 
       {/* Insights Tab Panel */}
-      {activeTab === 'insights' && userSettings?.aiEnabled && (
+      {activeTab === 'insights' && userSettings?.aiAvailable && (
         <div id="tab-panel-insights" role="tabpanel" aria-labelledby="tab-insights">
           <TrendRadarInsights
             token={getToken() || ''}

@@ -40,7 +40,7 @@ export default function TriagePage() {
         getUserSettings(token),
       ]);
       setItems(result.items);
-      setAiEnabled(settings.aiEnabled);
+      setAiEnabled(settings.aiAvailable);
       setSelectedIndex(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load triage queue');

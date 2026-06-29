@@ -67,7 +67,7 @@ export default function AiCommandTerminal() {
   }, [isOpen, getToken]);
 
   const open = useCallback(() => {
-    if (!isAuthenticated || !settings?.aiEnabled) return;
+    if (!isAuthenticated || !settings?.aiAvailable) return;
     setIsOpen(true);
     setInput('');
   }, [isAuthenticated, settings]);
@@ -306,8 +306,8 @@ export default function AiCommandTerminal() {
     }
   };
 
-  // Don't render if not authenticated or AI not enabled
-  if (!isAuthenticated || !settingsLoaded || !settings?.aiEnabled) return null;
+  // Don't render if not authenticated or AI not available
+  if (!isAuthenticated || !settingsLoaded || !settings?.aiAvailable) return null;
 
   return (
     <>

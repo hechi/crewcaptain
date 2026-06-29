@@ -162,8 +162,8 @@ export default function CreateOneOnOneEntryPage() {
         </div>
       )}
 
-      {/* AI Prep Assistant — only shown when AI is enabled in settings */}
-      {settings?.aiEnabled && (() => {
+      {/* AI Prep Assistant — only shown when AI is available (user config or admin defaults) */}
+      {settings?.aiAvailable && (() => {
         const token = getToken();
         return token ? (
           <AiPrepAssistant
@@ -175,7 +175,7 @@ export default function CreateOneOnOneEntryPage() {
       })()}
 
       {/* Extract Outcomes button — disabled on create page (entry not yet saved) */}
-      {settings?.aiEnabled && (
+      {settings?.aiAvailable && (
         <div style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
           <span
             data-testid="extract-outcomes-hint"

@@ -489,8 +489,8 @@ export default function StrategyPage() {
         </div>
       )}
 
-      {/* AI Suggestions Panel - only show when AI is enabled */}
-      {userSettings?.aiEnabled && (
+      {/* AI Suggestions Panel - only show when AI is available (user config or admin defaults) */}
+      {userSettings?.aiAvailable && (
         <div style={{ marginBottom: 'var(--space-6)' }}>
           <AiSuggestionsPanel onSuggestionApplied={fetchData} />
         </div>
@@ -575,7 +575,7 @@ export default function StrategyPage() {
           onSubmit={handleCreateGoal}
           onCancel={() => setIsCreateModalOpen(false)}
           submitLabel="Create Strategy Goal"
-          aiEnabled={userSettings?.aiEnabled}
+          aiEnabled={userSettings?.aiAvailable}
         />
       </Modal>
 
@@ -596,7 +596,7 @@ export default function StrategyPage() {
             onSubmit={handleUpdateGoal}
             onCancel={() => setEditingGoal(null)}
             submitLabel="Save Changes"
-            aiEnabled={userSettings?.aiEnabled}
+            aiEnabled={userSettings?.aiAvailable}
           />
         )}
       </Modal>

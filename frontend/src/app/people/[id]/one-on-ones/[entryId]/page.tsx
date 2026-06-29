@@ -168,7 +168,7 @@ export default function OneOnOneEntryDetailPage() {
     day: 'numeric',
   });
 
-  const showAiAssistant = settings?.aiEnabled === true;
+  const showAiAssistant = settings?.aiAvailable === true;
   const notesHaveContent = entry.notesMarkdown != null && entry.notesMarkdown.trim().length > 0;
   const blockedByPrivacy = entry.sensitive && settings?.aiPrivacyMode;
   const extractEnabled = notesHaveContent && !blockedByPrivacy;
