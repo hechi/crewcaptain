@@ -148,6 +148,36 @@ The demo OIDC application (`client_id: crewcaptain`), the demo user, and the pro
 
 > **Note:** The frontend container sets `AUTH_TRUST_HOST=true` (in `docker-compose.yml`). Auth.js v5 requires this when running self-hosted behind Docker/a proxy; without it you'll see `UntrustedHost: Host must be trusted`. If you change compose env, recreate the container with `docker compose ... up -d --force-recreate frontend` so it's picked up.
 
+### Local AI (Ollama)
+
+CrewCaptain's AI features (1:1 prep suggestions, summaries, performance narratives, etc.) talk to any OpenAI-compatible endpoint. For development and evaluation, the `docker-compose.ai.yml` overlay runs a **self-contained [Ollama](https://ollama.com/) instance that automatically pulls a small model on first start** and wires it in as the team-wide AI default — so the AI features work out of the box with no external API key.
+
+By default it pulls **`qwen2.5:1.5b`** (~1 GB), a small instruction-following model that's enough to demonstrate summaries and suggestions and runs on CPU. It's a demo-grade model — fine for kicking the tyres, not for production-quality output.
+
+**Start the stack with the overlay:**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.ai.yml up
+```
+
+Or bring up local auth **and** local AI together:
+
+```bash
+docker compose -f docker-compose.yml \
+               -f docker-compose.dev-auth.yml \
+               -f docker-compose.ai.yml up
+```
+
+On first start the `ollama-init` helper downloads the model (~1 GB, one-time — stored in the `ollama-models` volume). AI calls fail gracefully until the pull finishes, so nothing crashes while it downloads. Once ready, AI features light up automatically for all users (via `AI_DEFAULT_*`); users can still override with their own provider in Settings.
+
+**Tuning:**
+
+- **Smaller/faster model:** `OLLAMA_MODEL=gemma3:1b docker compose -f docker-compose.yml -f docker-compose.ai.yml up`
+- **GPU acceleration:** uncomment the `deploy.resources` block in `docker-compose.ai.yml` (requires the NVIDIA Container Toolkit).
+- **Image tag:** override with `OLLAMA_TAG`.
+
+> ⚠️ This overlay is for development/evaluation. CPU inference on a tiny model is slow and low-quality compared to a hosted model; for real deployments, point `AI_DEFAULT_*` (or per-user Settings) at a production-grade LLM endpoint.
+
 ### Local Development
 
 CrewCaptain uses `dev.sh` as the primary local development runner:
