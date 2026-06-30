@@ -4,6 +4,14 @@
 
 A self-hosted, privacy-first manager workspace for organizing people context, 1:1 history, development goals, action items, and kudos. CrewCaptain is not HR software — it's a private cockpit for people-centric leadership.
 
+> **Heads up — please read before relying on this.**
+> CrewCaptain was built with the help of AI (Kiro) and is maintained by a
+> **single developer in their spare time**. I have every intention of fixing
+> bugs and addressing issues, but my free time is limited, so there are no
+> guarantees on response or fix timelines. Treat this as a best-effort,
+> as-is open-source project (see [LICENSE](LICENSE) — no warranty) and review
+> the code yourself before depending on it for anything important.
+
 ---
 
 ## Features
@@ -82,13 +90,44 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 
 ## Quick Start
 
+### Try it in one command (all-in-one demo)
+
+Just want to kick the tyres? `docker-compose.full-demo.yml` is a **single,
+self-contained file** that runs the entire stack — CrewCaptain, PostgreSQL, a
+preconfigured authentik (login), and a local Ollama (AI) — with baked-in demo
+defaults. No repo checkout, no `.env`, no identity provider setup.
+
+You only need this one file. Download it, then:
+
+```bash
+# 1. One-time: add this to your hosts file so the browser and containers
+#    resolve authentik at the same hostname (keeps the OIDC issuer consistent).
+#    Linux/macOS: /etc/hosts   —   Windows: C:\Windows\System32\drivers\etc\hosts
+echo "127.0.0.1 authentik" | sudo tee -a /etc/hosts
+
+# 2. Start everything (first boot pulls images + a ~1 GB AI model)
+docker compose -f docker-compose.full-demo.yml up
+
+# 3. Open http://localhost:3000 and sign in with:
+#       username: demo
+#       password: demo12345
+```
+
+First boot takes a minute or two while authentik migrates its database and
+Ollama downloads the model; the app stays up while that happens, and AI/login
+light up once they finish.
+
+> ⚠️ **Demo only.** This file ships well-known, committed secrets so it works
+> out of the box. Never expose it to the internet or use it in production — use
+> `docker-compose.yml` with your own secrets and a real OIDC provider instead.
+
 ### Using Docker Compose (Production)
 
 The production `docker-compose.yml` pulls pre-built images from the container registry:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/crewcaptain.git
+git clone https://github.com/hechi/crewcaptain.git   # or: git@github.com:hechi/crewcaptain.git
 cd crewcaptain
 
 # 2. Configure environment variables
@@ -104,8 +143,10 @@ docker compose up -d
 ```
 
 **Images:**
-- `reg.root-base.de/poxy/crewcaptain/api:latest`
-- `reg.root-base.de/poxy/crewcaptain/frontend:latest`
+- `ghcr.io/hechi/crewcaptain/api:latest`
+- `ghcr.io/hechi/crewcaptain/frontend:latest`
+
+These public images are built and published by the GitHub Actions pipeline on every push to `main`.
 
 ### Using Docker Compose (Local Development)
 
@@ -862,28 +903,35 @@ psql -h localhost -U crewcaptain -d crewcaptain < backup_20250508.sql
 
 ---
 
-## CI/CD (GitLab)
+## CI/CD
 
-The project includes a `.gitlab-ci.yml` pipeline for the GitLab instance at `git.root-base.de`.
+The project ships pipelines for both hosting setups, so the same checks run wherever the code lives:
+
+- **GitLab** — `.gitlab-ci.yml` (used by the maintainer's self-hosted GitLab instance).
+- **GitHub** — `.github/workflows/ci.yml` (GitHub Actions).
+
+Both run the identical logical stages.
 
 ### Pipeline Stages
 
 | Stage | Trigger | Jobs |
 |-------|---------|------|
-| **test** | All branches | `test-api` (Gradle + Testcontainers), `test-frontend` (Jest) |
+| **test** | All branches / PRs | `test-api` (Gradle + Testcontainers), `test-frontend` (Jest) |
 | **build** | `main` only | `build-api` (Docker image), `build-frontend` (Docker image) |
 
 ### Container Registry
 
-Docker images are published to the GitLab Container Registry on every push to `main`:
+Docker images are published on every push to `main`:
 
-- `<registry>/api:latest` and `<registry>/api:<commit-sha>`
-- `<registry>/frontend:latest` and `<registry>/frontend:<commit-sha>`
+- GitLab CI → the GitLab Container Registry (`<registry>/api` and `<registry>/frontend`).
+- GitHub Actions → the GitHub Container Registry (`ghcr.io/<owner>/<repo>/api` and `.../frontend`).
+
+Both tag images with `latest` and the commit SHA.
 
 ### Runner Requirements
 
-- GitLab runners must support Docker-in-Docker (`docker:27-dind` service)
-- Docker-in-Docker is used for both Testcontainers (backend tests) and image builds
+- **GitLab**: runners must support Docker-in-Docker (`docker:24-dind` service), used for both Testcontainers (backend tests) and image builds.
+- **GitHub**: the default `ubuntu-latest` runners ship with Docker preinstalled, so Testcontainers and image builds work with no extra services.
 
 ---
 

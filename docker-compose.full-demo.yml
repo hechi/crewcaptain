@@ -1,0 +1,294 @@
+# ============================================================================
+# CrewCaptain — ALL-IN-ONE DEMO STACK
+# ============================================================================
+# A single, self-contained Docker Compose file that runs the *entire*
+# CrewCaptain experience with zero repo checkout and zero configuration:
+#
+#   * CrewCaptain API + frontend (public images from GHCR)
+#   * PostgreSQL database
+#   * authentik (OIDC login) — preconfigured with a demo user, no clicking
+#   * Ollama (local AI) — auto-pulls a small model so the AI features work
+#
+# It bakes in safe demo defaults (including the authentik bootstrap blueprint,
+# inlined as a Compose config), so you don't need the rest of the repository or
+# an .env file. Just grab THIS ONE FILE and run it.
+#
+# ----------------------------------------------------------------------------
+# HOW TO RUN
+# ----------------------------------------------------------------------------
+# 1. One-time: add this line to your hosts file so your browser and the
+#    containers resolve authentik at the SAME hostname (this keeps the OIDC
+#    token issuer consistent — without it, login fails):
+#
+#        127.0.0.1 authentik
+#
+#    Linux/macOS:  /etc/hosts        Windows:  C:\Windows\System32\drivers\etc\hosts
+#
+# 2. Start everything:
+#
+#        docker compose -f docker-compose.full-demo.yml up
+#
+#    First boot takes ~1-2 min while authentik migrates its DB and Ollama pulls
+#    the model (~1 GB, one-time). The app stays up the whole time; AI and login
+#    light up once those finish.
+#
+# 3. Open http://localhost:3000 and sign in with:
+#
+#        username:  demo
+#        password:  demo12345
+#
+#    authentik admin UI (optional): http://authentik:9000/if/admin/
+#        username:  akadmin
+#        password:  admin12345
+#
+# ----------------------------------------------------------------------------
+# ⚠️  DEMO / EVALUATION ONLY — NOT FOR PRODUCTION
+# ----------------------------------------------------------------------------
+# This file ships well-known, committed secrets (demo login, encryption key,
+# session secret, OIDC client secret) purely so the demo works out of the box.
+# Never expose this stack to the internet or use these values in production.
+# For a real deployment, use docker-compose.yml with your own secrets and a
+# real identity provider — see the README.
+# ============================================================================
+
+services:
+  # --- CrewCaptain database --------------------------------------------------
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: crewcaptain
+      POSTGRES_USER: crewcaptain
+      POSTGRES_PASSWORD: crewcaptain-demo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crewcaptain"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --- CrewCaptain API -------------------------------------------------------
+  api:
+    image: ghcr.io/hechi/crewcaptain/api:latest
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/crewcaptain
+      DB_USER: crewcaptain
+      DB_PASSWORD: crewcaptain-demo
+      # Point at the bundled authentik. Same host inside the network and from
+      # the browser (via the /etc/hosts entry), so the token issuer matches.
+      OIDC_ISSUER_URI: http://authentik:9000/application/o/crewcaptain/
+      OIDC_JWKS_URI: http://authentik:9000/application/o/crewcaptain/jwks/
+      # Demo encryption key (32-byte base64) so sensitive-field encryption is
+      # exercised. Throwaway value — generate your own with: openssl rand -base64 32
+      ENCRYPTION_KEY: "Dm07fBYKL0aqgORGWukCjiK4EpiQguPfLySVgvTbffg="
+      # Team-wide AI defaults pointed at the bundled Ollama instance.
+      AI_DEFAULT_BASE_URL: http://ollama:11434/v1
+      AI_DEFAULT_API_KEY: ""
+      AI_DEFAULT_MODEL: qwen2.5:1.5b
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- CrewCaptain frontend --------------------------------------------------
+  frontend:
+    image: ghcr.io/hechi/crewcaptain/frontend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      NEXTAUTH_URL: http://localhost:3000
+      # Demo session secret — throwaway. Generate your own: openssl rand -base64 32
+      NEXTAUTH_SECRET: "+xUSO9/pYlyfts+9CTghVCO6TU4O3TXXRn74nX+95cE="
+      AUTH_TRUST_HOST: "true"
+      OIDC_CLIENT_ID: crewcaptain
+      OIDC_CLIENT_SECRET: crewcaptain-dev-secret
+      OIDC_ISSUER: http://authentik:9000/application/o/crewcaptain/
+      API_BASE_URL: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # --- authentik (OIDC provider) backing services ---------------------------
+  authentik-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: authentik
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: authentik-demo
+    volumes:
+      - authentik-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authentik"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  authentik-redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --- authentik server + worker --------------------------------------------
+  # The worker applies the inlined bootstrap blueprint (config below) on first
+  # start, creating the demo user, the OIDC provider, and the "crewcaptain"
+  # application — no manual setup wizard.
+  authentik:
+    image: ghcr.io/goauthentik/server:2025.8
+    command: server
+    networks:
+      default:
+        aliases:
+          - authentik
+    environment:
+      AUTHENTIK_SECRET_KEY: demo-only-insecure-authentik-secret-key
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik-demo
+      AUTHENTIK_BOOTSTRAP_PASSWORD: admin12345
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    configs:
+      - source: authentik_blueprint
+        target: /blueprints/custom/crewcaptain-demo.yaml
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2025.8
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: demo-only-insecure-authentik-secret-key
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik-demo
+      AUTHENTIK_BOOTSTRAP_PASSWORD: admin12345
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    configs:
+      - source: authentik_blueprint
+        target: /blueprints/custom/crewcaptain-demo.yaml
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+
+  # --- Ollama (local AI) -----------------------------------------------------
+  ollama:
+    image: ollama/ollama:0.30.11
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # One-shot helper: waits for the server, pulls the demo model, then exits.
+  ollama-init:
+    image: ollama/ollama:0.30.11
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling qwen2.5:1.5b (one-time, ~1 GB)...";
+        ollama pull qwen2.5:1.5b;
+        echo "Model qwen2.5:1.5b ready.";
+    restart: "no"
+
+# ============================================================================
+# Inlined authentik bootstrap blueprint.
+# Mirrors authentik/blueprints/crewcaptain-dev.yaml so this file is fully
+# self-contained — no bind mount or repo checkout required.
+# ============================================================================
+configs:
+  authentik_blueprint:
+    content: |
+      version: 1
+      metadata:
+        name: crewcaptain-demo-bootstrap
+        labels:
+          blueprints.goauthentik.io/description: CrewCaptain demo login (demo user + OIDC app)
+      context:
+        client_id: crewcaptain
+        client_secret: crewcaptain-dev-secret
+        redirect_uri: http://localhost:3000/api/auth/callback/oidc
+      entries:
+        - model: authentik_core.user
+          state: present
+          identifiers:
+            username: demo
+          attrs:
+            name: Demo Manager
+            email: demo@crewcaptain.local
+            password: demo12345
+            is_active: true
+            path: users
+            type: internal
+        - model: authentik_providers_oauth2.oauth2provider
+          state: present
+          id: crewcaptain-provider
+          identifiers:
+            name: crewcaptain
+          attrs:
+            client_type: confidential
+            client_id: !Context client_id
+            client_secret: !Context client_secret
+            sub_mode: hashed_user_id
+            include_claims_in_id_token: true
+            authorization_flow:
+              !Find [
+                authentik_flows.flow,
+                [slug, default-provider-authorization-implicit-consent],
+              ]
+            invalidation_flow:
+              !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+            signing_key:
+              !Find [
+                authentik_crypto.certificatekeypair,
+                [name, authentik Self-signed Certificate],
+              ]
+            redirect_uris:
+              - matching_mode: strict
+                url: !Context redirect_uri
+            property_mappings:
+              - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
+              - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
+              - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        - model: authentik_core.application
+          state: present
+          identifiers:
+            slug: crewcaptain
+          attrs:
+            name: CrewCaptain
+            provider: !KeyOf crewcaptain-provider
+            meta_launch_url: http://localhost:3000
+            meta_description: CrewCaptain demo instance
+
+volumes:
+  pgdata:
+  authentik-pgdata:
+  ollama-models:

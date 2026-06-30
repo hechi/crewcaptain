@@ -37,4 +37,12 @@ Thumbs.db
 coverage/
 test-results/
 playwright-report/
+
+# AI agent tooling — local config, state, and caches (not part of the project)
 .omo/
+.opencode/
+.agents/
+.continue/
+.kiro/
+opencode.json
+skills-lock.json

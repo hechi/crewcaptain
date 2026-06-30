@@ -14,7 +14,7 @@ services:
       retries: 5
 
   api:
-    image: reg.root-base.de/poxy/crewcaptain/api:latest
+    image: ghcr.io/hechi/crewcaptain/api:latest
     ports:
       - "8080:8080"
     environment:
@@ -38,7 +38,7 @@ services:
       retries: 5
 
   frontend:
-    image: reg.root-base.de/poxy/crewcaptain/frontend:latest
+    image: ghcr.io/hechi/crewcaptain/frontend:latest
     ports:
       - "3000:3000"
     environment:
