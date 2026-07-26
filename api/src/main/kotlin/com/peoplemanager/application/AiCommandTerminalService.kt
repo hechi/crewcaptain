@@ -6,8 +6,8 @@ import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.UserSettings
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 

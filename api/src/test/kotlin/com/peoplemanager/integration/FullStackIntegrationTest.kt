@@ -1,6 +1,6 @@
 package com.peoplemanager.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.peoplemanager.adapters.persistence.JpaUserRepositoryAdapter
 import com.peoplemanager.domain.MoraleStatus
 import com.peoplemanager.domain.User
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.jdbc.core.JdbcTemplate
@@ -281,7 +281,7 @@ class FullStackIntegrationTest {
 
             val responseA = objectMapper.readTree(resultA.response.contentAsString)
             responseA.get("totalElements").asInt() shouldBe 2
-            val namesA = responseA.get("content").map { it.get("name").asText() }
+            val namesA = responseA.path("content").values().map { it.path("name").asText() }
             namesA.all { it.startsWith("Alice") } shouldBe true
 
             // User B sees only their persons
@@ -418,7 +418,7 @@ class FullStackIntegrationTest {
             ).andExpect(status().isOk).andReturn()
 
             val response = objectMapper.readTree(result.response.contentAsString)
-            val names = response.get("content").map { it.get("name").asText() }
+            val names = response.path("content").values().map { it.path("name").asText() }
 
             names shouldContainExactly listOf("Alice", "Bob", "Eve", "Mike", "Zara")
         }
@@ -449,7 +449,7 @@ class FullStackIntegrationTest {
 
             val response = objectMapper.readTree(result.response.contentAsString)
             response.get("totalElements").asInt() shouldBe 2
-            val names = response.get("content").map { it.get("name").asText() }
+            val names = response.path("content").values().map { it.path("name").asText() }
             names shouldContainExactly listOf("Alice", "Bob")
         }
 
@@ -472,7 +472,7 @@ class FullStackIntegrationTest {
 
             val response = objectMapper.readTree(result.response.contentAsString)
             response.get("totalElements").asInt() shouldBe 2
-            val names = response.get("content").map { it.get("name").asText() }
+            val names = response.path("content").values().map { it.path("name").asText() }
             names shouldContainExactly listOf("Alice", "Charlie")
         }
 

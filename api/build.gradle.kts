@@ -2,10 +2,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("org.springframework.boot")
-    id("io.spring.dependency-management") version "1.1.6"
-    kotlin("jvm") version "1.9.25"
-    kotlin("plugin.spring") version "1.9.25"
-    kotlin("plugin.jpa") version "1.9.25"
+    id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm") version "2.2.21"
+    kotlin("plugin.spring") version "2.2.21"
+    kotlin("plugin.jpa") version "2.2.21"
     jacoco
 }
 
@@ -29,28 +29,29 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot starters
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    // Spring Boot starters (Spring Boot 4.0: web -> webmvc, oauth2-resource-server -> security-oauth2-resource-server)
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // Metrics
     implementation("io.micrometer:micrometer-registry-prometheus")
 
-    // Database
-    implementation("org.flywaydb:flyway-core")
+    // Database (Spring Boot 4.0: Flyway auto-configuration lives in the spring-boot-flyway module)
+    implementation("org.springframework.boot:spring-boot-flyway")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
-    // Kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    // Kotlin (Jackson 3 uses the tools.jackson group in Spring Boot 4.0)
+    implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.3"))
     testImplementation("org.testcontainers:postgresql")

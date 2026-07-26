@@ -5,8 +5,8 @@ import com.peoplemanager.application.port.output.AiCompletionResult
 import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.*
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

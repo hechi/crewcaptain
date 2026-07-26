@@ -12,7 +12,7 @@ import com.peoplemanager.domain.StrategyGoalId
 import com.peoplemanager.domain.StrategyGoalStatus
 import com.peoplemanager.domain.UserId
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service

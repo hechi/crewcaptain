@@ -5,7 +5,7 @@ import com.peoplemanager.application.port.output.*
 import com.peoplemanager.application.StrategyGoalLinkService.AlignmentScore
 import com.peoplemanager.application.StrategyGoalLinkService.LinkedPdpGoalInfo
 import com.peoplemanager.domain.*
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*

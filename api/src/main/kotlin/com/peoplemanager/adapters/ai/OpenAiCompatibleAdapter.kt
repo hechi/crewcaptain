@@ -3,7 +3,7 @@ package com.peoplemanager.adapters.ai
 import com.peoplemanager.application.port.output.AiClientPort
 import com.peoplemanager.application.port.output.AiCompletionResult
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.net.URI

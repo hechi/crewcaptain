@@ -68,7 +68,7 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 
 | Layer      | Technology                                    |
 |------------|-----------------------------------------------|
-| Backend    | Kotlin + Spring Boot 3.3.13 (Hexagonal/DDD)  |
+| Backend    | Kotlin 2.2 + Spring Boot 4.0 (Hexagonal/DDD) |
 | Frontend   | Next.js 14 + React 18 + Auth.js (OIDC)       |
 | Database   | PostgreSQL 16                                 |
 | Auth       | OAuth2 / OIDC via authentik                   |

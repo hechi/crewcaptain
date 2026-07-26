@@ -1,8 +1,6 @@
 package com.peoplemanager.adapters.auth
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import tools.jackson.databind.json.JsonMapper
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
@@ -72,10 +70,7 @@ class SecurityConfig(
         return AuthenticationEntryPoint { _: HttpServletRequest, response: HttpServletResponse, authException: AuthenticationException ->
             response.status = HttpServletResponse.SC_UNAUTHORIZED
             response.contentType = MediaType.APPLICATION_JSON_VALUE
-            val objectMapper = ObjectMapper().apply {
-                registerModule(JavaTimeModule())
-                disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            }
+            val objectMapper = JsonMapper.builder().build()
             val body = mapOf(
                 "status" to 401,
                 "error" to "Unauthorized",

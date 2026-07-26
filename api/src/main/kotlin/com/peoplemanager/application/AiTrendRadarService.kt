@@ -13,7 +13,7 @@ import com.peoplemanager.domain.ActionItemStatus
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.UserSettings
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort

@@ -11,7 +11,7 @@ import com.peoplemanager.domain.OneOnOneEntryId
 import com.peoplemanager.domain.PersonId
 import com.peoplemanager.domain.UserId
 import com.peoplemanager.domain.UserSettings
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

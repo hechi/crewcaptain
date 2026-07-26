@@ -1,7 +1,7 @@
 package com.peoplemanager.adapters.web
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
+import tools.jackson.databind.cfg.EnumFeature
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration
 class JacksonConfig {
 
     @Bean
-    fun jacksonCustomizer(): Jackson2ObjectMapperBuilderCustomizer {
-        return Jackson2ObjectMapperBuilderCustomizer { builder ->
-            builder.featuresToEnable(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS)
+    fun jacksonCustomizer(): JsonMapperBuilderCustomizer {
+        return JsonMapperBuilderCustomizer { builder ->
+            builder.enable(EnumFeature.FAIL_ON_NUMBERS_FOR_ENUMS)
         }
     }
 }

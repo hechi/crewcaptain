@@ -1,6 +1,6 @@
 package com.peoplemanager.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.peoplemanager.adapters.persistence.JpaPdpGoalRepositoryAdapter
 import com.peoplemanager.adapters.persistence.JpaStrategyGoalPdpGoalLinkRepositoryAdapter
 import com.peoplemanager.adapters.persistence.JpaStrategyGoalRepositoryAdapter
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.jdbc.core.JdbcTemplate
@@ -277,7 +277,7 @@ class StrategyGoalIntegrationTest {
                 Int::class.java,
                 sg.id.value.toString()
             )
-            count shouldBeExactly 0
+            count!! shouldBeExactly 0
         }
 
         @Test
@@ -492,7 +492,7 @@ class StrategyGoalIntegrationTest {
                 Int::class.java,
                 userA.id.value.toString()
             )
-            linkCount shouldBeExactly 1
+            linkCount!! shouldBeExactly 1
 
             strategyGoalLinkService.unlinkPdpGoal(
                 UnlinkPdpGoalFromStrategyGoalCommand(userA.id, sgId, pdpId)
@@ -504,7 +504,7 @@ class StrategyGoalIntegrationTest {
                 Int::class.java,
                 userA.id.value.toString()
             )
-            unlinkCount shouldBeExactly 1
+            unlinkCount!! shouldBeExactly 1
         }
     }
 }
