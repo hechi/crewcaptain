@@ -658,6 +658,8 @@ All AI endpoints require AI to be enabled and configured (personal config or tea
 | `DB_PASSWORD`      | Database password                                | Yes      |
 | `OIDC_ISSUER_URI`  | OIDC issuer URI (authentik provider URL)         | Yes      |
 | `OIDC_JWKS_URI`    | JWKS endpoint URI                                | Yes      |
+| `APP_SECURITY_JWKS_CONNECT_TIMEOUT_MS` | JWKS fetch connect timeout in ms (default: 5000). Raise for remote/slow OIDC providers. | No |
+| `APP_SECURITY_JWKS_READ_TIMEOUT_MS` | JWKS fetch read timeout in ms (default: 10000). Spring Security 7 defaults to 500ms, which can cause "Read timed out" against remote providers. | No |
 | `ENCRYPTION_KEY`   | Base64-encoded 32-byte AES key for sensitive field encryption (generate with: `openssl rand -base64 32`) | No*      |
 | `NOTIFICATION_CRON` | Cron expression for notification scheduler (default: `0 0 * * * *` — every hour) | No |
 | `NOTIFICATION_DUE_SOON_DAYS` | Days before due date to trigger "due soon" notifications (default: 3) | No |
