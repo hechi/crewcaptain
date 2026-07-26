@@ -138,8 +138,13 @@ class AiCommandTerminalServiceTest {
 
     @Test
     fun `parseCommand should return parsed 1-1 entry on success`() {
+        // Use a date relative to today so the test stays within the service's
+        // 30-day "not a hallucination" window regardless of when it runs.
+        // (A hardcoded date would eventually drift past the window and be
+        // overridden with today, making this test time-dependent.)
+        val recentMeetingDate = java.time.LocalDate.now().minusDays(3).toString()
         val aiResponse = """
-            {"intent": "create_one_on_one_entry", "target_person_id": "${personId.value}", "content": "Discussed project timeline and blockers", "due_date": null, "meeting_date": "2026-06-06", "tags": ["project"], "sensitive": false}
+            {"intent": "create_one_on_one_entry", "target_person_id": "${personId.value}", "content": "Discussed project timeline and blockers", "due_date": null, "meeting_date": "$recentMeetingDate", "tags": ["project"], "sensitive": false}
         """.trimIndent()
 
         every { aiClientPort.chatCompletion(any(), any(), any(), any(), any()) } returns
@@ -151,7 +156,7 @@ class AiCommandTerminalServiceTest {
         result.intent shouldBe "create_one_on_one_entry"
         result.targetPersonId shouldBe personId.value.toString()
         result.content shouldBe "Discussed project timeline and blockers"
-        result.meetingDate shouldBe "2026-06-06"
+        result.meetingDate shouldBe recentMeetingDate
         result.tags shouldContainExactly listOf("project")
     }
 
