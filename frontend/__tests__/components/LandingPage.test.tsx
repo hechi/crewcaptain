@@ -57,7 +57,7 @@ describe('LandingPage', () => {
     const link = screen.getByTestId('github-link');
     expect(link).toBeInTheDocument();
     expect(link).toHaveTextContent('Deploy with Docker');
-    expect(link).toHaveAttribute('href', 'https://github.com/your-org/crewcaptain');
+    expect(link).toHaveAttribute('href', 'https://github.com/hechi/crewcaptain');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
@@ -168,6 +168,22 @@ describe('LandingPage', () => {
     expect(screen.getByText('GitHub')).toBeInTheDocument();
     expect(screen.getByText('Documentation')).toBeInTheDocument();
     expect(screen.getByText('License (AGPL-3.0)')).toBeInTheDocument();
+  });
+
+  it('should point footer links to the correct GitHub repository', () => {
+    render(<LandingPage />);
+    expect(screen.getByText('GitHub').closest('a')).toHaveAttribute(
+      'href',
+      'https://github.com/hechi/crewcaptain'
+    );
+    expect(screen.getByText('Documentation').closest('a')).toHaveAttribute(
+      'href',
+      'https://github.com/hechi/crewcaptain/blob/main/README.md'
+    );
+    expect(screen.getByText('License (AGPL-3.0)').closest('a')).toHaveAttribute(
+      'href',
+      'https://github.com/hechi/crewcaptain/blob/main/LICENSE'
+    );
   });
 
   it('should have accessible HUD visual with aria-hidden', () => {
