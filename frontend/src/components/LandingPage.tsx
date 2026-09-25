@@ -53,7 +53,7 @@ export default function LandingPage() {
               <ArrowRight size={16} aria-hidden="true" />
             </button>
             <a
-              href="https://github.com/your-org/crewcaptain"
+              href="https://github.com/hechi/crewcaptain"
               className="landing-btn landing-btn--secondary"
               data-testid="github-link"
               target="_blank"
@@ -268,21 +268,21 @@ export default function LandingPage() {
           </div>
           <div className="landing-footer__links">
             <a
-              href="https://github.com/your-org/crewcaptain"
+              href="https://github.com/hechi/crewcaptain"
               target="_blank"
               rel="noopener noreferrer"
             >
               GitHub
             </a>
             <a
-              href="https://github.com/your-org/crewcaptain/blob/main/README.md"
+              href="https://github.com/hechi/crewcaptain/blob/main/README.md"
               target="_blank"
               rel="noopener noreferrer"
             >
               Documentation
             </a>
             <a
-              href="https://github.com/your-org/crewcaptain/blob/main/LICENSE"
+              href="https://github.com/hechi/crewcaptain/blob/main/LICENSE"
               target="_blank"
               rel="noopener noreferrer"
             >
