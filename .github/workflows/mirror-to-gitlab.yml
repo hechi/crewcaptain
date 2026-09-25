@@ -1,0 +1,65 @@
+# Mirrors the GitHub repository to the private GitLab instance.
+#
+# GitHub is the primary/source-of-truth remote; GitLab (git.root-base.de) is a
+# secondary backup. This workflow keeps GitLab in sync by pushing all branches
+# and tags over SSH whenever refs are updated on GitHub.
+#
+# Required repository secrets:
+#   - GITLAB_SSH_PRIVATE_KEY : private half of the deploy key whose public half
+#                              is registered on the GitLab project with write
+#                              access enabled.
+#   - GITLAB_KNOWN_HOSTS     : output of `ssh-keyscan -p 6666 git.root-base.de`
+#                              (host-key lines only), so the push isn't prompted
+#                              to trust the host interactively.
+#
+# Only runs on pushes to this repo (never on pull_request), so the secrets are
+# never exposed to workflows triggered by forks.
+
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+
+# No write access to the GitHub repo is needed; this job only reads locally and
+# pushes outward to GitLab.
+permissions:
+  contents: read
+
+concurrency:
+  # Serialize mirror pushes so concurrent runs don't race on the remote.
+  group: mirror-to-gitlab
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Push all refs to GitLab
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          # A full clone with all refs is required to mirror branches and tags.
+          fetch-depth: 0
+
+      - name: Configure SSH for GitLab
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          install -m 600 /dev/null ~/.ssh/gitlab_deploy_key
+          printf '%s\n' "${{ secrets.GITLAB_SSH_PRIVATE_KEY }}" > ~/.ssh/gitlab_deploy_key
+          printf '%s\n' "${{ secrets.GITLAB_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Push branches and tags to GitLab
+        env:
+          GIT_SSH_COMMAND: "ssh -i ~/.ssh/gitlab_deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts -o IdentitiesOnly=yes"
+        run: |
+          git remote add gitlab ssh://git@git.root-base.de:6666/poxy/crewcaptain.git
+          # Fetch full remote-tracking refs for the branch that triggered this run.
+          git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+          # Push every local branch and tag. Not --mirror, so GitLab-only refs
+          # are preserved rather than deleted.
+          git push gitlab "+refs/remotes/origin/*:refs/heads/*"
+          git push gitlab --tags
