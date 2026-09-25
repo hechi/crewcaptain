@@ -935,6 +935,19 @@ Both tag images with `latest` and the commit SHA.
 - **GitLab**: runners must support Docker-in-Docker (`docker:24-dind` service), used for both Testcontainers (backend tests) and image builds.
 - **GitHub**: the default `ubuntu-latest` runners ship with Docker preinstalled, so Testcontainers and image builds work with no extra services.
 
+### Repository Mirroring (GitHub → GitLab)
+
+GitHub is the primary/source-of-truth remote; the self-hosted GitLab instance is kept in sync as a secondary backup. On every push of a branch or tag to GitHub, the `.github/workflows/mirror-to-gitlab.yml` workflow pushes all branches and tags to GitLab over SSH.
+
+It requires two repository secrets on GitHub (Settings → Secrets and variables → Actions):
+
+| Secret | Contents |
+|--------|----------|
+| `GITLAB_SSH_PRIVATE_KEY` | Private half of a deploy key whose public half is registered on the GitLab project with **write access enabled**. |
+| `GITLAB_KNOWN_HOSTS` | Output of `ssh-keyscan -p 6666 git.root-base.de` (host-key lines only), so the push does not stop on an interactive host-key prompt. |
+
+The workflow only runs on `push` (never on `pull_request`), so the secrets are never exposed to fork-triggered runs. Branches are pushed with a forced refspec, so GitLab tracks GitHub's history even after a rebase or force-push — GitLab is intentionally treated as a downstream mirror, not an independent source.
+
 ---
 
 ## Privacy & Telemetry
