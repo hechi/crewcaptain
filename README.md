@@ -14,83 +14,55 @@ A self-hosted, privacy-first manager workspace for organizing people context, 1:
 
 ---
 
-## Features
+## What is it?
 
-### Implemented
+CrewCaptain gives engineering managers and team leads one private place to keep
+track of the humans they work with: who they are, how they're doing, what was
+said in the last 1:1, what needs following up, and what's worth celebrating. It's
+self-hosted, so your team's data stays on your infrastructure.
 
-- **Person Directory** — Full CRUD for team members with name, preferred name, role title, timezone, start date, email, and tags
-- **Morale Tracking** — Visual morale indicators (Green/Yellow/Red/Unknown) per person with optional notes
-- **Pinned Remember Items** — Add, remove, and reorder quick-reference notes per person
-- **Sticky Notes** — Visual sticky-note cards replacing the basic pinned items list. Each note has a color (6 options: cyan, purple, green, amber, pink, slate), optional tag label, sensitive flag, and supports inline edit, drag-and-drop reorder, and delete with undo (10s toast). Person detail shows a card grid with truncation at 100 chars; People list shows up to 2 non-sensitive previews per card. Starter templates for quick capture (Family, Docs, Link, Life event, Manager). Markdown export includes sticky notes with sensitive content masked. Soft limit of 10 notes with friendly warning.
-- **Filtering & Pagination** — Filter people by tag or morale status with paginated results
-- **At-a-Glance Summary** — Person detail includes last 1:1 date, open action items count, and active PDP goals (placeholder)
-- **OIDC Authentication** — Secure login via authentik (OAuth2/OIDC) with automatic user provisioning
-- **Data Isolation** — All queries scoped by authenticated user (manager) — no cross-user data access
-- **Frontend UI** — People list, person detail, create person pages with filter bar, morale indicators, and empty states
-- **Cyberpunk-Lite Design System** — Dark-first UI with electric cyan/neon violet accents, JetBrains Mono headings, glassmorphism cards, glow effects, Inter body text, CSS custom properties design tokens, and consistent navigation
-- **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date. **Prep Notes Panel**: collapsible section on the 1:1 entry page (create + edit) that surfaces INBOX quick notes assigned to the person as "talking points to discuss." One-click "Add to Agenda" attaches the note to the 1:1 entry; "Dismiss" archives it. Hidden when empty.
-- **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components. Inline action items section on the 1:1 entry page allows quick-adding action items during a session (auto-linked to the entry), viewing existing open items for the person, and marking items done — all without leaving the 1:1 page.
-- **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
-- **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
-- **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox), assigned to a person, or self-assigned (personal notes for the manager). Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Self-assigned notes are accessible via "My Notes" in the user menu. Invariant: a note cannot be both self-assigned and assigned to a person — assigning to a person clears the self-assigned flag. Full frontend with dedicated Quick Notes page, My Notes page, status filter, and inline create form. **Quick Note Overlay** — Global floating overlay accessible from any page via `Ctrl+Shift+Q` or the floating action button (bottom-right). Cyberpunk glassmorphism design with neon glow fade-in animation, scan-line texture, and slide-up entrance. Supports `Ctrl+Enter` to save. Auto-closes after successful capture. Dismissible via Escape, backdrop click, or cancel button. Respects `prefers-reduced-motion`.
-- **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
-- **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
-- **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
-- **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with GIN indexes and relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
-- **Per-Person Markdown Export** — Export all data for a person as a structured Markdown file: profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filter. Sensitive content is marked but not exposed. Download via Export button on person detail page.
-- **Gamification & Engagement** — Dashboard gamification elements for engagement: animated progress ring for PDP goal completion percentage, 1:1 streak counter (consecutive weeks with meetings), achievement badges for milestones (first 1:1, 10 action items closed, etc.), and activity heatmap (contribution-graph style). Micro-animation on task completion (checkmark with glow burst). All animations respect `prefers-reduced-motion`.
-- **User Settings** — Per-user persistent settings page with: theme selection (dark/light), dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), notification type toggles (overdue, due-soon, stale 1:1, anniversary), and achievement visibility toggle. Settings are stored in the database and respected by the notification scheduler and dashboard.
-- **Light Theme** — Full light theme alternative to the default cyberpunk dark theme. Clean surfaces, teal/purple accents, proper contrast ratios, and subtle shadows instead of glows. Toggled via Settings page.
-- **Review Packet Generator** — Generate structured review/performance summary documents for a person over a configurable date range. Includes executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), morale status, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded. Download as Markdown via "Review Packet" button on person detail page.
-- **Bulk Import (CSV)** — Import multiple people at once from a CSV file. Supports columns: name (required), preferred_name, role_title, timezone, start_date (YYYY-MM-DD), email, tags (pipe-separated). Preview before import, per-row error reporting, max 500 rows per import. Accessible via "Import CSV" button on the People list page.
-- **Soft-Delete + Restore** — Deleting a person moves them to trash (soft-delete) instead of permanently removing them. Trash page shows all deleted people with restore and permanent delete capability. All queries automatically exclude soft-deleted records. Data isolation enforced on trash operations. Permanent delete requires confirmation and cascades to all associated data (1:1 entries, action items, PDP goals, kudos).
-- **Audit Log** — Records key actions (create, update, delete, restore) across all entities for the manager's own traceability. Paginated audit log page with entity type and action filters. All entries scoped by userId. Accessible via user menu in navigation.
-- **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (private, no sharing). A person belongs to one workspace (optional). Opt-in: if no workspaces exist, everything works as before. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and management page accessible via user menu.
-- **Landing Page** — Modern, high-converting landing page with cyberpunk-lite dark theme. Hero section with HUD visual motif, feature cards with glassmorphism, dedicated AI features section highlighting all AI capabilities (agenda generation, outcome extraction, performance narrative, kudos refinement, SMART goal check, and configurable AI settings), interactive screenshot showcase (tabbed gallery with 11 views including AI-powered features, quick capture, and settings), 3-step deployment guide, privacy/self-hosted messaging, and dual CTA sections. Fully responsive, accessible (WCAG AA), respects `prefers-reduced-motion`. Authenticated users are redirected to the dashboard.
-- **Prometheus Metrics** — Exposes application metrics at `/actuator/prometheus` for Prometheus scraping. Secured with a bearer token (`METRICS_TOKEN`). Includes JVM metrics, HTTP request metrics, HikariCP connection pool stats, and custom 1:1 metrics (total entries, entries in last 7 days). Health endpoint at `/actuator/health` remains unauthenticated for Docker healthchecks.
-- **AI-Powered 1:1 Prep Assistant** — Optional AI assistant that synthesizes person-specific context (recent 1:1 notes, open action items, active PDP goals, recent kudos) and generates 3-5 suggested agenda items for the next meeting. Configurable per-user in Settings: API Base URL (any OpenAI-compatible endpoint — Ollama, LiteLLM, OpenAI, etc.), API Key, Model Name, and Privacy Mode toggle. When Privacy Mode is ON, content marked `sensitive=true` is never sent to the LLM. Graceful failure: if the API is unreachable, shows an inline error without breaking the 1:1 page. One-click add suggestions to the agenda. Cyberpunk-themed UI with glow burst animation on completion and pulse loading state. Respects `prefers-reduced-motion`.
-- **AI Performance Narrative Generator** — Generate AI-powered performance review narratives from historical data. Aggregates kudos (with tags), PDP goals (with status and non-sensitive updates), 1:1 outcomes, and action item completion stats within a configurable date range. Sends context to the user's configured LLM with a leadership-coach system prompt. Three writing styles: Narrative (3 paragraphs), Bullet Points (structured sections), Concise (1 paragraph). Privacy Mode respected — sensitive content excluded unless disabled. Result displayed in an editable textarea with copy-to-clipboard. Button only visible when AI is enabled in Settings. Cyberpunk pulse animation during generation.
-- **AI Coaching & Feedback Refinement** — AI-powered coaching tools integrated into Kudos and PDP Goals. **Kudos Refinement**: "Refine" button on the Kudos form sends the draft to the LLM using the SBI (Situation-Behavior-Impact) framework, returning a polished version in a comparison view (Apply/Keep Original). **PDP Goal SMART Check**: "SMART Check" button on the PDP Goal form evaluates the goal against SMART criteria and suggests an improved title and description. **Customizable Prompts**: All AI system prompts (Kudos Refinement, PDP Optimization, Agenda Prep, Narrative) are configurable per-user in Settings under the "AI Prompts" section, with "Reset to Default" buttons. Existing AI features (1:1 Prep, Narrative Generator) now use the user's custom prompts when set.
-- **AI Outcome Extractor** — Post-meeting productivity tool that parses 1:1 entry notes using the configured LLM to extract action items and key decisions. Identifies tasks for both Manager and Direct Report with inferred due dates. Presents results in a review modal where items can be edited, toggled, or deselected before bulk-applying. Action items are created with `originatingEntryId` linking them to the source entry. Decisions are appended to the entry's Outcomes field. Duplicate detection: items matching existing action item titles are flagged and pre-unchecked. Privacy: disabled for sensitive entries when AI Privacy Mode is ON. Custom prompt configurable in Settings. Cyberpunk-themed modal with owner-type color coding (cyan for Manager, violet for Person).
-- **AI Strategic Trend Radar** — Diagnostic tool that analyzes 90 days of team member data (1:1 outcomes, action items, PDP progress, kudos) to surface long-term patterns and momentum shifts. Evaluates four dimensions: Sentiment/Morale Drift, Work/Growth Balance, Recognition Velocity, and Meeting Efficacy. Each insight includes a Confidence Score (0-100%) based on data volume and recency: Low (<40%, insufficient data), Moderate (40-75%, some signal), High (>75%, strong signal). Minimum 2 meetings required to generate insights; shows "Scanning horizon..." empty state otherwise. Privacy Mode respected — outcomes excluded when enabled. Custom system prompt configurable in Settings. Cyberpunk glassmorphism insight cards with neon confidence gauges and dimension icons. New "✦ Insights" tab on Person Detail page (conditionally visible when AI enabled).
-- **Strategy Hub** — Strategic layer for managers to define high-level objectives and visualize team PDP goal alignment. Create strategy goals with title, description, target date, and sensitive flag. Link PDP goals to strategy goals to track alignment. Alignment scoring shows percentage of active PDP goals contributing to each strategy goal. Gap analysis panel highlights unlinked PDP goals and strategy goals without contributors. Full CRUD with status transitions (ACTIVE → ACHIEVED/DROPPED). AES-256-GCM encryption for sensitive strategy goals. Full-text search integration with GIN index. Comprehensive audit logging for all CRUD and link/unlink operations.
-- **Unified Triage Queue** — Centralized actionable inbox aggregating overdue action items, due-soon items, stale 1:1 reminders, and upcoming work anniversaries into a single prioritized list. Sorted by criticality (Overdue > Due Soon > Stale > Informational), then chronologically. Filtering by scope (All/Mine), item type, workspace, and person. Vim-inspired keyboard navigation (j/k to move, d=done, c=cancel, s=snooze, a=add to 1:1, q=quick note, r=reassign, t=set due, Enter=peek drawer). Full InlineActionMenu with Done, Cancel, Snooze (1d/3d/7d submenu), Reassign Owner, Set Due Date (inline date picker), Add to 1:1, Save as Quick Note. QuickPeekDrawer (Enter key or peek icon) shows person context: morale dot, role, last 1:1 summary, open action items, and recent kudos — all without navigating away. Snooze support hides items temporarily. Toggle Owner switches between Manager/Person. AI "Next Best Action" hints (one-sentence suggestions from configured LLM, privacy mode respected, configurable prompt in Settings). Sensitive content masked in list. Workspace chip shown on rows. Glassmorphism card UI with cyberpunk glow ring on selected row. Global shortcut Cmd/Ctrl+J focuses the queue. Empty state with "You're all clear" messaging. Accessible via Navigation bar or `/triage` route.
-- **AI Command Terminal** — Natural language command overlay for creating action items, kudos, quick notes, and 1:1 entries via AI-powered parsing. Accessible via `Cmd/Ctrl+K` or floating action button (purple ⌘ icon, positioned next to Quick Note FAB). The terminal sends user input to the configured LLM (Ollama, OpenAI-compatible) with a structured JSON system prompt and the person directory context, then parses the response into typed commands. Supports intents: `create_action_item`, `create_kudo`, `create_quick_note`, `create_one_on_one_entry`. For 1:1 entries, the AI extracts meeting notes and a meeting date (defaulting to today if unspecified). Two execution modes: **Standard (Confirm & Save)** shows a preview card requiring manual confirmation, **Auto-Execute** (configurable in Settings) bypasses the preview and instantly executes with a 10-second undo toast. Privacy Mode: if enabled and the AI detects sensitive content, an explicit warning is displayed before execution. Sensitive items are routed through the AES-256-GCM encryption pipeline. Built-in `help` command (type "help" anytime to redisplay available commands without calling the AI). Cyberpunk glassmorphism terminal panel with slide-up animation, violet accent theme, continuous scrolling chat interface, scan-line texture, and monospace terminal aesthetic. Respects `prefers-reduced-motion`. Only visible when AI is enabled and configured in User Settings. Backend: `POST /api/v1/ai/command` (parse command), `GET /api/v1/ai/command/directory` (person directory for micro-context injection). Custom system prompt configurable in Settings as "Command Terminal Prompt".
-- **AI Admin/Team Defaults** — Admins can provide team-wide AI configuration via environment variables (`AI_DEFAULT_BASE_URL`, `AI_DEFAULT_API_KEY`, `AI_DEFAULT_MODEL`). Users who haven't configured their own AI settings automatically use the team defaults. Users who configure their own AI server/model in Settings override the team defaults. The Settings page shows a badge indicating the active config source ("AI available via team defaults" or "Using your personal AI config"). `GET /api/v1/settings/ai-status` returns the resolved AI availability and config source. All AI features (Command Terminal, Prep Assistant, Narrative, Coaching, Outcome Extractor, Trend Radar, Link Suggestions, Triage Hints) are shown whenever AI is *effectively available* — i.e. when either the user has their own config **or** admin team defaults are set. The frontend gates feature visibility on the resolved `aiAvailable` flag (not the user's personal `aiEnabled` toggle), so setting only the admin defaults lights up the features for everyone. When neither source is configured, all AI features are hidden.
+**Highlights:**
 
-### Planned
+- 📇 **People directory** with morale tracking, sticky notes, and tags
+- 🗓️ **1:1 management** — series cadence, templates, agendas, prep notes
+- ✅ **Action items, PDP goals, and kudos** tied to each person
+- 🧠 **Optional AI assistant** (bring your own OpenAI-compatible endpoint) for prep, narratives, coaching, and a natural-language command terminal
+- 📊 **Dashboard, triage queue, search, and gamification** to stay on top of everything
+- 🔒 **Privacy-first** — per-user data isolation, at-rest encryption for sensitive fields, no telemetry
+- 🐳 **Runs anywhere** via Docker Compose, with a one-command demo
 
-- (none currently)
+Jump to [Quick Start](#quick-start) to try it, or expand the sections below for the full detail.
 
 ---
 
-## Tech Stack
+## Table of Contents
 
-| Layer      | Technology                                    |
-|------------|-----------------------------------------------|
-| Backend    | Kotlin 2.2 + Spring Boot 4.0 (Hexagonal/DDD) |
-| Frontend   | Next.js 14 + React 18 + Auth.js (OIDC)       |
-| Database   | PostgreSQL 16                                 |
-| Auth       | OAuth2 / OIDC via authentik                   |
-| Deployment | Docker Compose                                |
-| API Style  | REST + JSON                                   |
-| Migrations | Flyway                                        |
-| Testing    | JUnit 5 + Kotest + Testcontainers (backend), Jest + React Testing Library (frontend) |
-
----
-
-## Prerequisites
-
-- **Docker** 24+ and **Docker Compose** v2+
-- **Java 21** (for local backend development)
-- **Node.js 20+** and **npm** (for local frontend development)
-- **authentik** instance (or any OIDC provider) for authentication — or use the bundled local authentik via the dev-auth overlay (see [Local OAuth (Authentik)](#local-oauth-authentik))
+- [Quick Start](#quick-start)
+- [Tech Stack](#tech-stack)
+- [Features](#features) (full list)
+- [Prerequisites](#prerequisites)
+- [API Endpoints](#api-endpoints)
+- [Environment Variables](#environment-variables)
+- [Running Tests](#running-tests)
+- [Monitoring (Prometheus + Grafana)](#monitoring-prometheus--grafana)
+- [Database Migrations](#database-migrations)
+- [authentik Setup (OIDC)](#authentik-setup-oidc)
+- [Backup and Restore](#backup-and-restore)
+- [Project Structure](#project-structure)
+- [CI/CD](#cicd)
+- [Privacy & Telemetry](#privacy--telemetry)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
 ## Quick Start
 
-### Try it in one command (all-in-one demo)
+The fastest way to see CrewCaptain is the all-in-one demo. For real use, run the
+production stack with your own secrets and identity provider.
+
+<details>
+<summary><strong>🚀 Try it in one command (all-in-one demo)</strong></summary>
 
 Just want to kick the tyres? `docker-compose.full-demo.yml` is a **single,
 self-contained file** that runs the entire stack — CrewCaptain, PostgreSQL, a
@@ -121,7 +93,10 @@ light up once they finish.
 > out of the box. Never expose it to the internet or use it in production — use
 > `docker-compose.yml` with your own secrets and a real OIDC provider instead.
 
-### Using Docker Compose (Production)
+</details>
+
+<details>
+<summary><strong>🐳 Using Docker Compose (Production)</strong></summary>
 
 The production `docker-compose.yml` pulls pre-built images from the container registry:
 
@@ -148,7 +123,10 @@ docker compose up -d
 
 These public images are built and published by the GitHub Actions pipeline on every push to `main`.
 
-### Using Docker Compose (Local Development)
+</details>
+
+<details>
+<summary><strong>🔧 Using Docker Compose (Local Development)</strong></summary>
 
 The `docker-compose.override.yml` adds build directives and dev tooling. When present, `docker compose up` will build from source:
 
@@ -162,7 +140,10 @@ docker compose up --build
 
 The override exposes the database port (5432), mounts source volumes for hot-reload, and sets development environment variables.
 
-### Local OAuth (Authentik)
+</details>
+
+<details>
+<summary><strong>🔑 Local OAuth (Authentik)</strong></summary>
 
 CrewCaptain authenticates via OIDC, so trying it out normally requires an external identity provider. For development and evaluation, the `docker-compose.dev-auth.yml` overlay runs a **self-contained [authentik](https://goauthentik.io/) instance that is preconfigured with a demo user and a ready-to-use OIDC application** — no clicking through setup wizards.
 
@@ -189,7 +170,10 @@ The demo OIDC application (`client_id: crewcaptain`), the demo user, and the pro
 
 > **Note:** The frontend container sets `AUTH_TRUST_HOST=true` (in `docker-compose.yml`). Auth.js v5 requires this when running self-hosted behind Docker/a proxy; without it you'll see `UntrustedHost: Host must be trusted`. If you change compose env, recreate the container with `docker compose ... up -d --force-recreate frontend` so it's picked up.
 
-### Local AI (Ollama)
+</details>
+
+<details>
+<summary><strong>🧠 Local AI (Ollama)</strong></summary>
 
 CrewCaptain's AI features (1:1 prep suggestions, summaries, performance narratives, etc.) talk to any OpenAI-compatible endpoint. For development and evaluation, the `docker-compose.ai.yml` overlay runs a **self-contained [Ollama](https://ollama.com/) instance that automatically pulls a small model on first start** and wires it in as the team-wide AI default — so the AI features work out of the box with no external API key.
 
@@ -219,7 +203,10 @@ On first start the `ollama-init` helper downloads the model (~1 GB, one-time —
 
 > ⚠️ This overlay is for development/evaluation. CPU inference on a tiny model is slow and low-quality compared to a hosted model; for real deployments, point `AI_DEFAULT_*` (or per-user Settings) at a production-grade LLM endpoint.
 
-### Local Development
+</details>
+
+<details>
+<summary><strong>💻 Local Development (dev.sh)</strong></summary>
 
 CrewCaptain uses `dev.sh` as the primary local development runner:
 
@@ -236,13 +223,125 @@ The script handles dependency installation, database migrations (Flyway), and st
 **Backend** runs on `http://localhost:8080`
 **Frontend** runs on `http://localhost:3000`
 
+</details>
+
+---
+
+## Tech Stack
+
+| Layer      | Technology                                    |
+|------------|-----------------------------------------------|
+| Backend    | Kotlin 2.2 + Spring Boot 4.0 (Hexagonal/DDD) |
+| Frontend   | Next.js 14 + React 18 + Auth.js (OIDC)       |
+| Database   | PostgreSQL 16                                 |
+| Auth       | OAuth2 / OIDC via authentik                   |
+| Deployment | Docker Compose                                |
+| API Style  | REST + JSON                                   |
+| Migrations | Flyway                                        |
+| Testing    | JUnit 5 + Kotest + Testcontainers (backend), Jest + React Testing Library (frontend) |
+
+---
+
+## Prerequisites
+
+- **Docker** 24+ and **Docker Compose** v2+
+- **Java 21** (for local backend development)
+- **Node.js 20+** and **npm** (for local frontend development)
+- **authentik** instance (or any OIDC provider) for authentication — or use the bundled local authentik via the dev-auth overlay (see [Local OAuth (Authentik)](#quick-start))
+
+---
+
+## Features
+
+CrewCaptain is feature-rich. The full list is grouped below — expand each area for detail.
+
+<details>
+<summary><strong>📇 People & context</strong></summary>
+
+- **Person Directory** — Full CRUD for team members with name, preferred name, role title, timezone, start date, email, and tags
+- **Morale Tracking** — Visual morale indicators (Green/Yellow/Red/Unknown) per person with optional notes
+- **Pinned Remember Items** — Add, remove, and reorder quick-reference notes per person
+- **Sticky Notes** — Visual sticky-note cards replacing the basic pinned items list. Each note has a color (6 options: cyan, purple, green, amber, pink, slate), optional tag label, sensitive flag, and supports inline edit, drag-and-drop reorder, and delete with undo (10s toast). Person detail shows a card grid with truncation at 100 chars; People list shows up to 2 non-sensitive previews per card. Starter templates for quick capture (Family, Docs, Link, Life event, Manager). Markdown export includes sticky notes with sensitive content masked. Soft limit of 10 notes with friendly warning.
+- **Filtering & Pagination** — Filter people by tag or morale status with paginated results
+- **At-a-Glance Summary** — Person detail includes last 1:1 date, open action items count, and active PDP goals (placeholder)
+- **Data Isolation** — All queries scoped by authenticated user (manager) — no cross-user data access
+- **Soft-Delete + Restore** — Deleting a person moves them to trash (soft-delete) instead of permanently removing them. Trash page shows all deleted people with restore and permanent delete capability. All queries automatically exclude soft-deleted records. Data isolation enforced on trash operations. Permanent delete requires confirmation and cascades to all associated data (1:1 entries, action items, PDP goals, kudos).
+- **Bulk Import (CSV)** — Import multiple people at once from a CSV file. Supports columns: name (required), preferred_name, role_title, timezone, start_date (YYYY-MM-DD), email, tags (pipe-separated). Preview before import, per-row error reporting, max 500 rows per import. Accessible via "Import CSV" button on the People list page.
+- **Workspaces** — Lightweight organizational containers for grouping people (e.g., "My Team", "Mentees", "Skip-levels"). A workspace belongs to a single manager (private, no sharing). A person belongs to one workspace (optional). Opt-in: if no workspaces exist, everything works as before. Includes workspace CRUD, person-to-workspace assignment, workspace filter on People list, and management page accessible via user menu.
+
+</details>
+
+<details>
+<summary><strong>🗓️ 1:1s, action items, goals & kudos</strong></summary>
+
+- **1:1 Entry Management** — Full-stack series configuration (cadence + template), entry CRUD with agenda items, Markdown notes, outcomes, sensitive flag, paginated timeline, template prefill, and person at-a-glance last 1:1 date. **Prep Notes Panel**: collapsible section on the 1:1 entry page (create + edit) that surfaces INBOX quick notes assigned to the person as "talking points to discuss." One-click "Add to Agenda" attaches the note to the 1:1 entry; "Dismiss" archives it. Hidden when empty.
+- **Action Items** — Create, track, complete, and cancel follow-ups from 1:1s with per-person and cross-person views, overdue filtering, owner type (manager/person), due dates, and status transitions (OPEN → DONE, OPEN → CANCELED). Full frontend with action items tab on person detail, status filter, inline create/edit forms, and cyberpunk-themed components. Inline action items section on the 1:1 entry page allows quick-adding action items during a session (auto-linked to the entry), viewing existing open items for the person, and marking items done — all without leaving the 1:1 page.
+- **PDP Goal Tracking** — Personal development plans per person with goals (title, description, target date), status transitions (ACTIVE → ACHIEVED/PAUSED/DROPPED, PAUSED → ACTIVE), timestamped progress updates with sensitive flag, and full frontend with PDP goals tab, status filter, inline create/edit forms, and cyberpunk-themed components.
+- **Kudos / Recognition** — Record positive feedback and achievements per person with date, Markdown text, and optional tags (e.g., "impact", "collaboration"). Full frontend with Kudos tab on person detail, inline create form, and delete. Immutable entries (create + delete only).
+- **Quick Notes (Inbox)** — Global quick capture for thoughts, follow-ups, and observations. Notes can be unassigned (inbox), assigned to a person, or self-assigned (personal notes for the manager). Status workflow: INBOX → ATTACHED (to 1:1) / CONVERTED (to action item) / ARCHIVED. Supports sensitive flag. Self-assigned notes are accessible via "My Notes" in the user menu. Invariant: a note cannot be both self-assigned and assigned to a person — assigning to a person clears the self-assigned flag. Full frontend with dedicated Quick Notes page, My Notes page, status filter, and inline create form. **Quick Note Overlay** — Global floating overlay accessible from any page via `Ctrl+Shift+Q` or the floating action button (bottom-right). Cyberpunk glassmorphism design with neon glow fade-in animation, scan-line texture, and slide-up entrance. Supports `Ctrl+Enter` to save. Auto-closes after successful capture. Dismissible via Escape, backdrop click, or cancel button. Respects `prefers-reduced-motion`.
+- **Strategy Hub** — Strategic layer for managers to define high-level objectives and visualize team PDP goal alignment. Create strategy goals with title, description, target date, and sensitive flag. Link PDP goals to strategy goals to track alignment. Alignment scoring shows percentage of active PDP goals contributing to each strategy goal. Gap analysis panel highlights unlinked PDP goals and strategy goals without contributors. Full CRUD with status transitions (ACTIVE → ACHIEVED/DROPPED). AES-256-GCM encryption for sensitive strategy goals. Full-text search integration with GIN index. Comprehensive audit logging for all CRUD and link/unlink operations.
+
+</details>
+
+<details>
+<summary><strong>📊 Dashboards, triage & search</strong></summary>
+
+- **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
+- **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
+- **Full-Text Search** — Search across all manager data (people, 1:1 notes, quick notes, action items, PDP goals, kudos) using PostgreSQL full-text search with GIN indexes and relevance ranking. Type filters, pagination, and sensitive content protection (sensitive snippets hidden in results). Dedicated search page with real-time URL state and navigation link.
+- **Unified Triage Queue** — Centralized actionable inbox aggregating overdue action items, due-soon items, stale 1:1 reminders, and upcoming work anniversaries into a single prioritized list. Sorted by criticality (Overdue > Due Soon > Stale > Informational), then chronologically. Filtering by scope (All/Mine), item type, workspace, and person. Vim-inspired keyboard navigation (j/k to move, d=done, c=cancel, s=snooze, a=add to 1:1, q=quick note, r=reassign, t=set due, Enter=peek drawer). Full InlineActionMenu with Done, Cancel, Snooze (1d/3d/7d submenu), Reassign Owner, Set Due Date (inline date picker), Add to 1:1, Save as Quick Note. QuickPeekDrawer (Enter key or peek icon) shows person context: morale dot, role, last 1:1 summary, open action items, and recent kudos — all without navigating away. Snooze support hides items temporarily. Toggle Owner switches between Manager/Person. AI "Next Best Action" hints (one-sentence suggestions from configured LLM, privacy mode respected, configurable prompt in Settings). Sensitive content masked in list. Workspace chip shown on rows. Glassmorphism card UI with cyberpunk glow ring on selected row. Global shortcut Cmd/Ctrl+J focuses the queue. Empty state with "You're all clear" messaging. Accessible via Navigation bar or `/triage` route.
+- **Gamification & Engagement** — Dashboard gamification elements for engagement: animated progress ring for PDP goal completion percentage, 1:1 streak counter (consecutive weeks with meetings), achievement badges for milestones (first 1:1, 10 action items closed, etc.), and activity heatmap (contribution-graph style). Micro-animation on task completion (checkmark with glow burst). All animations respect `prefers-reduced-motion`.
+- **Audit Log** — Records key actions (create, update, delete, restore) across all entities for the manager's own traceability. Paginated audit log page with entity type and action filters. All entries scoped by userId. Accessible via user menu in navigation.
+
+</details>
+
+<details>
+<summary><strong>🧠 AI-powered features (optional)</strong></summary>
+
+All AI features work with any OpenAI-compatible endpoint (Ollama, LiteLLM, OpenAI, etc.) and are only shown when AI is effectively available (personal config or admin team defaults). Privacy Mode keeps `sensitive=true` content out of LLM calls.
+
+- **AI-Powered 1:1 Prep Assistant** — Optional AI assistant that synthesizes person-specific context (recent 1:1 notes, open action items, active PDP goals, recent kudos) and generates 3-5 suggested agenda items for the next meeting. Configurable per-user in Settings: API Base URL, API Key, Model Name, and Privacy Mode toggle. When Privacy Mode is ON, content marked `sensitive=true` is never sent to the LLM. Graceful failure: if the API is unreachable, shows an inline error without breaking the 1:1 page. One-click add suggestions to the agenda. Cyberpunk-themed UI with glow burst animation on completion and pulse loading state. Respects `prefers-reduced-motion`.
+- **AI Performance Narrative Generator** — Generate AI-powered performance review narratives from historical data. Aggregates kudos (with tags), PDP goals (with status and non-sensitive updates), 1:1 outcomes, and action item completion stats within a configurable date range. Sends context to the user's configured LLM with a leadership-coach system prompt. Three writing styles: Narrative (3 paragraphs), Bullet Points (structured sections), Concise (1 paragraph). Privacy Mode respected — sensitive content excluded unless disabled. Result displayed in an editable textarea with copy-to-clipboard. Button only visible when AI is enabled in Settings. Cyberpunk pulse animation during generation.
+- **AI Coaching & Feedback Refinement** — AI-powered coaching tools integrated into Kudos and PDP Goals. **Kudos Refinement**: "Refine" button on the Kudos form sends the draft to the LLM using the SBI (Situation-Behavior-Impact) framework, returning a polished version in a comparison view (Apply/Keep Original). **PDP Goal SMART Check**: "SMART Check" button on the PDP Goal form evaluates the goal against SMART criteria and suggests an improved title and description. **Customizable Prompts**: All AI system prompts (Kudos Refinement, PDP Optimization, Agenda Prep, Narrative) are configurable per-user in Settings under the "AI Prompts" section, with "Reset to Default" buttons. Existing AI features (1:1 Prep, Narrative Generator) now use the user's custom prompts when set.
+- **AI Outcome Extractor** — Post-meeting productivity tool that parses 1:1 entry notes using the configured LLM to extract action items and key decisions. Identifies tasks for both Manager and Direct Report with inferred due dates. Presents results in a review modal where items can be edited, toggled, or deselected before bulk-applying. Action items are created with `originatingEntryId` linking them to the source entry. Decisions are appended to the entry's Outcomes field. Duplicate detection: items matching existing action item titles are flagged and pre-unchecked. Privacy: disabled for sensitive entries when AI Privacy Mode is ON. Custom prompt configurable in Settings. Cyberpunk-themed modal with owner-type color coding (cyan for Manager, violet for Person).
+- **AI Strategic Trend Radar** — Diagnostic tool that analyzes 90 days of team member data (1:1 outcomes, action items, PDP progress, kudos) to surface long-term patterns and momentum shifts. Evaluates four dimensions: Sentiment/Morale Drift, Work/Growth Balance, Recognition Velocity, and Meeting Efficacy. Each insight includes a Confidence Score (0-100%) based on data volume and recency: Low (<40%, insufficient data), Moderate (40-75%, some signal), High (>75%, strong signal). Minimum 2 meetings required to generate insights; shows "Scanning horizon..." empty state otherwise. Privacy Mode respected — outcomes excluded when enabled. Custom system prompt configurable in Settings. Cyberpunk glassmorphism insight cards with neon confidence gauges and dimension icons. New "✦ Insights" tab on Person Detail page (conditionally visible when AI enabled).
+- **AI Command Terminal** — Natural language command overlay for creating action items, kudos, quick notes, and 1:1 entries via AI-powered parsing. Accessible via `Cmd/Ctrl+K` or floating action button (purple ⌘ icon, positioned next to Quick Note FAB). The terminal sends user input to the configured LLM with a structured JSON system prompt and the person directory context, then parses the response into typed commands. Supports intents: `create_action_item`, `create_kudo`, `create_quick_note`, `create_one_on_one_entry`. For 1:1 entries, the AI extracts meeting notes and a meeting date (defaulting to today if unspecified). Two execution modes: **Standard (Confirm & Save)** shows a preview card requiring manual confirmation, **Auto-Execute** (configurable in Settings) bypasses the preview and instantly executes with a 10-second undo toast. Privacy Mode: if enabled and the AI detects sensitive content, an explicit warning is displayed before execution. Sensitive items are routed through the AES-256-GCM encryption pipeline. Built-in `help` command (type "help" anytime to redisplay available commands without calling the AI). Cyberpunk glassmorphism terminal panel with slide-up animation, violet accent theme, continuous scrolling chat interface, scan-line texture, and monospace terminal aesthetic. Respects `prefers-reduced-motion`. Only visible when AI is enabled and configured in User Settings. Backend: `POST /api/v1/ai/command` (parse command), `GET /api/v1/ai/command/directory` (person directory for micro-context injection). Custom system prompt configurable in Settings as "Command Terminal Prompt".
+- **AI Admin/Team Defaults** — Admins can provide team-wide AI configuration via environment variables (`AI_DEFAULT_BASE_URL`, `AI_DEFAULT_API_KEY`, `AI_DEFAULT_MODEL`). Users who haven't configured their own AI settings automatically use the team defaults. Users who configure their own AI server/model in Settings override the team defaults. The Settings page shows a badge indicating the active config source ("AI available via team defaults" or "Using your personal AI config"). `GET /api/v1/settings/ai-status` returns the resolved AI availability and config source. All AI features (Command Terminal, Prep Assistant, Narrative, Coaching, Outcome Extractor, Trend Radar, Link Suggestions, Triage Hints) are shown whenever AI is *effectively available* — i.e. when either the user has their own config **or** admin team defaults are set. The frontend gates feature visibility on the resolved `aiAvailable` flag (not the user's personal `aiEnabled` toggle), so setting only the admin defaults lights up the features for everyone. When neither source is configured, all AI features are hidden.
+
+</details>
+
+<details>
+<summary><strong>🔒 Auth, security & platform</strong></summary>
+
+- **OIDC Authentication** — Secure login via authentik (OAuth2/OIDC) with automatic user provisioning
+- **Sensitive Content Encryption** — Application-level AES-256-GCM encryption for sensitive text fields at rest. When `ENCRYPTION_KEY` is configured, all content marked `sensitive=true` (1:1 notes/outcomes, quick notes, PDP updates) is encrypted before storage and decrypted on read. Graceful fallback: without a key, the system operates normally with plaintext storage. Supports legacy unencrypted data migration (reads both encrypted and unencrypted content).
+- **User Settings** — Per-user persistent settings page with: theme selection (dark/light), dashboard reminder thresholds (due-soon days, stale 1:1 days, anniversary lookahead), notification type toggles (overdue, due-soon, stale 1:1, anniversary), and achievement visibility toggle. Settings are stored in the database and respected by the notification scheduler and dashboard.
+- **Prometheus Metrics** — Exposes application metrics at `/actuator/prometheus` for Prometheus scraping. Secured with a bearer token (`METRICS_TOKEN`). Includes JVM metrics, HTTP request metrics, HikariCP connection pool stats, and custom 1:1 metrics (total entries, entries in last 7 days). Health endpoint at `/actuator/health` remains unauthenticated for Docker healthchecks.
+
+</details>
+
+<details>
+<summary><strong>🎨 UI, design & content export</strong></summary>
+
+- **Frontend UI** — People list, person detail, create person pages with filter bar, morale indicators, and empty states
+- **Cyberpunk-Lite Design System** — Dark-first UI with electric cyan/neon violet accents, JetBrains Mono headings, glassmorphism cards, glow effects, Inter body text, CSS custom properties design tokens, and consistent navigation
+- **Light Theme** — Full light theme alternative to the default cyberpunk dark theme. Clean surfaces, teal/purple accents, proper contrast ratios, and subtle shadows instead of glows. Toggled via Settings page.
+- **Landing Page** — Modern, high-converting landing page with cyberpunk-lite dark theme. Hero section with HUD visual motif, feature cards with glassmorphism, dedicated AI features section highlighting all AI capabilities (agenda generation, outcome extraction, performance narrative, kudos refinement, SMART goal check, and configurable AI settings), interactive screenshot showcase (tabbed gallery with 11 views including AI-powered features, quick capture, and settings), 3-step deployment guide, privacy/self-hosted messaging, and dual CTA sections. Fully responsive, accessible (WCAG AA), respects `prefers-reduced-motion`. Authenticated users are redirected to the dashboard.
+- **Per-Person Markdown Export** — Export all data for a person as a structured Markdown file: profile summary, pinned remember items, morale, 1:1 history (reverse chronological), action items (grouped by status), PDP goals with progress updates, and kudos. Optional date range filter. Sensitive content is marked but not exposed. Download via Export button on person detail page.
+- **Review Packet Generator** — Generate structured review/performance summary documents for a person over a configurable date range. Includes executive summary with statistics (1:1 count, action item completion rate, PDP goal progress, kudos count), morale status, detailed 1:1 meeting history, action items grouped by status, PDP goals with progress updates, and kudos with tag summary. Sensitive content is excluded. Download as Markdown via "Review Packet" button on person detail page.
+
+</details>
+
+**Planned:** none currently.
+
 ---
 
 ## API Endpoints
 
-All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/`
+All endpoints require an `Authorization: Bearer <jwt>` header. Base path: `/api/v1/`. All data is scoped to the authenticated manager. Expand each group for the endpoint tables and field/parameter details.
 
-### Person Directory
+<details>
+<summary><strong>Person Directory</strong></summary>
 
 | Method | Endpoint                                | Description                    |
 |--------|-----------------------------------------|--------------------------------|
@@ -308,7 +407,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `morale` — Filter by morale status (GREEN, YELLOW, RED, UNKNOWN)
 - `workspace` — Filter by workspace UUID
 
-### 1:1 Entry Management
+</details>
+
+<details>
+<summary><strong>1:1 Entry Management</strong></summary>
 
 | Method | Endpoint                                                    | Description                        |
 |--------|-------------------------------------------------------------|------------------------------------|
@@ -336,7 +438,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
 
-### Action Items
+</details>
+
+<details>
+<summary><strong>Action Items</strong></summary>
 
 | Method | Endpoint                                                              | Description                          |
 |--------|-----------------------------------------------------------------------|--------------------------------------|
@@ -368,7 +473,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - OPEN → CANCELED (via `/cancel`)
 - No other transitions are allowed
 
-### PDP Goals (Personal Development Plans)
+</details>
+
+<details>
+<summary><strong>PDP Goals (Personal Development Plans)</strong></summary>
 
 | Method | Endpoint                                                              | Description                          |
 |--------|-----------------------------------------------------------------------|--------------------------------------|
@@ -406,7 +514,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `size` — Page size (default: 20)
 - `status` — Filter by status (ACTIVE, ACHIEVED, PAUSED, DROPPED)
 
-### Kudos / Recognition
+</details>
+
+<details>
+<summary><strong>Kudos / Recognition</strong></summary>
 
 | Method | Endpoint                                                | Description                          |
 |--------|---------------------------------------------------------|--------------------------------------|
@@ -425,7 +536,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
 
-### Quick Notes (Inbox)
+</details>
+
+<details>
+<summary><strong>Quick Notes (Inbox)</strong></summary>
 
 | Method | Endpoint                                                | Description                          |
 |--------|---------------------------------------------------------|--------------------------------------|
@@ -459,7 +573,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `personId` — Filter by assigned person
 - `selfAssigned` — Filter by self-assigned flag (true/false)
 
-### Dashboard
+</details>
+
+<details>
+<summary><strong>Dashboard</strong></summary>
 
 | Method | Endpoint                | Description                                    |
 |--------|-------------------------|------------------------------------------------|
@@ -469,7 +586,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `dueSoonDays` — Number of days to look ahead for due-soon items (default: 3)
 - `anniversaryLookaheadDays` — Number of days to look ahead for anniversaries (default: 30)
 
-### Notifications
+</details>
+
+<details>
+<summary><strong>Notifications</strong></summary>
 
 | Method | Endpoint                                    | Description                          |
 |--------|---------------------------------------------|--------------------------------------|
@@ -489,7 +609,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `STALE_ONE_ON_ONE` — 1:1 meeting overdue based on cadence
 - `UPCOMING_ANNIVERSARY` — Work anniversary approaching
 
-### Search
+</details>
+
+<details>
+<summary><strong>Search</strong></summary>
 
 | Method | Endpoint          | Description                                    |
 |--------|-------------------|------------------------------------------------|
@@ -514,7 +637,10 @@ All endpoints require `Authorization: Bearer <jwt>` header. Base path: `/api/v1/
 - `totalCount` — Total number of matching results
 - `page` / `size` / `totalPages` — Pagination metadata
 
-### Strategy Goals
+</details>
+
+<details>
+<summary><strong>Strategy Goals</strong></summary>
 
 | Method | Endpoint                                                              | Description                          |
 |--------|-----------------------------------------------------------------------|--------------------------------------|
@@ -566,7 +692,10 @@ Encryption/Search trade-off:
 - `unlinkedPdpGoals` — Array of PDP goals not linked to any strategy goal
 - `emptyStrategyGoals` — Array of strategy goals with no linked PDP goals
 
-### User Settings
+</details>
+
+<details>
+<summary><strong>User Settings</strong></summary>
 
 | Method | Endpoint          | Description                                    |
 |--------|-------------------|------------------------------------------------|
@@ -585,7 +714,10 @@ Encryption/Search trade-off:
 - `notifyStaleOneOnOne` — Enable stale 1:1 notifications (default: true)
 - `notifyUpcomingAnniversary` — Enable anniversary notifications (default: true)
 
-### Workspaces
+</details>
+
+<details>
+<summary><strong>Workspaces</strong></summary>
 
 | Method | Endpoint                                          | Description                          |
 |--------|---------------------------------------------------|--------------------------------------|
@@ -596,7 +728,10 @@ Encryption/Search trade-off:
 | DELETE | `/api/v1/workspaces/{workspaceId}`                | Delete a workspace                   |
 | PUT    | `/api/v1/workspaces/persons/{personId}/workspace` | Assign a person to a workspace (or clear with empty body) |
 
-### Triage Queue
+</details>
+
+<details>
+<summary><strong>Triage Queue</strong></summary>
 
 | Method | Endpoint                                                                  | Description                          |
 |--------|---------------------------------------------------------------------------|--------------------------------------|
@@ -610,7 +745,10 @@ Encryption/Search trade-off:
 - `personId` — Filter by person
 - `scope` — Owner scope: `ALL` (default) or `MINE`
 
-### Gamification
+</details>
+
+<details>
+<summary><strong>Gamification</strong></summary>
 
 | Method | Endpoint                       | Description                          |
 |--------|--------------------------------|--------------------------------------|
@@ -619,7 +757,10 @@ Encryption/Search trade-off:
 **Query parameters:**
 - `heatmapDays` — Number of days of activity history for the heatmap (default: 90)
 
-### Audit Log
+</details>
+
+<details>
+<summary><strong>Audit Log</strong></summary>
 
 | Method | Endpoint                | Description                          |
 |--------|-------------------------|--------------------------------------|
@@ -631,7 +772,10 @@ Encryption/Search trade-off:
 - `page` — Page number (default: 0)
 - `size` — Page size (default: 20)
 
-### AI Endpoints
+</details>
+
+<details>
+<summary><strong>AI Endpoints</strong></summary>
 
 All AI endpoints require AI to be enabled and configured (personal config or team defaults) and respect Privacy Mode.
 
@@ -645,11 +789,16 @@ All AI endpoints require AI to be enabled and configured (personal config or tea
 
 > Person-scoped AI endpoints (1:1 prep, performance narrative, trend radar, outcome extraction) are listed in the **Person Directory** table above.
 
+</details>
+
 ---
 
 ## Environment Variables
 
-### Backend (API)
+See `.env.example` for a complete template with placeholder values. Expand for the full variable reference.
+
+<details>
+<summary><strong>Backend (API)</strong></summary>
 
 | Variable           | Description                                      | Required |
 |--------------------|--------------------------------------------------|----------|
@@ -669,7 +818,14 @@ All AI endpoints require AI to be enabled and configured (personal config or tea
 | `AI_DEFAULT_API_KEY`  | API key for the team-wide AI provider (leave empty for local models like Ollama) | No |
 | `AI_DEFAULT_MODEL`    | Model name for team-wide AI defaults (e.g., `llama3`, `gpt-4o`) | No |
 
-### Frontend
+*`ENCRYPTION_KEY` is required when sensitive field encryption is enabled. Generate with: `openssl rand -base64 32`. Must be exactly 32 bytes when Base64-decoded (256-bit AES key). Without this key, sensitive content is stored in plaintext (the `sensitive` flag still works for UI labeling).
+
+**AI Team Defaults**: Set `AI_DEFAULT_BASE_URL` and `AI_DEFAULT_MODEL` to provide AI features to all users without requiring individual configuration. Users who set their own AI server/model in Settings will use their personal config instead. This allows admins to share a team subscription (e.g., a shared Ollama instance) while letting power users override with their own provider.
+
+</details>
+
+<details>
+<summary><strong>Frontend</strong></summary>
 
 | Variable            | Description                                     | Required |
 |---------------------|-------------------------------------------------|----------|
@@ -680,11 +836,7 @@ All AI endpoints require AI to be enabled and configured (personal config or tea
 | `OIDC_ISSUER`       | authentik OIDC issuer URL                       | Yes      |
 | `API_BASE_URL`      | Internal URL to backend API (read at runtime, e.g., `http://api:8080` for Docker or `https://api.example.com` for external) | Yes      |
 
-*`ENCRYPTION_KEY` is required when sensitive field encryption is enabled. Generate with: `openssl rand -base64 32`. Must be exactly 32 bytes when Base64-decoded (256-bit AES key). Without this key, sensitive content is stored in plaintext (the `sensitive` flag still works for UI labeling).
-
-**AI Team Defaults**: Set `AI_DEFAULT_BASE_URL` and `AI_DEFAULT_MODEL` to provide AI features to all users without requiring individual configuration. Users who set their own AI server/model in Settings will use their personal config instead. This allows admins to share a team subscription (e.g., a shared Ollama instance) while letting power users override with their own provider.
-
-See `.env.example` for a complete template with placeholder values.
+</details>
 
 ---
 
@@ -720,6 +872,9 @@ All backend database tests use Testcontainers with real PostgreSQL — no H2.
 ## Monitoring (Prometheus + Grafana)
 
 CrewCaptain exposes a Prometheus-compatible metrics endpoint for monitoring.
+
+<details>
+<summary><strong>Endpoints, setup, metrics & security</strong></summary>
 
 ### Endpoints
 
@@ -765,11 +920,16 @@ All metrics include the tag `application="crewcaptain"`.
 - All other actuator endpoints (except `/actuator/health`) are blocked.
 - The metrics endpoint does not expose any user data — only operational metrics.
 
+</details>
+
 ---
 
 ## Database Migrations
 
-Schema changes are managed via Flyway. Current migrations:
+Schema changes are managed via Flyway. New migrations must follow the naming convention: `V{timestamp}__{description}.sql`.
+
+<details>
+<summary><strong>Current migrations</strong></summary>
 
 | Migration | Description |
 |-----------|-------------|
@@ -808,11 +968,14 @@ Schema changes are managed via Flyway. Current migrations:
 | `V20250606120000` | Add snoozed_until to action_items |
 | `V20250607120000` | Add AI auto-execute flag and command terminal prompt to user_settings |
 
-New migrations must follow the naming convention: `V{timestamp}__{description}.sql`
+</details>
 
 ---
 
 ## authentik Setup (OIDC)
+
+<details>
+<summary><strong>Provider, application & .env values</strong></summary>
 
 1. In your authentik admin panel, create a new **OAuth2/OIDC Provider**:
    - Name: `crewcaptain`
@@ -833,9 +996,14 @@ New migrations must follow the naming convention: `V{timestamp}__{description}.s
 
 > **Note**: Without the `offline_access` scope mapping, authentik will not issue refresh tokens and users will be forced to re-login when the access token expires (typically every 5 minutes).
 
+</details>
+
 ---
 
 ## Backup and Restore
+
+<details>
+<summary><strong>PostgreSQL backup & restore commands</strong></summary>
 
 ### Backup PostgreSQL
 
@@ -857,9 +1025,14 @@ cat backup_20250508.sql | docker compose exec -T db psql -U crewcaptain -d crewc
 psql -h localhost -U crewcaptain -d crewcaptain < backup_20250508.sql
 ```
 
+</details>
+
 ---
 
 ## Project Structure
+
+<details>
+<summary><strong>Directory layout</strong></summary>
 
 ```
 /
@@ -903,6 +1076,8 @@ psql -h localhost -U crewcaptain -d crewcaptain < backup_20250508.sql
     └── Dockerfile
 ```
 
+</details>
+
 ---
 
 ## CI/CD
@@ -913,6 +1088,9 @@ The project ships pipelines for both hosting setups, so the same checks run wher
 - **GitHub** — `.github/workflows/ci.yml` (GitHub Actions).
 
 Both run the identical logical stages.
+
+<details>
+<summary><strong>Pipeline stages, registry, runners & mirroring</strong></summary>
 
 ### Pipeline Stages
 
@@ -947,6 +1125,8 @@ It requires two repository secrets on GitHub (Settings → Secrets and variables
 | `GITLAB_KNOWN_HOSTS` | Output of `ssh-keyscan -p 6666 git.root-base.de` (host-key lines only), so the push does not stop on an interactive host-key prompt. |
 
 The workflow only runs on `push` (never on `pull_request`), so the secrets are never exposed to fork-triggered runs. Branches are pushed with a forced refspec, so GitLab tracks GitHub's history even after a rebase or force-push — GitLab is intentionally treated as a downstream mirror, not an independent source.
+
+</details>
 
 ---
 
