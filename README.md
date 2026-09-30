@@ -237,6 +237,7 @@ The script handles dependency installation, database migrations (Flyway), and st
 | Auth       | OAuth2 / OIDC via authentik                   |
 | Deployment | Docker Compose                                |
 | API Style  | REST + JSON                                   |
+| PDF export | CommonMark 0.24 + Flying Saucer 9.13 (PDFBox) |
 | Migrations | Flyway                                        |
 | Testing    | JUnit 5 + Kotest + Testcontainers (backend), Jest + React Testing Library (frontend) |
 
@@ -284,7 +285,21 @@ CrewCaptain is feature-rich. The full list is grouped below — expand each area
 </details>
 
 <details>
-<summary><strong>📊 Dashboards, triage & search</strong></summary>
+<summary><strong>� Feedback Links (public, no-login feedback collection)</strong></summary>
+
+- **Feedback Links** — Managers create a short, shareable link for a person that anyone can open and fill out **without an account**. One link → one compact public form. Links are multi-use until they expire (default 14 days, configurable, max 90) and can be **revoked** (final) or **extended**. The public form (`/f/{token}`) shows the person's name, the questions, an optional "Submit anonymously" toggle (default on), and clear "reviewed by their manager" copy. Expired and revoked links show a friendly message and refuse submissions. The questions are **snapshotted onto the link at creation time**, so editing or deleting the source template never changes already-collected responses. Only the manager who owns the person record can create/manage links; every query is `userId`-scoped and cross-manager access returns 404.
+- **Reusable Templates + AI generation** — Manager-owned feedback templates with a question builder. Three question types: **Rating** (1–5 with endpoint labels), **Likert** (5-point, stored 1–5 so it feeds rating analytics), and **free Text**. Any question can have a single-level **show-if** rule (e.g. reveal a follow-up text question when an earlier rating is ≤ 3), which also covers "optional follow-up" questions. Managers can **generate a full template from a short brief with AI**; the AI's JSON is validated against the template schema so invalid output surfaces as an error instead of a broken template. Two one-click **starter templates** (Performance review, Project retro) are included. Prompt is customizable in Settings.
+- **Manager review area** — A **Feedback tab** on person detail with four panels: **Responses** (filter by pending/approved and flagged; approve, flag/unflag, pin, delete, and convert a response into a **Kudo / Quick Note / Action Item**; bulk approve/delete; pending count), **Links** (copy the public URL, revoke, extend, usage stats — submission count and last submission time, timestamps only, no IP or user-agent stored), **Analytics**, and **Summary**. Responses arrive as **manager-visible PENDING**; approving clears them for use in review packets, 1:1 prep, summaries, and export.
+- **Bulk link creation** — From the People list, select multiple people, pick a template and expiry, and generate a unique link per person in one flow. Results show a per-person link table with copy buttons and a **CSV download** for pasting into messages.
+- **Analytics & AI summaries** — Per-person analytics computed from approved feedback: average rating overall and per period (month or quarter, rendered as an inline SVG trend chart), and **top themes** via deterministic keyword frequency (works with no AI configured). On demand, an **AI narrative summary** combines ratings and themes into an editable paragraph the manager can save; the latest saved summary is included in the Review Packet. Aggregates are manager-only.
+- **Export** — Export selected or approved feedback for a person to **Markdown or PDF** (`/persons/{id}/feedback-export?format=md|pdf`). PDF is rendered server-side (CommonMark → XHTML → Flying Saucer/PDFBox) behind an output port so no HTML/PDF library leaks into the domain.
+- **Privacy & abuse resistance** — Response answers and comments (and saved AI summaries) are **encrypted at rest** (AES-256-GCM) since third-party opinion is inherently sensitive. Anonymity is real: no IP or user-agent is ever stored. The public submit endpoint — the only unauthenticated write in the app — is guarded by a per-IP+token in-memory rate limit, a hidden honeypot field, and per-answer length/question-count caps. No email or notifications are sent; managers copy/paste links to share.
+- **Auditing** — Link creation, revocation, extension, submission, approval, flagging, deletion, conversion, and summary saves are all recorded in the manager's audit log.
+
+</details>
+
+<details>
+<summary><strong>�📊 Dashboards, triage & search</strong></summary>
 
 - **Dashboard** — At-a-glance overview showing overdue action items, due-soon items, stale 1:1 reminders (based on cadence), and upcoming work anniversaries. Configurable lookahead windows for due-soon (default 3 days) and anniversaries (default 30 days).
 - **In-App Notifications** — Scheduled notification generation for overdue action items, due-soon items (configurable threshold, default 3 days), stale 1:1 reminders (based on cadence), and upcoming work anniversaries (7-day lookahead). Notification center with bell icon in navigation, unread badge, mark-as-read (individual and bulk), and dedicated notifications page with pagination and unread filter. Deduplication prevents duplicate notifications within 24 hours. Scheduler runs hourly by default (configurable via cron expression).
@@ -307,6 +322,8 @@ All AI features work with any OpenAI-compatible endpoint (Ollama, LiteLLM, OpenA
 - **AI Strategic Trend Radar** — Diagnostic tool that analyzes 90 days of team member data (1:1 outcomes, action items, PDP progress, kudos) to surface long-term patterns and momentum shifts. Evaluates four dimensions: Sentiment/Morale Drift, Work/Growth Balance, Recognition Velocity, and Meeting Efficacy. Each insight includes a Confidence Score (0-100%) based on data volume and recency: Low (<40%, insufficient data), Moderate (40-75%, some signal), High (>75%, strong signal). Minimum 2 meetings required to generate insights; shows "Scanning horizon..." empty state otherwise. Privacy Mode respected — outcomes excluded when enabled. Custom system prompt configurable in Settings. Cyberpunk glassmorphism insight cards with neon confidence gauges and dimension icons. New "✦ Insights" tab on Person Detail page (conditionally visible when AI enabled).
 - **AI Command Terminal** — Natural language command overlay for creating action items, kudos, quick notes, and 1:1 entries via AI-powered parsing. Accessible via `Cmd/Ctrl+K` or floating action button (purple ⌘ icon, positioned next to Quick Note FAB). The terminal sends user input to the configured LLM with a structured JSON system prompt and the person directory context, then parses the response into typed commands. Supports intents: `create_action_item`, `create_kudo`, `create_quick_note`, `create_one_on_one_entry`. For 1:1 entries, the AI extracts meeting notes and a meeting date (defaulting to today if unspecified). Two execution modes: **Standard (Confirm & Save)** shows a preview card requiring manual confirmation, **Auto-Execute** (configurable in Settings) bypasses the preview and instantly executes with a 10-second undo toast. Privacy Mode: if enabled and the AI detects sensitive content, an explicit warning is displayed before execution. Sensitive items are routed through the AES-256-GCM encryption pipeline. Built-in `help` command (type "help" anytime to redisplay available commands without calling the AI). Cyberpunk glassmorphism terminal panel with slide-up animation, violet accent theme, continuous scrolling chat interface, scan-line texture, and monospace terminal aesthetic. Respects `prefers-reduced-motion`. Only visible when AI is enabled and configured in User Settings. Backend: `POST /api/v1/ai/command` (parse command), `GET /api/v1/ai/command/directory` (person directory for micro-context injection). Custom system prompt configurable in Settings as "Command Terminal Prompt".
 - **AI Admin/Team Defaults** — Admins can provide team-wide AI configuration via environment variables (`AI_DEFAULT_BASE_URL`, `AI_DEFAULT_API_KEY`, `AI_DEFAULT_MODEL`). Users who haven't configured their own AI settings automatically use the team defaults. Users who configure their own AI server/model in Settings override the team defaults. The Settings page shows a badge indicating the active config source ("AI available via team defaults" or "Using your personal AI config"). `GET /api/v1/settings/ai-status` returns the resolved AI availability and config source. All AI features (Command Terminal, Prep Assistant, Narrative, Coaching, Outcome Extractor, Trend Radar, Link Suggestions, Triage Hints) are shown whenever AI is *effectively available* — i.e. when either the user has their own config **or** admin team defaults are set. The frontend gates feature visibility on the resolved `aiAvailable` flag (not the user's personal `aiEnabled` toggle), so setting only the admin defaults lights up the features for everyone. When neither source is configured, all AI features are hidden.
+- **AI Feedback Template Generation** — On the Feedback Templates page (and the Create Feedback Link modal), a manager can describe the feedback they want in a short brief and have the LLM draft a complete template. The AI's JSON is validated against the template schema (question types, single-level branching), so unusable output surfaces as an error rather than a broken template; the manager then edits and saves it. Gated on the resolved `aiAvailable` flag and shows an inline spinner while generating. Custom system prompt configurable in Settings ("Feedback Template Prompt").
+- **AI Feedback Summary** — On a person's Feedback → Summary panel, a one-click "Summarize feedback" produces a short narrative combining the average rating and top themes across approved responses. The result is editable and can be saved; the latest saved summary is included in the person's Review Packet. Works only on approved, non-flagged feedback; gated on `aiAvailable`. Custom system prompt configurable in Settings ("Feedback Summary Prompt").
 
 </details>
 
@@ -406,6 +423,62 @@ All endpoints require an `Authorization: Bearer <jwt>` header. Base path: `/api/
 - `tag` — Filter by tag
 - `morale` — Filter by morale status (GREEN, YELLOW, RED, UNKNOWN)
 - `workspace` — Filter by workspace UUID
+
+</details>
+
+<details>
+<summary><strong>Feedback Links</strong></summary>
+
+All endpoints require `Authorization: Bearer <jwt>` **except** the two public endpoints, which are unauthenticated by design.
+
+**Templates**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/api/v1/feedback-templates`            | List the manager's templates |
+| POST   | `/api/v1/feedback-templates`            | Create a template |
+| GET    | `/api/v1/feedback-templates/{id}`       | Get a template |
+| PUT    | `/api/v1/feedback-templates/{id}`       | Update a template |
+| DELETE | `/api/v1/feedback-templates/{id}`       | Delete a template |
+| GET    | `/api/v1/feedback-templates/starters`   | Built-in starter templates (drafts) |
+| POST   | `/api/v1/feedback-templates/ai-generate`| Generate a draft template from a `{ "brief": "..." }` (422 if AI unavailable or output invalid) |
+
+**Links**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/v1/persons/{personId}/feedback-links` | Create a link (from `templateId`, or inline `title`+`questions`) |
+| GET    | `/api/v1/persons/{personId}/feedback-links` | List a person's links with usage stats |
+| POST   | `/api/v1/feedback-links/bulk`               | Create links for many people from one template |
+| POST   | `/api/v1/feedback-links/{linkId}/revoke`    | Revoke a link (final) |
+| POST   | `/api/v1/feedback-links/{linkId}/extend`    | Extend expiry (`{ "expiresInDays": 14 }`, max 90) |
+
+**Responses**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/api/v1/persons/{personId}/feedback-responses` | List responses (query: `status=PENDING\|APPROVED`, `flagged=true\|false`) |
+| PATCH  | `/api/v1/feedback-responses/{id}`               | Approve / flag / pin (`{ "approve": true, "flagged": false, "pinned": true }`) |
+| DELETE | `/api/v1/feedback-responses/{id}`               | Delete a response (hard delete; audit-logged) |
+| POST   | `/api/v1/feedback-responses/bulk`               | Bulk `{ "responseIds": [...], "action": "APPROVE"\|"DELETE" }` |
+| POST   | `/api/v1/feedback-responses/{id}/convert`       | Convert to `{ "type": "KUDO"\|"QUICK_NOTE"\|"ACTION_ITEM", "text": "..." }` |
+
+**Analytics, summaries & export**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/api/v1/persons/{personId}/feedback-analytics`        | Analytics (query: `from`, `to`, `bucket=MONTH\|QUARTER`) |
+| POST   | `/api/v1/persons/{personId}/feedback-summary/generate` | AI narrative summary (422 if AI unavailable / no feedback) |
+| GET    | `/api/v1/persons/{personId}/feedback-summaries`        | List saved summaries |
+| POST   | `/api/v1/persons/{personId}/feedback-summaries`        | Save an (edited) summary |
+| GET    | `/api/v1/persons/{personId}/feedback-export`           | Export responses (query: `format=md\|pdf`, `ids=csv of response ids`) |
+
+**Public (no authentication)**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/api/v1/public/feedback/{token}` | Fetch the public form (person name + questions only). 404 not found, 410 expired/revoked |
+| POST   | `/api/v1/public/feedback/{token}` | Submit feedback. Body includes optional `anonymous`, `submitterName`, `submitterEmail`, `answers[]`, `additionalComments`, and a honeypot `website` (must be empty). Rate-limited per IP+token |
 
 </details>
 
@@ -967,6 +1040,9 @@ Schema changes are managed via Flyway. New migrations must follow the naming con
 | `V20250602120000` | Add sticky-note fields to pinned_remember_items |
 | `V20250606120000` | Add snoozed_until to action_items |
 | `V20250607120000` | Add AI auto-execute flag and command terminal prompt to user_settings |
+| `V20250610120000` | Create feedback_templates + feedback_template_prompt on user_settings |
+| `V20250610120001` | Create feedback_links and feedback_responses |
+| `V20250610120002` | Create feedback_summaries + feedback_summary_prompt on user_settings |
 
 </details>
 
