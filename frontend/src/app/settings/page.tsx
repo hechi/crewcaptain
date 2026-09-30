@@ -42,6 +42,8 @@ export default function SettingsPage() {
   const [linkSuggestionsPrompt, setLinkSuggestionsPrompt] = useState('');
   const [triageHintPrompt, setTriageHintPrompt] = useState('');
   const [commandTerminalPrompt, setCommandTerminalPrompt] = useState('');
+  const [feedbackTemplatePrompt, setFeedbackTemplatePrompt] = useState('');
+  const [feedbackSummaryPrompt, setFeedbackSummaryPrompt] = useState('');
 
   const fetchSettings = useCallback(async () => {
     const token = getToken();
@@ -77,6 +79,8 @@ export default function SettingsPage() {
       setLinkSuggestionsPrompt(result.linkSuggestionsPrompt || '');
       setTriageHintPrompt(result.triageHintPrompt || '');
       setCommandTerminalPrompt(result.commandTerminalPrompt || '');
+      setFeedbackTemplatePrompt(result.feedbackTemplatePrompt || '');
+      setFeedbackSummaryPrompt(result.feedbackSummaryPrompt || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -122,6 +126,8 @@ export default function SettingsPage() {
         linkSuggestionsPrompt: linkSuggestionsPrompt || null,
         triageHintPrompt: triageHintPrompt || null,
         commandTerminalPrompt: commandTerminalPrompt || null,
+        feedbackTemplatePrompt: feedbackTemplatePrompt || null,
+        feedbackSummaryPrompt: feedbackSummaryPrompt || null,
       };
       const result = await updateUserSettings(token, request);
       setSettings(result);
@@ -719,6 +725,24 @@ export default function SettingsPage() {
                     value={commandTerminalPrompt}
                     onChange={setCommandTerminalPrompt}
                     onReset={() => setCommandTerminalPrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-feedback-template-prompt"
+                    label="Feedback Template Prompt"
+                    placeholder="You are an expert in 360-degree feedback design. Generate a concise feedback template with rating and text questions based on the brief..."
+                    value={feedbackTemplatePrompt}
+                    onChange={setFeedbackTemplatePrompt}
+                    onReset={() => setFeedbackTemplatePrompt('')}
+                  />
+
+                  <PromptTextarea
+                    testId="input-feedback-summary-prompt"
+                    label="Feedback Summary Prompt"
+                    placeholder="You are a people analytics advisor. Summarize the collected feedback responses into balanced, actionable themes..."
+                    value={feedbackSummaryPrompt}
+                    onChange={setFeedbackSummaryPrompt}
+                    onReset={() => setFeedbackSummaryPrompt('')}
                   />
                 </div>
               </>

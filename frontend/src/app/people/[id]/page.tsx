@@ -58,9 +58,11 @@ import AiNarrativeModal from '@/components/AiNarrativeModal';
 import WorkspaceAssignment from '@/components/workspace/WorkspaceAssignment';
 import LoadingScreen from '@/components/LoadingScreen';
 import TrendRadarInsights from '@/components/TrendRadarInsights';
+import FeedbackTabPanel from '@/components/feedback/FeedbackTabPanel';
+import CreateFeedbackLinkModal from '@/components/feedback/CreateFeedbackLinkModal';
 import { Download, FileText, Sparkles } from 'lucide-react';
 
-type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos' | 'insights';
+type Tab = 'details' | 'one-on-ones' | 'action-items' | 'pdp-goals' | 'kudos' | 'feedback' | 'insights';
 
 export default function PersonDetailPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -69,7 +71,7 @@ export default function PersonDetailPage() {
   const searchParams = useSearchParams();
   const personId = params.id as string;
 
-  const validTabs: Tab[] = ['details', 'one-on-ones', 'action-items', 'pdp-goals', 'kudos', 'insights'];
+  const validTabs: Tab[] = ['details', 'one-on-ones', 'action-items', 'pdp-goals', 'kudos', 'feedback', 'insights'];
   const tabParam = searchParams.get('tab') as Tab | null;
   const initialTab: Tab = tabParam && validTabs.includes(tabParam) ? tabParam : 'details';
 
@@ -124,6 +126,10 @@ export default function PersonDetailPage() {
   const [generatingNarrative, setGeneratingNarrative] = useState(false);
   const [narrativeResult, setNarrativeResult] = useState<string | null>(null);
   const [narrativeError, setNarrativeError] = useState<string | null>(null);
+
+  // Feedback links state
+  const [showCreateFeedbackLinkModal, setShowCreateFeedbackLinkModal] = useState(false);
+  const [feedbackRefreshKey, setFeedbackRefreshKey] = useState(0);
 
   const fetchPerson = useCallback(async () => {
     const token = getToken();
@@ -922,6 +928,29 @@ export default function PersonDetailPage() {
         >
           Kudos
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'feedback'}
+          aria-controls="tab-panel-feedback"
+          onClick={() => setActiveTab('feedback')}
+          data-testid="tab-feedback"
+          style={{
+            padding: '10px 20px',
+            border: 'none',
+            borderBottom: activeTab === 'feedback' ? '2px solid var(--color-primary)' : '2px solid transparent',
+            background: 'none',
+            fontSize: 'var(--text-body)',
+            fontWeight: activeTab === 'feedback' ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+            color: activeTab === 'feedback' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            cursor: 'pointer',
+            marginBottom: '-1px',
+            fontFamily: 'var(--font-mono)',
+            transition: 'color 0.2s',
+          }}
+        >
+          Feedback
+        </button>
         {userSettings?.aiAvailable && (
           <button
             type="button"
@@ -1383,6 +1412,18 @@ export default function PersonDetailPage() {
         </div>
       )}
 
+      {/* Feedback Tab Panel */}
+      {activeTab === 'feedback' && (
+        <div id="tab-panel-feedback" role="tabpanel" aria-labelledby="tab-feedback">
+          <FeedbackTabPanel
+            personId={personId}
+            aiAvailable={userSettings?.aiAvailable ?? false}
+            refreshKey={feedbackRefreshKey}
+            onCreateLink={() => setShowCreateFeedbackLinkModal(true)}
+          />
+        </div>
+      )}
+
       {/* Insights Tab Panel */}
       {activeTab === 'insights' && userSettings?.aiAvailable && (
         <div id="tab-panel-insights" role="tabpanel" aria-labelledby="tab-insights">
@@ -1415,6 +1456,16 @@ export default function PersonDetailPage() {
           error={narrativeError}
         />
       )}
+
+      {/* Create Feedback Link Modal */}
+      <CreateFeedbackLinkModal
+        isOpen={showCreateFeedbackLinkModal}
+        personId={personId}
+        personName={person.name}
+        aiAvailable={userSettings?.aiAvailable ?? false}
+        onClose={() => setShowCreateFeedbackLinkModal(false)}
+        onCreated={() => setFeedbackRefreshKey((k) => k + 1)}
+      />
     </div>
   );
 }

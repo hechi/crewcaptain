@@ -27,6 +27,8 @@ export interface UserSettings {
   linkSuggestionsPrompt: string | null;
   triageHintPrompt: string | null;
   commandTerminalPrompt: string | null;
+  feedbackTemplatePrompt: string | null;
+  feedbackSummaryPrompt: string | null;
   aiConfigSource: 'USER_SETTINGS' | 'ADMIN_DEFAULTS' | null;
   aiAvailable: boolean;
 }
@@ -57,6 +59,8 @@ export interface UpdateUserSettingsRequest {
   linkSuggestionsPrompt?: string | null;
   triageHintPrompt?: string | null;
   commandTerminalPrompt?: string | null;
+  feedbackTemplatePrompt?: string | null;
+  feedbackSummaryPrompt?: string | null;
 }
 
 export interface AiPrepResponse {

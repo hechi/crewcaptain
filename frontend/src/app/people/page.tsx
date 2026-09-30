@@ -12,6 +12,7 @@ import WorkspaceSelector from '@/components/workspace/WorkspaceSelector';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import CsvImportModal from '@/components/CsvImportModal';
+import BulkFeedbackLinksModal from '@/components/feedback/BulkFeedbackLinksModal';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function PeopleListPage() {
@@ -26,6 +27,7 @@ export default function PeopleListPage() {
   const [workspaceFilter, setWorkspaceFilter] = useState<string | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showBulkFeedbackModal, setShowBulkFeedbackModal] = useState(false);
 
   const fetchWorkspaces = useCallback(async () => {
     const token = getToken();
@@ -108,6 +110,25 @@ export default function PeopleListPage() {
             }}
           >
             Trash
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowBulkFeedbackModal(true)}
+            data-testid="bulk-feedback-links-button"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontWeight: 'var(--weight-semibold)',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              transition: 'box-shadow 0.2s',
+            }}
+          >
+            Bulk feedback links
           </button>
           <button
             type="button"
@@ -212,6 +233,12 @@ export default function PeopleListPage() {
           token={getToken() || ''}
         />
       )}
+
+      <BulkFeedbackLinksModal
+        isOpen={showBulkFeedbackModal}
+        people={people?.content ?? []}
+        onClose={() => setShowBulkFeedbackModal(false)}
+      />
     </div>
   );
 }
