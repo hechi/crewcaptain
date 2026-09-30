@@ -49,6 +49,12 @@ dependencies {
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    // PDF export: Markdown -> XHTML (CommonMark) -> PDF (Flying Saucer + PDFBox).
+    // Both are actively maintained and on Maven Central. Kept behind an output port
+    // (PdfRendererPort) so the domain stays framework-free (enforced by ArchUnit).
+    implementation("org.commonmark:commonmark:0.24.0")
+    implementation("org.xhtmlrenderer:flying-saucer-pdf:9.13.0")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")

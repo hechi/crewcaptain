@@ -7,6 +7,7 @@ import com.peoplemanager.application.port.output.KudosRepository
 import com.peoplemanager.application.port.output.OneOnOneEntryRepository
 import com.peoplemanager.application.port.output.PdpGoalRepository
 import com.peoplemanager.application.port.output.PdpUpdateRepository
+import com.peoplemanager.application.port.output.FeedbackResponseRepository
 import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.port.output.UserSettingsRepository
 import com.peoplemanager.domain.ActionItemStatus
@@ -29,6 +30,7 @@ class AiPrepService(
     private val pdpGoalRepository: PdpGoalRepository,
     private val pdpUpdateRepository: PdpUpdateRepository,
     private val kudosRepository: KudosRepository,
+    private val feedbackResponseRepository: FeedbackResponseRepository,
     private val aiClientPort: AiClientPort,
     private val aiConfigResolver: AiConfigResolver
 ) {
@@ -159,6 +161,25 @@ class AiPrepService(
         if (recentKudos.isNotEmpty()) {
             val kudosText = recentKudos.joinToString("\n") { "- ${it.text}" }
             sections.add("## Recent Kudos\n$kudosText")
+        }
+
+        // Approved peer feedback (free-text signal). Third-party opinion; included for prep
+        // context. Privacy Mode note: feedback is not per-item sensitive-tagged, but we cap
+        // volume and only use approved, non-flagged responses.
+        val approvedFeedback = feedbackResponseRepository
+            .findAllByUserIdAndPersonId(userId, personId)
+            .filter { it.isUsable }
+            .take(5)
+
+        if (approvedFeedback.isNotEmpty()) {
+            val feedbackText = approvedFeedback
+                .flatMap { it.freeTextParts() }
+                .filter { it.isNotBlank() }
+                .take(8)
+                .joinToString("\n") { "- $it" }
+            if (feedbackText.isNotBlank()) {
+                sections.add("## Recent Peer Feedback\n$feedbackText")
+            }
         }
 
         return sections.joinToString("\n\n")

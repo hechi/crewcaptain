@@ -14,7 +14,11 @@ data class ReviewPacketData(
     val actionItems: List<ActionItem>,
     val pdpGoals: List<PdpGoalWithUpdates>,
     val kudos: List<Kudos>,
-    val summary: ReviewPacketSummary
+    val summary: ReviewPacketSummary,
+    /** Approved, non-flagged peer feedback for the period (optional). */
+    val feedback: List<FeedbackResponse> = emptyList(),
+    /** Latest saved AI feedback summary content, if any (optional). */
+    val feedbackSummary: String? = null
 )
 
 /**

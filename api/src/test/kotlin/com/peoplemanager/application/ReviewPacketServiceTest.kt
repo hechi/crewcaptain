@@ -1,6 +1,7 @@
 package com.peoplemanager.application
 
 import com.peoplemanager.application.port.output.ActionItemRepository
+import com.peoplemanager.application.port.output.FeedbackResponseRepository
 import com.peoplemanager.application.port.output.KudosRepository
 import com.peoplemanager.application.port.output.OneOnOneEntryRepository
 import com.peoplemanager.application.port.output.PdpGoalRepository
@@ -30,6 +31,8 @@ class ReviewPacketServiceTest {
     private lateinit var pdpGoalRepository: PdpGoalRepository
     private lateinit var pdpUpdateRepository: PdpUpdateRepository
     private lateinit var kudosRepository: KudosRepository
+    private lateinit var feedbackResponseRepository: FeedbackResponseRepository
+    private lateinit var feedbackSummaryRepository: com.peoplemanager.application.port.output.FeedbackSummaryRepository
     private lateinit var service: ReviewPacketService
 
     private val userId = UserId.generate()
@@ -45,9 +48,14 @@ class ReviewPacketServiceTest {
         pdpGoalRepository = mockk()
         pdpUpdateRepository = mockk()
         kudosRepository = mockk()
+        feedbackResponseRepository = mockk()
+        every { feedbackResponseRepository.findAllByUserIdAndPersonId(userId, personId) } returns emptyList()
+        feedbackSummaryRepository = mockk()
+        every { feedbackSummaryRepository.findLatestByUserIdAndPersonId(userId, personId) } returns null
         service = ReviewPacketService(
             personRepository, oneOnOneEntryRepository, actionItemRepository,
-            pdpGoalRepository, pdpUpdateRepository, kudosRepository
+            pdpGoalRepository, pdpUpdateRepository, kudosRepository, feedbackResponseRepository,
+            feedbackSummaryRepository
         )
     }
 

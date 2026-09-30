@@ -22,6 +22,7 @@ class AiPrepServiceTest {
     private val pdpGoalRepository = mockk<PdpGoalRepository>()
     private val pdpUpdateRepository = mockk<PdpUpdateRepository>()
     private val kudosRepository = mockk<KudosRepository>()
+    private val feedbackResponseRepository = mockk<FeedbackResponseRepository>()
     private val aiClientPort = mockk<AiClientPort>()
     private val aiConfigResolver = AiConfigResolver(defaultBaseUrl = "", defaultApiKey = "", defaultModel = "")
 
@@ -56,9 +57,12 @@ class AiPrepServiceTest {
             pdpGoalRepository,
             pdpUpdateRepository,
             kudosRepository,
+            feedbackResponseRepository,
             aiClientPort,
             aiConfigResolver
         )
+        // Default: no peer feedback (individual tests can override).
+        every { feedbackResponseRepository.findAllByUserIdAndPersonId(userId, personId) } returns emptyList()
     }
 
     @Test
