@@ -89,6 +89,12 @@ class UserSettingsEntity(
     @Column(name = "command_terminal_prompt", columnDefinition = "TEXT")
     val commandTerminalPrompt: String? = null,
 
+    @Column(name = "feedback_template_prompt", columnDefinition = "TEXT")
+    val feedbackTemplatePrompt: String? = null,
+
+    @Column(name = "feedback_summary_prompt", columnDefinition = "TEXT")
+    val feedbackSummaryPrompt: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

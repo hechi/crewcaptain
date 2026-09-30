@@ -86,7 +86,9 @@ class UserSettingsController(
             strategyOptimizationPrompt = request.strategyOptimizationPrompt,
             triageHintPrompt = request.triageHintPrompt,
             aiAutoExecuteCommands = request.aiAutoExecuteCommands,
-            commandTerminalPrompt = request.commandTerminalPrompt
+            commandTerminalPrompt = request.commandTerminalPrompt,
+            feedbackTemplatePrompt = request.feedbackTemplatePrompt,
+            feedbackSummaryPrompt = request.feedbackSummaryPrompt
         )
 
         val settings = userSettingsService.updateSettings(userId, command)
