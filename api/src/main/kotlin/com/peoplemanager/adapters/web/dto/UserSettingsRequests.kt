@@ -38,5 +38,7 @@ data class UpdateUserSettingsRequest(
     val strategyOptimizationPrompt: String? = null,
     val triageHintPrompt: String? = null,
     val aiAutoExecuteCommands: Boolean = false,
-    val commandTerminalPrompt: String? = null
+    val commandTerminalPrompt: String? = null,
+    val feedbackTemplatePrompt: String? = null,
+    val feedbackSummaryPrompt: String? = null
 )

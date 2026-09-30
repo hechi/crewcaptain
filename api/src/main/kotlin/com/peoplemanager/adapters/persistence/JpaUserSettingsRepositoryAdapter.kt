@@ -51,6 +51,8 @@ class JpaUserSettingsRepositoryAdapter(
         triageHintPrompt = this.triageHintPrompt,
         aiAutoExecuteCommands = this.aiAutoExecuteCommands,
         commandTerminalPrompt = this.commandTerminalPrompt,
+        feedbackTemplatePrompt = this.feedbackTemplatePrompt,
+        feedbackSummaryPrompt = this.feedbackSummaryPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
@@ -83,6 +85,8 @@ class JpaUserSettingsRepositoryAdapter(
         triageHintPrompt = this.triageHintPrompt,
         aiAutoExecuteCommands = this.aiAutoExecuteCommands,
         commandTerminalPrompt = this.commandTerminalPrompt,
+        feedbackTemplatePrompt = this.feedbackTemplatePrompt,
+        feedbackSummaryPrompt = this.feedbackSummaryPrompt,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

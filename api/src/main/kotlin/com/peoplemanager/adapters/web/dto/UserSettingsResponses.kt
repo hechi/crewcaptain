@@ -29,6 +29,8 @@ data class UserSettingsResponse(
     val triageHintPrompt: String?,
     val aiAutoExecuteCommands: Boolean,
     val commandTerminalPrompt: String?,
+    val feedbackTemplatePrompt: String?,
+    val feedbackSummaryPrompt: String?,
     val aiConfigSource: String?,
     val aiAvailable: Boolean
 ) {
@@ -59,6 +61,8 @@ data class UserSettingsResponse(
             triageHintPrompt = settings.triageHintPrompt,
             aiAutoExecuteCommands = settings.aiAutoExecuteCommands,
             commandTerminalPrompt = settings.commandTerminalPrompt,
+            feedbackTemplatePrompt = settings.feedbackTemplatePrompt,
+            feedbackSummaryPrompt = settings.feedbackSummaryPrompt,
             aiConfigSource = resolvedConfig?.source?.name,
             aiAvailable = resolvedConfig != null
         )
