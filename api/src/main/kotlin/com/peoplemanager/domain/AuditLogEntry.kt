@@ -16,7 +16,13 @@ enum class AuditAction {
     DELETE,
     RESTORE,
     LINK,
-    UNLINK
+    UNLINK,
+    SUBMIT,
+    APPROVE,
+    FLAG,
+    REVOKE,
+    EXTEND,
+    CONVERT
 }
 
 enum class AuditEntityType {
@@ -30,7 +36,11 @@ enum class AuditEntityType {
     QUICK_NOTE,
     USER_SETTINGS,
     WORKSPACE,
-    STRATEGY_GOAL
+    STRATEGY_GOAL,
+    FEEDBACK_TEMPLATE,
+    FEEDBACK_LINK,
+    FEEDBACK_RESPONSE,
+    FEEDBACK_SUMMARY
 }
 
 /**
@@ -339,6 +349,131 @@ data class AuditLogEntry(
                 entityType = AuditEntityType.STRATEGY_GOAL,
                 entityId = strategyGoalId.value.toString(),
                 summary = "Dropped strategy goal \"$title\""
+            )
+
+        // ===== Feedback templates =====
+
+        fun feedbackTemplateCreated(userId: UserId, templateId: FeedbackTemplateId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.CREATE,
+                entityType = AuditEntityType.FEEDBACK_TEMPLATE,
+                entityId = templateId.value.toString(),
+                summary = "Created feedback template \"${title.take(200)}\""
+            )
+
+        fun feedbackTemplateUpdated(userId: UserId, templateId: FeedbackTemplateId, title: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.UPDATE,
+                entityType = AuditEntityType.FEEDBACK_TEMPLATE,
+                entityId = templateId.value.toString(),
+                summary = "Updated feedback template \"${title.take(200)}\""
+            )
+
+        fun feedbackTemplateDeleted(userId: UserId, templateId: FeedbackTemplateId): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.DELETE,
+                entityType = AuditEntityType.FEEDBACK_TEMPLATE,
+                entityId = templateId.value.toString(),
+                summary = "Deleted feedback template"
+            )
+
+        // ===== Feedback links =====
+
+        fun feedbackLinkCreated(userId: UserId, linkId: FeedbackLinkId, personId: PersonId, personName: String, templateTitle: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.CREATE,
+                entityType = AuditEntityType.FEEDBACK_LINK,
+                entityId = linkId.value.toString(),
+                personId = personId,
+                summary = "Created feedback link \"${templateTitle.take(150)}\" for \"$personName\""
+            )
+
+        fun feedbackLinkRevoked(userId: UserId, linkId: FeedbackLinkId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.REVOKE,
+                entityType = AuditEntityType.FEEDBACK_LINK,
+                entityId = linkId.value.toString(),
+                personId = personId,
+                summary = "Revoked feedback link for \"$personName\""
+            )
+
+        fun feedbackLinkExtended(userId: UserId, linkId: FeedbackLinkId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.EXTEND,
+                entityType = AuditEntityType.FEEDBACK_LINK,
+                entityId = linkId.value.toString(),
+                personId = personId,
+                summary = "Extended feedback link for \"$personName\""
+            )
+
+        // ===== Feedback responses =====
+
+        fun feedbackResponseSubmitted(userId: UserId, responseId: FeedbackResponseId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.SUBMIT,
+                entityType = AuditEntityType.FEEDBACK_RESPONSE,
+                entityId = responseId.value.toString(),
+                personId = personId,
+                summary = "Feedback submitted for \"$personName\""
+            )
+
+        fun feedbackResponseApproved(userId: UserId, responseId: FeedbackResponseId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.APPROVE,
+                entityType = AuditEntityType.FEEDBACK_RESPONSE,
+                entityId = responseId.value.toString(),
+                personId = personId,
+                summary = "Approved feedback response for \"$personName\""
+            )
+
+        fun feedbackResponseFlagged(userId: UserId, responseId: FeedbackResponseId, personId: PersonId, personName: String, flagged: Boolean): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.FLAG,
+                entityType = AuditEntityType.FEEDBACK_RESPONSE,
+                entityId = responseId.value.toString(),
+                personId = personId,
+                summary = if (flagged) "Flagged feedback response for \"$personName\"" else "Unflagged feedback response for \"$personName\""
+            )
+
+        fun feedbackResponseDeleted(userId: UserId, responseId: FeedbackResponseId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.DELETE,
+                entityType = AuditEntityType.FEEDBACK_RESPONSE,
+                entityId = responseId.value.toString(),
+                personId = personId,
+                summary = "Deleted feedback response for \"$personName\""
+            )
+
+        fun feedbackResponseConverted(userId: UserId, responseId: FeedbackResponseId, personId: PersonId, conversionType: FeedbackConversionType, targetId: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.CONVERT,
+                entityType = AuditEntityType.FEEDBACK_RESPONSE,
+                entityId = responseId.value.toString(),
+                personId = personId,
+                summary = "Converted feedback response to ${conversionType.name} ($targetId)"
+            )
+
+        // ===== Feedback summaries =====
+
+        fun feedbackSummarySaved(userId: UserId, summaryId: FeedbackSummaryId, personId: PersonId, personName: String): AuditLogEntry =
+            AuditLogEntry(
+                userId = userId,
+                action = AuditAction.CREATE,
+                entityType = AuditEntityType.FEEDBACK_SUMMARY,
+                entityId = summaryId.value.toString(),
+                personId = personId,
+                summary = "Saved feedback summary for \"$personName\""
             )
     }
 }

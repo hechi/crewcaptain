@@ -36,6 +36,8 @@ data class UserSettings(
     val triageHintPrompt: String? = null,
     val aiAutoExecuteCommands: Boolean = false,
     val commandTerminalPrompt: String? = null,
+    val feedbackTemplatePrompt: String? = null,
+    val feedbackSummaryPrompt: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -161,6 +163,18 @@ data class UserSettings(
      */
     fun effectiveCommandTerminalPrompt(): String =
         commandTerminalPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_COMMAND_TERMINAL_PROMPT
+
+    /**
+     * Returns the effective feedback template generation prompt (custom or default).
+     */
+    fun effectiveFeedbackTemplatePrompt(): String =
+        feedbackTemplatePrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_FEEDBACK_TEMPLATE_PROMPT
+
+    /**
+     * Returns the effective feedback summary prompt (custom or default).
+     */
+    fun effectiveFeedbackSummaryPrompt(): String =
+        feedbackSummaryPrompt?.takeIf { it.isNotBlank() } ?: DEFAULT_FEEDBACK_SUMMARY_PROMPT
 
     companion object {
         const val DEFAULT_DUE_SOON_DAYS = 3
@@ -305,6 +319,40 @@ data class UserSettings(
             "- If no due date is mentioned, set due_date to null. " +
             "- Extract any hashtags or category words as tags. " +
             "- Set sensitive to true only if the user explicitly marks content as sensitive or private."
+
+        const val DEFAULT_FEEDBACK_TEMPLATE_PROMPT =
+            "You are an expert in performance management and 360-degree feedback design. " +
+            "Given a short brief, produce a compact feedback survey template as JSON. " +
+            "RULES: " +
+            "- Output ONLY valid JSON. No markdown code fences, no preamble, no explanation. " +
+            "- The JSON must be an object with keys: " +
+            "'title' (string, <=200 chars), " +
+            "'description' (string or null, a one-line purpose), " +
+            "'questions' (array, 3 to 8 items). " +
+            "- Each question object must have: " +
+            "'id' (short unique string like 'q1', 'q2'), " +
+            "'type' (one of 'RATING', 'LIKERT', 'TEXT'), " +
+            "'text' (the question, <=500 chars), " +
+            "'required' (boolean), " +
+            "'lowLabel' (string or null, only for RATING), " +
+            "'highLabel' (string or null, only for RATING), " +
+            "'showIf' (null, or an object {\"questionId\": <id of an EARLIER rating/likert question>, \"operator\": one of 'LTE'|'GTE'|'EQ', \"value\": integer 1-5}). " +
+            "- RATING is a 1-5 numeric scale; provide short lowLabel/highLabel. " +
+            "- LIKERT is a 5-point agreement scale (Strongly disagree..Strongly agree). " +
+            "- Use showIf only for optional follow-up TEXT questions that elaborate on a low/high rating. " +
+            "- showIf may only reference an earlier RATING or LIKERT question that is itself unconditional. " +
+            "- Keep the survey short and focused on the brief. Prefer a mix of one or two ratings/likerts and an open text question."
+
+        const val DEFAULT_FEEDBACK_SUMMARY_PROMPT =
+            "You are a leadership coach. Summarize the collected peer feedback about a team member into a short, " +
+            "balanced narrative for the manager to use in review prep and 1:1s. " +
+            "RULES: " +
+            "- Write 1-2 short paragraphs, objective and supportive. " +
+            "- Weave in the average rating and the most common themes. " +
+            "- Note strengths and any development areas fairly, without over-indexing on a single response. " +
+            "- Do NOT invent facts not present in the feedback. " +
+            "- Do NOT include any preamble like 'Here is the summary'. Output ONLY the narrative. " +
+            "- Do NOT use markdown headers; plain prose is fine."
 
         fun createDefault(userId: UserId): UserSettings = UserSettings(userId = userId)
     }

@@ -137,3 +137,68 @@ data class OidcIdentity(
         require(issuer.isNotBlank()) { "OIDC issuer must not be blank" }
     }
 }
+
+@JvmInline
+value class FeedbackTemplateId(val value: UUID) {
+    companion object {
+        fun generate(): FeedbackTemplateId = FeedbackTemplateId(UUID.randomUUID())
+    }
+}
+
+@JvmInline
+value class FeedbackLinkId(val value: UUID) {
+    companion object {
+        fun generate(): FeedbackLinkId = FeedbackLinkId(UUID.randomUUID())
+    }
+}
+
+@JvmInline
+value class FeedbackResponseId(val value: UUID) {
+    companion object {
+        fun generate(): FeedbackResponseId = FeedbackResponseId(UUID.randomUUID())
+    }
+}
+
+@JvmInline
+value class FeedbackSummaryId(val value: UUID) {
+    companion object {
+        fun generate(): FeedbackSummaryId = FeedbackSummaryId(UUID.randomUUID())
+    }
+}
+
+enum class FeedbackQuestionType {
+    /** 1-5 numeric rating with endpoint labels. */
+    RATING,
+
+    /** 5-point Likert scale, stored as 1..5 (Strongly disagree..Strongly agree). */
+    LIKERT,
+
+    /** Free-text answer. */
+    TEXT
+}
+
+/** Comparison operator for a single-level conditional show rule. */
+enum class ShowIfOperator {
+    LTE, // show when the referenced answer value is <= threshold
+    GTE, // show when the referenced answer value is >= threshold
+    EQ   // show when the referenced answer value == threshold
+}
+
+/** Lifecycle state of a feedback link, derived from expiry/revocation. */
+enum class FeedbackLinkStatus {
+    ACTIVE, EXPIRED, REVOKED
+}
+
+/** Manager review state of a submitted response. */
+enum class FeedbackResponseStatus {
+    /** Newly submitted, awaiting manager review. */
+    PENDING,
+
+    /** Manager cleared it for use in packets/prep/summaries/export. */
+    APPROVED
+}
+
+/** Target of a response conversion. */
+enum class FeedbackConversionType {
+    KUDO, QUICK_NOTE, ACTION_ITEM
+}
