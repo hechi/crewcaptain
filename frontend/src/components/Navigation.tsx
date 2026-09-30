@@ -161,6 +161,19 @@ export default function Navigation() {
           >
             Search
           </Link>
+          <Link
+            href="/feedback-templates"
+            data-testid="nav-feedback-templates"
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              transition: 'color 0.2s',
+            }}
+          >
+            Feedback
+          </Link>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

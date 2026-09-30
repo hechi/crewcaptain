@@ -8,6 +8,7 @@ export const config = {
     '/quick-notes/:path*',
     '/search/:path*',
     '/settings/:path*',
+    '/feedback-templates/:path*',
     '/notifications/:path*',
     '/audit-log/:path*',
     '/workspaces/:path*',

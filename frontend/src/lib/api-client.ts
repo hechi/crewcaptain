@@ -1176,3 +1176,280 @@ export async function getPersonDirectory(token: string): Promise<PersonDirectory
   const response = await fetchWithAuth(`${API_BASE_URL}/ai/command/directory`, {}, token);
   return response.json();
 }
+
+// --- Feedback Links feature ---
+
+import {
+  FeedbackTemplate,
+  FeedbackTemplateDraft,
+  SaveFeedbackTemplateRequest,
+  FeedbackLink,
+  CreateFeedbackLinkRequest,
+  BulkCreateFeedbackLinkRequest,
+  BulkFeedbackLinkResult,
+  FeedbackResponseItem,
+  UpdateFeedbackResponseRequest,
+  ConvertFeedbackResponseRequest,
+  FeedbackResponseStatus,
+  FeedbackAnalytics,
+  FeedbackSummary,
+  PublicFeedbackForm,
+  PublicFeedbackSubmission,
+} from '@/types/feedback';
+
+// Templates
+
+export async function listFeedbackTemplates(token: string): Promise<FeedbackTemplate[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-templates`, {}, token);
+  return response.json();
+}
+
+export async function getFeedbackTemplate(token: string, id: string): Promise<FeedbackTemplate> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-templates/${id}`, {}, token);
+  return response.json();
+}
+
+export async function getFeedbackStarterTemplates(token: string): Promise<FeedbackTemplateDraft[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-templates/starters`, {}, token);
+  return response.json();
+}
+
+export async function createFeedbackTemplate(token: string, data: SaveFeedbackTemplateRequest): Promise<FeedbackTemplate> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-templates`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function updateFeedbackTemplate(token: string, id: string, data: SaveFeedbackTemplateRequest): Promise<FeedbackTemplate> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-templates/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function deleteFeedbackTemplate(token: string, id: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/feedback-templates/${id}`, { method: 'DELETE' }, token);
+}
+
+/**
+ * Ask AI to draft a template from a brief. Returns { draft } on success or { error } when
+ * the AI is unavailable or produced unusable output (HTTP 422).
+ */
+export async function generateFeedbackTemplate(
+  token: string,
+  brief: string
+): Promise<{ draft?: FeedbackTemplateDraft; error?: string }> {
+  const response = await fetch(`${API_BASE_URL}/feedback-templates/ai-generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ brief }),
+  });
+  if (response.ok) return { draft: await response.json() };
+  try {
+    const body = await response.json();
+    return { error: body.message || 'Failed to generate template' };
+  } catch {
+    return { error: 'Failed to generate template' };
+  }
+}
+
+// Links
+
+export async function listFeedbackLinks(token: string, personId: string): Promise<FeedbackLink[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/feedback-links`, {}, token);
+  return response.json();
+}
+
+export async function createFeedbackLink(token: string, personId: string, data: CreateFeedbackLinkRequest): Promise<FeedbackLink> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/feedback-links`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function bulkCreateFeedbackLinks(token: string, data: BulkCreateFeedbackLinkRequest): Promise<BulkFeedbackLinkResult> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-links/bulk`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function revokeFeedbackLink(token: string, linkId: string): Promise<FeedbackLink> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-links/${linkId}/revoke`, { method: 'POST' }, token);
+  return response.json();
+}
+
+export async function extendFeedbackLink(token: string, linkId: string, expiresInDays: number): Promise<FeedbackLink> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-links/${linkId}/extend`, {
+    method: 'POST',
+    body: JSON.stringify({ expiresInDays }),
+  }, token);
+  return response.json();
+}
+
+// Responses
+
+export async function listFeedbackResponses(
+  token: string,
+  personId: string,
+  params?: { status?: FeedbackResponseStatus; flagged?: boolean }
+): Promise<FeedbackResponseItem[]> {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set('status', params.status);
+  if (params?.flagged !== undefined) sp.set('flagged', String(params.flagged));
+  const qs = sp.toString();
+  const url = `${API_BASE_URL}/persons/${personId}/feedback-responses${qs ? `?${qs}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function updateFeedbackResponse(token: string, responseId: string, data: UpdateFeedbackResponseRequest): Promise<FeedbackResponseItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-responses/${responseId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+export async function deleteFeedbackResponse(token: string, responseId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/feedback-responses/${responseId}`, { method: 'DELETE' }, token);
+}
+
+export async function bulkUpdateFeedbackResponses(
+  token: string,
+  data: { responseIds: string[]; action: 'APPROVE' | 'DELETE' }
+): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/feedback-responses/bulk`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+}
+
+export async function convertFeedbackResponse(token: string, responseId: string, data: ConvertFeedbackResponseRequest): Promise<FeedbackResponseItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/feedback-responses/${responseId}/convert`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+// Analytics & summaries
+
+export async function getFeedbackAnalytics(
+  token: string,
+  personId: string,
+  params?: { from?: string; to?: string; bucket?: 'MONTH' | 'QUARTER' }
+): Promise<FeedbackAnalytics> {
+  const sp = new URLSearchParams();
+  if (params?.from) sp.set('from', params.from);
+  if (params?.to) sp.set('to', params.to);
+  if (params?.bucket) sp.set('bucket', params.bucket);
+  const qs = sp.toString();
+  const url = `${API_BASE_URL}/persons/${personId}/feedback-analytics${qs ? `?${qs}` : ''}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.json();
+}
+
+export async function listFeedbackSummaries(token: string, personId: string): Promise<FeedbackSummary[]> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/feedback-summaries`, {}, token);
+  return response.json();
+}
+
+export async function generateFeedbackSummary(
+  token: string,
+  personId: string,
+  params?: { from?: string; to?: string }
+): Promise<{ content?: string; error?: string }> {
+  const response = await fetch(`${API_BASE_URL}/persons/${personId}/feedback-summary/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ from: params?.from || null, to: params?.to || null }),
+  });
+  if (response.ok) return response.json();
+  try {
+    const body = await response.json();
+    return { error: body.message || 'Failed to generate summary' };
+  } catch {
+    return { error: 'Failed to generate summary' };
+  }
+}
+
+export async function saveFeedbackSummary(
+  token: string,
+  personId: string,
+  data: { periodFrom: string; periodTo: string; content: string; responseCount: number }
+): Promise<FeedbackSummary> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/persons/${personId}/feedback-summaries`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  return response.json();
+}
+
+// Export (Markdown text / PDF blob)
+
+export async function exportFeedbackMarkdown(
+  token: string,
+  personId: string,
+  params?: { ids?: string[] }
+): Promise<string> {
+  const sp = new URLSearchParams();
+  sp.set('format', 'md');
+  if (params?.ids?.length) sp.set('ids', params.ids.join(','));
+  const url = `${API_BASE_URL}/persons/${personId}/feedback-export?${sp.toString()}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.text();
+}
+
+export async function exportFeedbackPdf(
+  token: string,
+  personId: string,
+  params?: { ids?: string[] }
+): Promise<Blob> {
+  const sp = new URLSearchParams();
+  sp.set('format', 'pdf');
+  if (params?.ids?.length) sp.set('ids', params.ids.join(','));
+  const url = `${API_BASE_URL}/persons/${personId}/feedback-export?${sp.toString()}`;
+  const response = await fetchWithAuth(url, {}, token);
+  return response.blob();
+}
+
+// --- Public feedback form (NO authentication) ---
+
+export async function getPublicFeedbackForm(token: string): Promise<PublicFeedbackForm> {
+  const response = await fetch(`${API_BASE_URL}/public/feedback/${encodeURIComponent(token)}`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    let body: ApiError;
+    try {
+      body = await response.json();
+    } catch {
+      body = { status: response.status, error: response.statusText || 'Error', message: 'Failed to load form', timestamp: new Date().toISOString() };
+    }
+    throw new ApiException(body.status, body.error, body.message, body.timestamp);
+  }
+  return response.json();
+}
+
+export async function submitPublicFeedback(token: string, submission: PublicFeedbackSubmission): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/public/feedback/${encodeURIComponent(token)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(submission),
+  });
+  if (!response.ok) {
+    let body: ApiError;
+    try {
+      body = await response.json();
+    } catch {
+      body = { status: response.status, error: response.statusText || 'Error', message: 'Failed to submit feedback', timestamp: new Date().toISOString() };
+    }
+    throw new ApiException(body.status, body.error, body.message, body.timestamp);
+  }
+}
