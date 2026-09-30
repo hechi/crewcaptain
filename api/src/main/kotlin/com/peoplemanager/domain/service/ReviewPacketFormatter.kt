@@ -26,6 +26,7 @@ object ReviewPacketFormatter {
         appendActionItemsSection(sb, data.actionItems, data.summary)
         appendPdpSection(sb, data.pdpGoals, data.summary)
         appendKudosSection(sb, data.kudos, data.summary)
+        appendFeedbackSection(sb, data)
         appendFooter(sb, data)
 
         return sb.toString()
@@ -257,6 +258,53 @@ object ReviewPacketFormatter {
             sb.appendLine("- **$dateStr**$tagsStr — ${kudos.text}")
         }
         sb.appendLine()
+    }
+
+    private fun appendFeedbackSection(sb: StringBuilder, data: ReviewPacketData) {
+        // Only render the section if there is approved feedback or a saved summary.
+        if (data.feedback.isEmpty() && data.feedbackSummary.isNullOrBlank()) return
+
+        sb.appendLine("## Peer Feedback")
+        sb.appendLine()
+
+        data.feedbackSummary?.takeIf { it.isNotBlank() }?.let { summary ->
+            sb.appendLine("**Summary:**")
+            sb.appendLine()
+            sb.appendLine(summary.trim())
+            sb.appendLine()
+        }
+
+        if (data.feedback.isEmpty()) {
+            sb.appendLine("*No approved feedback responses during this period.*")
+            sb.appendLine()
+            return
+        }
+
+        val ratings = data.feedback.flatMap { it.ratingValues() }
+        if (ratings.isNotEmpty()) {
+            sb.appendLine("**Average rating:** ${"%.2f".format(ratings.average())} (${ratings.size} ratings across ${data.feedback.size} responses)")
+            sb.appendLine()
+        }
+
+        data.feedback.forEach { response ->
+            val who = if (response.anonymous) "Anonymous" else (response.submitterName ?: "Unnamed")
+            val dateStr = formatInstant(response.createdAt)
+            sb.appendLine("### $who — $dateStr")
+            sb.appendLine()
+            response.answers.forEach { a ->
+                when {
+                    a.ratingValue != null -> sb.appendLine("- **${a.questionId}:** ${a.ratingValue}/5")
+                    !a.textValue.isNullOrBlank() -> sb.appendLine("- **${a.questionId}:** ${a.textValue.trim()}")
+                }
+            }
+            response.additionalComments?.takeIf { it.isNotBlank() }?.let {
+                sb.appendLine()
+                sb.appendLine(it.trim())
+            }
+            sb.appendLine()
+            sb.appendLine("---")
+            sb.appendLine()
+        }
     }
 
     private fun appendFooter(sb: StringBuilder, data: ReviewPacketData) {

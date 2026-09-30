@@ -503,4 +503,54 @@ class ReviewPacketFormatterTest {
             result shouldContain "for period 2024-01-01 to 2024-06-30"
         }
     }
+
+    @Nested
+    inner class FeedbackSectionTests {
+        private fun feedbackResponse(
+            anonymous: Boolean = true,
+            submitterName: String? = null,
+            rating: Int = 4,
+            comment: String? = "Great collaboration"
+        ) = FeedbackResponse(
+            id = FeedbackResponseId.generate(),
+            userId = userId,
+            personId = personId,
+            linkId = FeedbackLinkId.generate(),
+            anonymous = anonymous,
+            submitterName = submitterName,
+            answers = listOf(FeedbackAnswer("q1", ratingValue = rating)),
+            additionalComments = comment,
+            status = FeedbackResponseStatus.APPROVED
+        )
+
+        @Test
+        fun `omits the peer feedback section when there is no feedback or summary`() {
+            val result = ReviewPacketFormatter.format(createReviewPacketData())
+            result shouldNotContain "## Peer Feedback"
+        }
+
+        @Test
+        fun `renders approved feedback with average rating`() {
+            val data = createReviewPacketData().copy(feedback = listOf(feedbackResponse(rating = 4), feedbackResponse(rating = 2)))
+            val result = ReviewPacketFormatter.format(data)
+            result shouldContain "## Peer Feedback"
+            result shouldContain "Average rating:** 3.00"
+            result shouldContain "Great collaboration"
+        }
+
+        @Test
+        fun `renders a saved summary`() {
+            val data = createReviewPacketData().copy(feedbackSummary = "Alex is consistently reliable.")
+            val result = ReviewPacketFormatter.format(data)
+            result shouldContain "## Peer Feedback"
+            result shouldContain "Alex is consistently reliable."
+        }
+
+        @Test
+        fun `anonymous feedback is labeled Anonymous`() {
+            val data = createReviewPacketData().copy(feedback = listOf(feedbackResponse(anonymous = true)))
+            val result = ReviewPacketFormatter.format(data)
+            result shouldContain "### Anonymous"
+        }
+    }
 }

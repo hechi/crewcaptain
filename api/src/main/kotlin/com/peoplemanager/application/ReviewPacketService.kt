@@ -5,10 +5,13 @@ import com.peoplemanager.application.port.output.KudosRepository
 import com.peoplemanager.application.port.output.OneOnOneEntryRepository
 import com.peoplemanager.application.port.output.PdpGoalRepository
 import com.peoplemanager.application.port.output.PdpUpdateRepository
+import com.peoplemanager.application.port.output.FeedbackResponseRepository
+import com.peoplemanager.application.port.output.FeedbackSummaryRepository
 import com.peoplemanager.application.port.output.PersonRepository
 import com.peoplemanager.application.port.output.ReviewPacketPort
 import com.peoplemanager.application.queries.GenerateReviewPacketQuery
 import com.peoplemanager.domain.ActionItem
+import com.peoplemanager.domain.FeedbackResponse
 import com.peoplemanager.domain.Kudos
 import com.peoplemanager.domain.OneOnOneEntry
 import com.peoplemanager.domain.PdpGoalWithUpdates
@@ -30,7 +33,9 @@ class ReviewPacketService(
     private val actionItemRepository: ActionItemRepository,
     private val pdpGoalRepository: PdpGoalRepository,
     private val pdpUpdateRepository: PdpUpdateRepository,
-    private val kudosRepository: KudosRepository
+    private val kudosRepository: KudosRepository,
+    private val feedbackResponseRepository: FeedbackResponseRepository,
+    private val feedbackSummaryRepository: FeedbackSummaryRepository
 ) : ReviewPacketPort {
 
     companion object {
@@ -45,6 +50,9 @@ class ReviewPacketService(
         val actionItems = fetchActionItems(query)
         val pdpGoals = fetchPdpGoals(query)
         val kudos = fetchKudos(query)
+        val feedback = fetchFeedback(query)
+        val feedbackSummary = feedbackSummaryRepository
+            .findLatestByUserIdAndPersonId(query.userId, query.personId)?.content
 
         val summary = ReviewPacketSummary.compute(entries, actionItems, pdpGoals, kudos)
 
@@ -56,7 +64,9 @@ class ReviewPacketService(
             actionItems = actionItems,
             pdpGoals = pdpGoals,
             kudos = kudos,
-            summary = summary
+            summary = summary,
+            feedback = feedback,
+            feedbackSummary = feedbackSummary
         )
 
         return ReviewPacketFormatter.format(packetData)
@@ -115,6 +125,16 @@ class ReviewPacketService(
 
         return filterByDateRange(kudos, query.dateFrom, query.dateTo) { k ->
             k.date
+        }
+    }
+
+    private fun fetchFeedback(query: GenerateReviewPacketQuery): List<FeedbackResponse> {
+        val all = feedbackResponseRepository.findAllByUserIdAndPersonId(query.userId, query.personId)
+        // Approved and non-flagged only, within the review period.
+        return all.filter { it.isUsable }.let { usable ->
+            filterByDateRange(usable, query.dateFrom, query.dateTo) { r ->
+                r.createdAt.atZone(ZoneOffset.UTC).toLocalDate()
+            }
         }
     }
 
