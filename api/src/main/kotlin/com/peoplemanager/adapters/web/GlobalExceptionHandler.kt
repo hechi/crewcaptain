@@ -2,6 +2,13 @@ package com.peoplemanager.adapters.web
 
 import com.peoplemanager.adapters.web.dto.ErrorResponse
 import com.peoplemanager.application.ActionItemNotFoundException
+import com.peoplemanager.application.FeedbackLinkExpiredException
+import com.peoplemanager.application.FeedbackLinkNotFoundException
+import com.peoplemanager.application.FeedbackLinkRevokedException
+import com.peoplemanager.application.FeedbackLinkTokenNotFoundException
+import com.peoplemanager.application.FeedbackResponseNotFoundException
+import com.peoplemanager.application.FeedbackSubmissionInvalidException
+import com.peoplemanager.application.FeedbackTemplateNotFoundException
 import com.peoplemanager.application.KudosNotFoundException
 import com.peoplemanager.application.NotificationNotFoundException
 import com.peoplemanager.application.OneOnOneEntryNotFoundException
@@ -159,6 +166,83 @@ class GlobalExceptionHandler {
             timestamp = Instant.now()
         )
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(FeedbackTemplateNotFoundException::class)
+    fun handleFeedbackTemplateNotFoundException(ex: FeedbackTemplateNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = "Feedback template not found",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(FeedbackLinkNotFoundException::class)
+    fun handleFeedbackLinkNotFoundException(ex: FeedbackLinkNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = "Feedback link not found",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(FeedbackResponseNotFoundException::class)
+    fun handleFeedbackResponseNotFoundException(ex: FeedbackResponseNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = "Feedback response not found",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(FeedbackLinkTokenNotFoundException::class)
+    fun handleFeedbackLinkTokenNotFoundException(ex: FeedbackLinkTokenNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = "This feedback link was not found",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(FeedbackLinkExpiredException::class)
+    fun handleFeedbackLinkExpiredException(ex: FeedbackLinkExpiredException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.GONE.value(),
+            error = HttpStatus.GONE.reasonPhrase,
+            message = "This link has expired",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.GONE).body(error)
+    }
+
+    @ExceptionHandler(FeedbackLinkRevokedException::class)
+    fun handleFeedbackLinkRevokedException(ex: FeedbackLinkRevokedException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.GONE.value(),
+            error = HttpStatus.GONE.reasonPhrase,
+            message = "This link has been revoked",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.GONE).body(error)
+    }
+
+    @ExceptionHandler(FeedbackSubmissionInvalidException::class)
+    fun handleFeedbackSubmissionInvalidException(ex: FeedbackSubmissionInvalidException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = ex.message ?: "Invalid submission",
+            timestamp = Instant.now()
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
     }
 
     @ExceptionHandler(IllegalArgumentException::class)
