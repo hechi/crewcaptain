@@ -23,6 +23,27 @@ class SecurityConfig(
     @Value("\${app.metrics.token:}") private val metricsToken: String
 ) {
 
+    /**
+     * Public, unauthenticated chain for the feedback submission endpoints.
+     * This is the only place in the app that permits anonymous access, and it is
+     * scoped narrowly to the public feedback path. A per-IP rate-limit filter guards
+     * the write endpoint. No bearer token is parsed here.
+     */
+    @Bean
+    @Order(0)
+    fun publicFeedbackSecurityFilterChain(
+        http: HttpSecurity,
+        rateLimitFilter: PublicFeedbackRateLimitFilter
+    ): SecurityFilterChain {
+        http
+            .securityMatcher("/api/v1/public/feedback/**")
+            .csrf { it.disable() }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .authorizeHttpRequests { auth -> auth.anyRequest().permitAll() }
+            .addFilterBefore(rateLimitFilter, AuthorizationFilter::class.java)
+        return http.build()
+    }
+
     @Bean
     @Order(1)
     fun actuatorSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
