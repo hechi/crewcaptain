@@ -272,7 +272,11 @@ class QuickNoteServiceTest {
 
             result.status shouldBe QuickNoteStatus.CONVERTED
             result.personId shouldBe personId
-            verify { actionItemRepository.save(match { it.title == "Inbox note" && it.personId == personId }) }
+            verify {
+                actionItemRepository.save(
+                    match { it.title == "Inbox note" && it.personId == personId && it.originatingQuickNoteId == quickNoteId }
+                )
+            }
         }
 
         @Test
@@ -293,7 +297,11 @@ class QuickNoteServiceTest {
             result.status shouldBe QuickNoteStatus.CONVERTED
             result.personId shouldBe null
             result.selfAssigned shouldBe true
-            verify { actionItemRepository.save(match { it.title == "My personal todo" && it.personId == null }) }
+            verify {
+                actionItemRepository.save(
+                    match { it.title == "My personal todo" && it.personId == null && it.originatingQuickNoteId == quickNoteId }
+                )
+            }
             verify(exactly = 0) { personRepository.findByIdAndUserId(any(), any()) }
         }
 

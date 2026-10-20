@@ -13,6 +13,7 @@ export interface ActionItem {
   dueDate: string | null;
   status: ActionItemStatus;
   originatingEntryId: string | null;
+  originatingQuickNoteId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -13,6 +13,7 @@ data class ActionItem(
     val dueDate: LocalDate? = null,
     val status: ActionItemStatus = ActionItemStatus.OPEN,
     val originatingEntryId: OneOnOneEntryId? = null,
+    val originatingQuickNoteId: QuickNoteId? = null,
     val snoozedUntil: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()

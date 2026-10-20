@@ -103,6 +103,27 @@ class ActionItemTest {
         }
 
         @Test
+        fun `should create action item with originating quick note id`() {
+            val quickNoteId = QuickNoteId.generate()
+            val item = ActionItem(
+                id = ActionItemId.generate(),
+                userId = userId,
+                personId = null,
+                title = "From a quick note",
+                originatingQuickNoteId = quickNoteId
+            )
+
+            item.originatingQuickNoteId shouldBe quickNoteId
+        }
+
+        @Test
+        fun `should default originating quick note id to null`() {
+            val item = createActionItem()
+
+            item.originatingQuickNoteId shouldBe null
+        }
+
+        @Test
         fun `should reject blank title`() {
             shouldThrow<IllegalArgumentException> {
                 createActionItem(title = "")

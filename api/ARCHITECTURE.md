@@ -90,7 +90,9 @@ Notable domain invariants worth knowing when touching these aggregates:
   items are reached through the user-scoped repository finders (`findByIdAndUserId` /
   `deleteByIdAndUserId`) and the cross-person `/api/v1/action-items` endpoints rather than the
   per-person (`/api/v1/persons/{personId}/action-items`) routes. Person-oriented features
-  (follow-up notifications, the triage queue) intentionally skip person-less items.
+  (follow-up notifications, the triage queue) intentionally skip person-less items. An item
+  converted from a quick note carries an optional `originatingQuickNoteId` backlink (alongside
+  `originatingEntryId` for items raised from a 1:1); the FK is `ON DELETE SET NULL`.
 - **QuickNote** — carries an optional `tag` (≤30 chars) and the invariant that a note cannot be
   both `selfAssigned` and assigned to a `personId`. Converting a self-assigned note yields a
   person-less ActionItem and leaves the note person-less (the invariant is preserved).

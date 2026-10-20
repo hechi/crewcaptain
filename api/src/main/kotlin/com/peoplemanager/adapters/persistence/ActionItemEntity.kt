@@ -36,6 +36,9 @@ class ActionItemEntity(
     @Column(name = "originating_entry_id")
     var originatingEntryId: UUID? = null,
 
+    @Column(name = "originating_quick_note_id")
+    var originatingQuickNoteId: UUID? = null,
+
     @Column(name = "snoozed_until")
     var snoozedUntil: Instant? = null,
 
