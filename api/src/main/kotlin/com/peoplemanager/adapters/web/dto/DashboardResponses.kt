@@ -4,7 +4,9 @@ import com.peoplemanager.domain.ActionItemOwnerType
 import com.peoplemanager.domain.CadenceType
 import com.peoplemanager.domain.DashboardActionItem
 import com.peoplemanager.domain.DashboardData
+import com.peoplemanager.domain.PriorityKind
 import com.peoplemanager.domain.StaleOneOnOneReminder
+import com.peoplemanager.domain.TodayPriorityItem
 import com.peoplemanager.domain.UpcomingAnniversary
 import java.time.Instant
 import java.time.LocalDate
@@ -14,14 +16,36 @@ data class DashboardResponse(
     val overdueActionItems: List<DashboardActionItemResponse>,
     val dueSoonActionItems: List<DashboardActionItemResponse>,
     val staleOneOnOnes: List<StaleOneOnOneReminderResponse>,
-    val upcomingAnniversaries: List<UpcomingAnniversaryResponse>
+    val upcomingAnniversaries: List<UpcomingAnniversaryResponse>,
+    val todayPriorities: List<TodayPriorityItemResponse>
 ) {
     companion object {
         fun from(data: DashboardData): DashboardResponse = DashboardResponse(
             overdueActionItems = data.overdueActionItems.map { DashboardActionItemResponse.from(it) },
             dueSoonActionItems = data.dueSoonActionItems.map { DashboardActionItemResponse.from(it) },
             staleOneOnOnes = data.staleOneOnOnes.map { StaleOneOnOneReminderResponse.from(it) },
-            upcomingAnniversaries = data.upcomingAnniversaries.map { UpcomingAnniversaryResponse.from(it) }
+            upcomingAnniversaries = data.upcomingAnniversaries.map { UpcomingAnniversaryResponse.from(it) },
+            todayPriorities = data.todayPriorities.map { TodayPriorityItemResponse.from(it) }
+        )
+    }
+}
+
+data class TodayPriorityItemResponse(
+    val kind: PriorityKind,
+    val id: UUID,
+    val title: String,
+    val personId: UUID?,
+    val personName: String?,
+    val dueDate: LocalDate?
+) {
+    companion object {
+        fun from(item: TodayPriorityItem): TodayPriorityItemResponse = TodayPriorityItemResponse(
+            kind = item.kind,
+            id = item.id,
+            title = item.title,
+            personId = item.personId?.value,
+            personName = item.personName,
+            dueDate = item.dueDate
         )
     }
 }

@@ -6,6 +6,7 @@ import { GamificationStats } from '@/types/gamification';
 import { getDashboard, getGamificationStats, getUserSettings } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import LoadingScreen from '@/components/LoadingScreen';
+import TodayPriorities from '@/components/dashboard/TodayPriorities';
 import OverdueActionItems from '@/components/dashboard/OverdueActionItems';
 import DueSoonActionItems from '@/components/dashboard/DueSoonActionItems';
 import StaleOneOnOnes from '@/components/dashboard/StaleOneOnOnes';
@@ -299,6 +300,45 @@ export default function DashboardPage() {
           gap: 'var(--space-5)',
         }}
       >
+        {/* Today's Priorities */}
+        <section
+          data-testid="dashboard-section-priorities"
+          style={{
+            padding: 'var(--space-5)',
+            borderRadius: 'var(--radius-large)',
+            border: '1px solid var(--color-border)',
+            backgroundColor: 'var(--color-bg-elevated)',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 'var(--text-subheading)',
+              fontWeight: 'var(--weight-semibold)',
+              color: 'var(--color-primary)',
+              margin: '0 0 16px 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            Today&apos;s Priorities
+            {dashboard.todayPriorities.length > 0 && (
+              <span
+                style={{
+                  fontSize: '12px',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--color-primary-muted)',
+                  color: 'var(--color-primary)',
+                }}
+              >
+                {dashboard.todayPriorities.length}
+              </span>
+            )}
+          </h2>
+          <TodayPriorities items={dashboard.todayPriorities} />
+        </section>
+
         {/* Strategy Progress */}
         <section
           data-testid="dashboard-section-strategy"

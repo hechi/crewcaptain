@@ -2,11 +2,22 @@ import { ActionItemOwnerType } from './action-item';
 
 export interface DashboardActionItem {
   id: string;
-  personId: string;
-  personName: string;
+  personId: string | null;
+  personName: string | null;
   title: string;
   dueDate: string;
   ownerType: ActionItemOwnerType;
+}
+
+export type PriorityKind = 'OVERDUE' | 'DUE_SOON' | 'INBOX_NOTE';
+
+export interface TodayPriorityItem {
+  kind: PriorityKind;
+  id: string;
+  title: string;
+  personId: string | null;
+  personName: string | null;
+  dueDate: string | null;
 }
 
 export type CadenceType = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'CUSTOM';
@@ -35,4 +46,5 @@ export interface DashboardResponse {
   dueSoonActionItems: DashboardActionItem[];
   staleOneOnOnes: StaleOneOnOneReminder[];
   upcomingAnniversaries: UpcomingAnniversary[];
+  todayPriorities: TodayPriorityItem[];
 }

@@ -5,11 +5,15 @@ import com.peoplemanager.application.port.input.DashboardQueryPort
 import com.peoplemanager.application.port.output.OneOnOneEntryRepository
 import com.peoplemanager.application.port.output.OneOnOneSeriesRepository
 import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.QuickNoteRepository
 import com.peoplemanager.application.queries.GetDashboardQuery
 import com.peoplemanager.domain.CadenceType
 import com.peoplemanager.domain.DashboardActionItem
 import com.peoplemanager.domain.DashboardData
+import com.peoplemanager.domain.PriorityKind
+import com.peoplemanager.domain.QuickNoteStatus
 import com.peoplemanager.domain.StaleOneOnOneReminder
+import com.peoplemanager.domain.TodayPriorityItem
 import com.peoplemanager.domain.UpcomingAnniversary
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -25,8 +29,13 @@ class DashboardService(
     private val personRepository: PersonRepository,
     private val actionItemRepository: ActionItemRepository,
     private val oneOnOneSeriesRepository: OneOnOneSeriesRepository,
-    private val oneOnOneEntryRepository: OneOnOneEntryRepository
+    private val oneOnOneEntryRepository: OneOnOneEntryRepository,
+    private val quickNoteRepository: QuickNoteRepository
 ) : DashboardQueryPort {
+
+    private companion object {
+        const val TODAY_PRIORITIES_LIMIT = 7
+    }
 
     override fun getDashboard(query: GetDashboardQuery): DashboardData {
         val today = LocalDate.now(ZoneOffset.UTC)
@@ -126,11 +135,57 @@ class DashboardService(
             }
             .sortedBy { it.daysUntil }
 
+        // Today's Priorities — a single ranked focus list: overdue action items first, then
+        // due-soon action items, then the manager's self-assigned INBOX quick notes. Capped.
+        val selfAssignedInboxNotes = quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(
+            query.userId, true, QuickNoteStatus.INBOX, PageRequest.of(0, TODAY_PRIORITIES_LIMIT)
+        ).content
+
+        val todayPriorities = buildList {
+            overdueItems.forEach { item ->
+                add(
+                    TodayPriorityItem(
+                        kind = PriorityKind.OVERDUE,
+                        id = item.id.value,
+                        title = item.title,
+                        personId = item.personId,
+                        personName = item.personName,
+                        dueDate = item.dueDate
+                    )
+                )
+            }
+            dueSoonItems.forEach { item ->
+                add(
+                    TodayPriorityItem(
+                        kind = PriorityKind.DUE_SOON,
+                        id = item.id.value,
+                        title = item.title,
+                        personId = item.personId,
+                        personName = item.personName,
+                        dueDate = item.dueDate
+                    )
+                )
+            }
+            selfAssignedInboxNotes.forEach { note ->
+                add(
+                    TodayPriorityItem(
+                        kind = PriorityKind.INBOX_NOTE,
+                        id = note.id.value,
+                        title = note.text,
+                        personId = null,
+                        personName = null,
+                        dueDate = null
+                    )
+                )
+            }
+        }.take(TODAY_PRIORITIES_LIMIT)
+
         return DashboardData(
             overdueActionItems = overdueItems,
             dueSoonActionItems = dueSoonItems,
             staleOneOnOnes = staleReminders,
-            upcomingAnniversaries = upcomingAnniversaries
+            upcomingAnniversaries = upcomingAnniversaries,
+            todayPriorities = todayPriorities
         )
     }
 

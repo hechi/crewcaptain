@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import DashboardPage from '@/app/dashboard/page';
 
@@ -74,6 +74,24 @@ const mockDashboardData = {
       anniversaryDate: '2026-05-15',
       yearsCompleted: 3,
       daysUntil: 5,
+    },
+  ],
+  todayPriorities: [
+    {
+      kind: 'OVERDUE' as const,
+      id: '1',
+      title: 'Review PR',
+      personId: 'person-1',
+      personName: 'Alice Smith',
+      dueDate: '2026-05-07',
+    },
+    {
+      kind: 'INBOX_NOTE' as const,
+      id: 'note-1',
+      title: 'Prep board deck',
+      personId: null,
+      personName: null,
+      dueDate: null,
     },
   ],
 };
@@ -161,10 +179,27 @@ describe('DashboardPage', () => {
     });
 
     expect(screen.getByTestId('dashboard-title')).toHaveTextContent('Dashboard');
+    expect(screen.getByTestId('dashboard-section-priorities')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-section-overdue')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-section-due-soon')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-section-stale')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-section-anniversaries')).toBeInTheDocument();
+  });
+
+  it('should render the Today\'s Priorities list with items', async () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { name: 'Test User' }, expires: '', accessToken: 'test-token' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+    mockGetDashboard.mockResolvedValue(mockDashboardData);
+
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('today-priorities-list')).toBeInTheDocument();
+    });
+    expect(screen.getAllByTestId('today-priority-item')).toHaveLength(2);
   });
 
   it('should display alert summary with correct count', async () => {
@@ -230,6 +265,7 @@ describe('DashboardPage', () => {
       dueSoonActionItems: [],
       staleOneOnOnes: [],
       upcomingAnniversaries: [],
+      todayPriorities: [],
     });
 
     render(<DashboardPage />);
@@ -255,6 +291,7 @@ describe('DashboardPage', () => {
       dueSoonActionItems: [],
       staleOneOnOnes: [],
       upcomingAnniversaries: [],
+      todayPriorities: [],
     });
 
     render(<DashboardPage />);
@@ -277,6 +314,7 @@ describe('DashboardPage', () => {
       dueSoonActionItems: [],
       staleOneOnOnes: [],
       upcomingAnniversaries: [],
+      todayPriorities: [],
     });
 
     render(<DashboardPage />);
@@ -321,6 +359,7 @@ describe('DashboardPage', () => {
       dueSoonActionItems: [],
       staleOneOnOnes: [],
       upcomingAnniversaries: [],
+      todayPriorities: [],
     });
 
     render(<DashboardPage />);
@@ -344,10 +383,13 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Review PR')).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-section-overdue')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+    // "Review PR" also appears in the Today's Priorities widget, so scope to the overdue section.
+    const overdueSection = screen.getByTestId('dashboard-section-overdue');
+    expect(within(overdueSection).getByText('Review PR')).toBeInTheDocument();
+    expect(within(overdueSection).getByText('Alice Smith')).toBeInTheDocument();
   });
 
   it('should display stale 1:1 reminders', async () => {
