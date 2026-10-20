@@ -16,14 +16,16 @@ class QuickNoteTest {
         text: String = "Remember to discuss project timeline",
         personId: PersonId? = null,
         sensitive: Boolean = false,
-        status: QuickNoteStatus = QuickNoteStatus.INBOX
+        status: QuickNoteStatus = QuickNoteStatus.INBOX,
+        tag: String? = null
     ) = QuickNote(
         id = QuickNoteId.generate(),
         userId = userId,
         personId = personId,
         text = text,
         sensitive = sensitive,
-        status = status
+        status = status,
+        tag = tag
     )
 
     @Nested
@@ -190,6 +192,56 @@ class QuickNoteTest {
             val toggled = note.toggleSensitive()
 
             toggled.sensitive shouldBe false
+        }
+    }
+
+    @Nested
+    inner class TagTests {
+
+        @Test
+        fun `should default tag to null`() {
+            val note = createQuickNote()
+
+            note.tag shouldBe null
+        }
+
+        @Test
+        fun `should create quick note with a tag`() {
+            val note = createQuickNote(tag = "hiring")
+
+            note.tag shouldBe "hiring"
+        }
+
+        @Test
+        fun `should accept a tag of exactly 30 characters`() {
+            val thirtyChars = "a".repeat(30)
+            val note = createQuickNote(tag = thirtyChars)
+
+            note.tag shouldBe thirtyChars
+        }
+
+        @Test
+        fun `should reject a tag longer than 30 characters`() {
+            shouldThrow<IllegalArgumentException> {
+                createQuickNote(tag = "a".repeat(31))
+            }.message shouldBe "Tag must be 30 characters or fewer"
+        }
+
+        @Test
+        fun `should update the tag`() {
+            val note = createQuickNote(tag = "old")
+            val updated = note.updateTag("new")
+
+            updated.tag shouldBe "new"
+            updated.updatedAt shouldNotBe note.updatedAt
+        }
+
+        @Test
+        fun `should clear the tag`() {
+            val note = createQuickNote(tag = "old")
+            val updated = note.updateTag(null)
+
+            updated.tag shouldBe null
         }
     }
 

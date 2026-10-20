@@ -15,6 +15,7 @@ data class ListQuickNotesQuery(
     val status: QuickNoteStatus? = null,
     val personId: PersonId? = null,
     val selfAssigned: Boolean? = null,
+    val tag: String? = null,
     val page: Int = 0,
     val size: Int = 20
 )

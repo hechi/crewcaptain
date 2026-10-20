@@ -17,5 +17,7 @@ interface QuickNoteRepository {
     fun findAllByUserIdAndStatusAndPersonId(userId: UserId, status: QuickNoteStatus, personId: PersonId, pageable: Pageable): Page<QuickNote>
     fun findAllByUserIdAndSelfAssigned(userId: UserId, selfAssigned: Boolean, pageable: Pageable): Page<QuickNote>
     fun findAllByUserIdAndSelfAssignedAndStatus(userId: UserId, selfAssigned: Boolean, status: QuickNoteStatus, pageable: Pageable): Page<QuickNote>
+    fun findAllByUserIdAndTag(userId: UserId, tag: String, pageable: Pageable): Page<QuickNote>
+    fun findAllByUserIdAndSelfAssignedAndTag(userId: UserId, selfAssigned: Boolean, tag: String, pageable: Pageable): Page<QuickNote>
     fun deleteByIdAndUserId(quickNoteId: QuickNoteId, userId: UserId): Boolean
 }

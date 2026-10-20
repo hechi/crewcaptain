@@ -8,7 +8,7 @@ import com.peoplemanager.domain.UserId
 
 data class GetActionItemQuery(
     val userId: UserId,
-    val personId: PersonId,
+    val personId: PersonId? = null,
     val actionItemId: ActionItemId
 )
 

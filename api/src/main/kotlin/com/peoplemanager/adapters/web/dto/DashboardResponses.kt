@@ -28,8 +28,8 @@ data class DashboardResponse(
 
 data class DashboardActionItemResponse(
     val id: UUID,
-    val personId: UUID,
-    val personName: String,
+    val personId: UUID?,
+    val personName: String?,
     val title: String,
     val dueDate: LocalDate,
     val ownerType: ActionItemOwnerType
@@ -37,7 +37,7 @@ data class DashboardActionItemResponse(
     companion object {
         fun from(item: DashboardActionItem): DashboardActionItemResponse = DashboardActionItemResponse(
             id = item.id.value,
-            personId = item.personId.value,
+            personId = item.personId?.value,
             personName = item.personName,
             title = item.title,
             dueDate = item.dueDate,

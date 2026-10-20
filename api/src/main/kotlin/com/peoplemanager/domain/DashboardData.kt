@@ -16,8 +16,8 @@ data class DashboardData(
 
 data class DashboardActionItem(
     val id: ActionItemId,
-    val personId: PersonId,
-    val personName: String,
+    val personId: PersonId?,
+    val personName: String?,
     val title: String,
     val dueDate: LocalDate,
     val ownerType: ActionItemOwnerType

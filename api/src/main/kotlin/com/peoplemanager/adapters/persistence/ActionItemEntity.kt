@@ -15,8 +15,8 @@ class ActionItemEntity(
     @Column(name = "user_id", nullable = false)
     val userId: UUID = UUID.randomUUID(),
 
-    @Column(name = "person_id", nullable = false)
-    val personId: UUID = UUID.randomUUID(),
+    @Column(name = "person_id")
+    val personId: UUID? = null,
 
     @Column(name = "title", nullable = false)
     var title: String = "",

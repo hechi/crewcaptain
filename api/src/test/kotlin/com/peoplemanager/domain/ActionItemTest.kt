@@ -62,6 +62,33 @@ class ActionItemTest {
         }
 
         @Test
+        fun `should create a person-less action item`() {
+            val item = ActionItem(
+                id = ActionItemId.generate(),
+                userId = userId,
+                personId = null,
+                title = "My personal todo"
+            )
+
+            item.personId shouldBe null
+            item.ownerType shouldBe ActionItemOwnerType.MANAGER
+            item.title shouldBe "My personal todo"
+        }
+
+        @Test
+        fun `should complete a person-less action item`() {
+            val item = ActionItem(
+                id = ActionItemId.generate(),
+                userId = userId,
+                personId = null,
+                title = "My personal todo",
+                status = ActionItemStatus.OPEN
+            )
+
+            item.complete().status shouldBe ActionItemStatus.DONE
+        }
+
+        @Test
         fun `should create action item with originating entry id`() {
             val entryId = OneOnOneEntryId.generate()
             val item = ActionItem(

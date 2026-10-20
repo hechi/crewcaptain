@@ -35,6 +35,15 @@ class JpaActionItemRepositoryAdapter(
         )?.toDomain()
     }
 
+    override fun findByIdAndUserId(
+        actionItemId: ActionItemId,
+        userId: UserId
+    ): ActionItem? {
+        return springDataRepository.findByIdAndUserId(
+            actionItemId.value, userId.value
+        )?.toDomain()
+    }
+
     override fun findAllByUserIdAndPersonId(
         userId: UserId,
         personId: PersonId,
@@ -108,6 +117,16 @@ class JpaActionItemRepositoryAdapter(
         return deleted > 0
     }
 
+    override fun deleteByIdAndUserId(
+        actionItemId: ActionItemId,
+        userId: UserId
+    ): Boolean {
+        val deleted = springDataRepository.deleteByIdAndUserId(
+            actionItemId.value, userId.value
+        )
+        return deleted > 0
+    }
+
     override fun countOpenByUserIdAndPersonId(userId: UserId, personId: PersonId): Long {
         return springDataRepository.countOpenByUserIdAndPersonId(userId.value, personId.value)
     }
@@ -119,7 +138,7 @@ class JpaActionItemRepositoryAdapter(
     private fun ActionItemEntity.toDomain(): ActionItem = ActionItem(
         id = ActionItemId(this.id),
         userId = UserId(this.userId),
-        personId = PersonId(this.personId),
+        personId = this.personId?.let { PersonId(it) },
         title = this.title,
         description = this.description,
         ownerType = ActionItemOwnerType.valueOf(this.ownerType),
@@ -134,7 +153,7 @@ class JpaActionItemRepositoryAdapter(
     private fun ActionItem.toEntity(): ActionItemEntity = ActionItemEntity(
         id = this.id.value,
         userId = this.userId.value,
-        personId = this.personId.value,
+        personId = this.personId?.value,
         title = this.title,
         description = this.description,
         ownerType = this.ownerType.name,

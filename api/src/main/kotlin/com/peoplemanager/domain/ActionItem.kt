@@ -6,7 +6,7 @@ import java.time.LocalDate
 data class ActionItem(
     val id: ActionItemId,
     val userId: UserId,
-    val personId: PersonId,
+    val personId: PersonId? = null,
     val title: String,
     val description: String? = null,
     val ownerType: ActionItemOwnerType = ActionItemOwnerType.MANAGER,

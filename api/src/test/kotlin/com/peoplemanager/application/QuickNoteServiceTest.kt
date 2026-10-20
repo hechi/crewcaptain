@@ -276,6 +276,47 @@ class QuickNoteServiceTest {
         }
 
         @Test
+        fun `should convert a self-assigned note to a person-less action item`() {
+            val selfNote = QuickNote(
+                id = quickNoteId,
+                userId = userId,
+                text = "My personal todo",
+                selfAssigned = true
+            )
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns selfNote
+            every { actionItemRepository.save(any()) } answers { firstArg() }
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = ConvertQuickNoteCommand(userId = userId, quickNoteId = quickNoteId, personId = null)
+            val result = service.convertQuickNote(command)
+
+            result.status shouldBe QuickNoteStatus.CONVERTED
+            result.personId shouldBe null
+            result.selfAssigned shouldBe true
+            verify { actionItemRepository.save(match { it.title == "My personal todo" && it.personId == null }) }
+            verify(exactly = 0) { personRepository.findByIdAndUserId(any(), any()) }
+        }
+
+        @Test
+        fun `should convert with a due date`() {
+            val dueDate = java.time.LocalDate.of(2026, 7, 1)
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
+            every { personRepository.findByIdAndUserId(personId, userId) } returns person
+            every { actionItemRepository.save(any()) } answers { firstArg() }
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = ConvertQuickNoteCommand(
+                userId = userId,
+                quickNoteId = quickNoteId,
+                personId = personId,
+                dueDate = dueDate
+            )
+            service.convertQuickNote(command)
+
+            verify { actionItemRepository.save(match { it.dueDate == dueDate }) }
+        }
+
+        @Test
         fun `should archive quick note`() {
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
             every { quickNoteRepository.save(any()) } answers { firstArg() }

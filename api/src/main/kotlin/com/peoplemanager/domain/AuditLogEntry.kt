@@ -145,7 +145,7 @@ data class AuditLogEntry(
                 summary = "Deleted 1:1 entry for \"$personName\""
             )
 
-        fun actionItemCreated(userId: UserId, actionItemId: ActionItemId, personId: PersonId, title: String): AuditLogEntry =
+        fun actionItemCreated(userId: UserId, actionItemId: ActionItemId, personId: PersonId?, title: String): AuditLogEntry =
             AuditLogEntry(
                 userId = userId,
                 action = AuditAction.CREATE,
@@ -155,7 +155,7 @@ data class AuditLogEntry(
                 summary = "Created action item \"$title\""
             )
 
-        fun actionItemUpdated(userId: UserId, actionItemId: ActionItemId, personId: PersonId, title: String): AuditLogEntry =
+        fun actionItemUpdated(userId: UserId, actionItemId: ActionItemId, personId: PersonId?, title: String): AuditLogEntry =
             AuditLogEntry(
                 userId = userId,
                 action = AuditAction.UPDATE,
@@ -165,7 +165,7 @@ data class AuditLogEntry(
                 summary = "Updated action item \"$title\""
             )
 
-        fun actionItemDeleted(userId: UserId, actionItemId: ActionItemId, personId: PersonId, title: String): AuditLogEntry =
+        fun actionItemDeleted(userId: UserId, actionItemId: ActionItemId, personId: PersonId?, title: String): AuditLogEntry =
             AuditLogEntry(
                 userId = userId,
                 action = AuditAction.DELETE,

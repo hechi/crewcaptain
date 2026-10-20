@@ -54,14 +54,15 @@ class TriageQueueService(
                 .filter { !isSnoozed(it, now) }
                 .filter { matchesOwnerScope(it, query.ownerScope) }
                 .forEach { item ->
-                    val person = personMap[item.personId]
+                    val personId = item.personId ?: return@forEach
+                    val person = personMap[personId]
                     items.add(
                         TriageItem(
                             id = "ai-${item.id.value}",
                             type = TriageItemType.ACTION_ITEM_OVERDUE,
                             criticality = TriageCriticality.OVERDUE,
                             title = item.title,
-                            personId = item.personId,
+                            personId = personId,
                             personName = person?.name ?: "Unknown",
                             workspaceId = person?.workspaceId,
                             workspaceName = null, // Resolved in controller DTO if needed
@@ -88,14 +89,15 @@ class TriageQueueService(
                 .filter { !isSnoozed(it, now) }
                 .filter { matchesOwnerScope(it, query.ownerScope) }
                 .forEach { item ->
-                    val person = personMap[item.personId]
+                    val personId = item.personId ?: return@forEach
+                    val person = personMap[personId]
                     items.add(
                         TriageItem(
                             id = "ai-ds-${item.id.value}",
                             type = TriageItemType.ACTION_ITEM_DUE_SOON,
                             criticality = TriageCriticality.DUE_SOON,
                             title = item.title,
-                            personId = item.personId,
+                            personId = personId,
                             personName = person?.name ?: "Unknown",
                             workspaceId = person?.workspaceId,
                             sensitive = false,

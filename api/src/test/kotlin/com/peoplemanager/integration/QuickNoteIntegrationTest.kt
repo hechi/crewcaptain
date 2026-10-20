@@ -590,6 +590,224 @@ class QuickNoteIntegrationTest {
     }
 
     @Nested
+    inner class Tags {
+
+        @Test
+        fun `should create a quick note with a tag`() {
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Tagged note", "selfAssigned": true, "tag": "hiring"}""")
+            )
+                .andExpect(status().isCreated)
+                .andExpect(jsonPath("$.tag").value("hiring"))
+        }
+
+        @Test
+        fun `should reject a tag longer than 30 characters`() {
+            val longTag = "a".repeat(31)
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Tagged note", "selfAssigned": true, "tag": "$longTag"}""")
+            )
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should filter self-assigned notes by tag`() {
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Hiring note", "selfAssigned": true, "tag": "hiring"}""")
+            ).andExpect(status().isCreated)
+
+            mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Budget note", "selfAssigned": true, "tag": "budget"}""")
+            ).andExpect(status().isCreated)
+
+            mockMvc.perform(
+                get("/api/v1/quick-notes?selfAssigned=true&tag=hiring")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].text").value("Hiring note"))
+                .andExpect(jsonPath("$.content[0].tag").value("hiring"))
+        }
+
+        @Test
+        fun `should set and clear a tag via update`() {
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Note to tag", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            mockMvc.perform(
+                put("/api/v1/quick-notes/$noteId")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"tag": "followup"}""")
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.tag").value("followup"))
+
+            // Explicitly clear the tag
+            mockMvc.perform(
+                put("/api/v1/quick-notes/$noteId")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"tag": null, "updateTag": true}""")
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.tag").isEmpty)
+        }
+    }
+
+    @Nested
+    inner class ConvertToPersonLessTodo {
+
+        @Test
+        fun `should convert a self-assigned note into a person-less action item`() {
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Prepare the budget deck", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            // Convert without a personId -> person-less TODO
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$noteId/convert")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{}""")
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.status").value("CONVERTED"))
+                .andExpect(jsonPath("$.personId").isEmpty)
+                .andExpect(jsonPath("$.selfAssigned").value(true))
+
+            // The person-less action item is reachable via the cross-person list
+            mockMvc.perform(
+                get("/api/v1/action-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Prepare the budget deck"))
+                .andExpect(jsonPath("$.content[0].personId").isEmpty)
+        }
+
+        @Test
+        fun `should convert with a due date`() {
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Submit report", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$noteId/convert")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"dueDate": "2026-07-01"}""")
+            )
+                .andExpect(status().isOk)
+
+            mockMvc.perform(
+                get("/api/v1/action-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.content[0].dueDate").value("2026-07-01"))
+        }
+
+        @Test
+        fun `should complete a person-less action item via the by-id endpoint`() {
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "Call the vendor", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$noteId/convert")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{}""")
+            ).andExpect(status().isOk)
+
+            val listResult = mockMvc.perform(
+                get("/api/v1/action-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            ).andExpect(status().isOk).andReturn()
+
+            val actionItemId = objectMapper.readTree(listResult.response.contentAsString)
+                .get("content").get(0).get("id").asText()
+
+            mockMvc.perform(
+                post("/api/v1/action-items/$actionItemId/complete")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.status").value("DONE"))
+        }
+
+        @Test
+        fun `should not allow user B to complete user A person-less action item`() {
+            val createResult = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "A's private todo", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+
+            val noteId = objectMapper.readTree(createResult.response.contentAsString).get("id").asText()
+
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$noteId/convert")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{}""")
+            ).andExpect(status().isOk)
+
+            val listResult = mockMvc.perform(
+                get("/api/v1/action-items")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            ).andExpect(status().isOk).andReturn()
+
+            val actionItemId = objectMapper.readTree(listResult.response.contentAsString)
+                .get("content").get(0).get("id").asText()
+
+            // User B must not be able to reach it
+            mockMvc.perform(
+                post("/api/v1/action-items/$actionItemId/complete")
+                    .with(authentication(authenticatedJwt(userB.id)))
+            )
+                .andExpect(status().isNotFound)
+        }
+    }
+
+    @Nested
     inner class DataIsolation {
 
         @Test
