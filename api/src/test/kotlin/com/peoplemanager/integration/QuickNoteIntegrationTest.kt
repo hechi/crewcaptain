@@ -701,6 +701,7 @@ class QuickNoteIntegrationTest {
                 .andExpect(jsonPath("$.selfAssigned").value(true))
 
             // The person-less action item is reachable via the cross-person list
+            // and links back to the originating quick note.
             mockMvc.perform(
                 get("/api/v1/action-items")
                     .with(authentication(authenticatedJwt(userA.id)))
@@ -709,6 +710,7 @@ class QuickNoteIntegrationTest {
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].title").value("Prepare the budget deck"))
                 .andExpect(jsonPath("$.content[0].personId").isEmpty)
+                .andExpect(jsonPath("$.content[0].originatingQuickNoteId").value(noteId))
         }
 
         @Test

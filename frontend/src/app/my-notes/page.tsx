@@ -8,6 +8,7 @@ import {
   archiveQuickNote,
   deleteQuickNote,
   convertQuickNote,
+  updateQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteForm from '@/components/quick-notes/QuickNoteForm';
@@ -96,6 +97,17 @@ export default function MyNotesPage() {
       fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to convert note to a TODO');
+    }
+  };
+
+  const handleUpdate = async (id: string, text: string, tag: string | null) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await updateQuickNote(token, id, { text, tag, updateTag: true });
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update note');
     }
   };
 
@@ -246,6 +258,7 @@ export default function MyNotesPage() {
                   onArchive={handleArchive}
                   onDelete={handleDelete}
                   onConvert={handleConvert}
+                  onUpdate={handleUpdate}
                 />
               ))}
             </div>
@@ -271,10 +284,14 @@ interface MyNoteCardProps {
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
   onConvert: (id: string, dueDate?: string) => void;
+  onUpdate: (id: string, text: string, tag: string | null) => void;
 }
 
-function MyNoteCard({ note, onArchive, onDelete, onConvert }: MyNoteCardProps) {
+function MyNoteCard({ note, onArchive, onDelete, onConvert, onUpdate }: MyNoteCardProps) {
   const [dueDate, setDueDate] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(note.text);
+  const [editTag, setEditTag] = useState(note.tag ?? '');
 
   const formattedDate = new Date(note.createdAt).toLocaleDateString(undefined, {
     year: 'numeric',
@@ -285,6 +302,23 @@ function MyNoteCard({ note, onArchive, onDelete, onConvert }: MyNoteCardProps) {
   });
 
   const isInbox = note.status === 'INBOX';
+
+  const startEditing = () => {
+    setEditText(note.text);
+    setEditTag(note.tag ?? '');
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+  };
+
+  const saveEditing = () => {
+    const trimmedText = editText.trim();
+    if (!trimmedText) return;
+    onUpdate(note.id, trimmedText, editTag.trim() || null);
+    setIsEditing(false);
+  };
 
   return (
     <div
@@ -365,21 +399,106 @@ function MyNoteCard({ note, onArchive, onDelete, onConvert }: MyNoteCardProps) {
         </span>
       </div>
 
-      {/* Text */}
-      <p
-        data-testid="my-note-text"
-        style={{
-          margin: '0 0 12px',
-          fontSize: 'var(--text-body)',
-          color: 'var(--color-text-primary)',
-          lineHeight: '1.5',
-          whiteSpace: 'pre-wrap',
-        }}
-      >
-        {note.text}
-      </p>
+      {/* Text (view mode) */}
+      {!isEditing && (
+        <p
+          data-testid="my-note-text"
+          style={{
+            margin: '0 0 12px',
+            fontSize: 'var(--text-body)',
+            color: 'var(--color-text-primary)',
+            lineHeight: '1.5',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {note.text}
+        </p>
+      )}
+
+      {/* Edit mode */}
+      {isEditing && (
+        <div data-testid="my-note-edit" style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <textarea
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            data-testid="my-note-edit-text-input"
+            aria-label="Edit note text"
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-ui)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              resize: 'vertical',
+              minHeight: '60px',
+            }}
+          />
+          <input
+            type="text"
+            value={editTag}
+            onChange={(e) => setEditTag(e.target.value)}
+            placeholder="#tag (optional)"
+            maxLength={30}
+            data-testid="my-note-edit-tag-input"
+            aria-label="Edit tag"
+            style={{
+              padding: '4px 10px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              maxWidth: '200px',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={saveEditing}
+              disabled={!editText.trim()}
+              data-testid="my-note-edit-save-btn"
+              style={{
+                padding: '4px 12px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: editText.trim() ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
+                color: editText.trim() ? 'var(--color-bg-base)' : 'var(--color-text-muted)',
+                cursor: editText.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={cancelEditing}
+              data-testid="my-note-edit-cancel-btn"
+              style={{
+                padding: '4px 12px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
+      {!isEditing && (
       <div data-testid="my-note-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         {isInbox && (
           <>
@@ -439,6 +558,26 @@ function MyNoteCard({ note, onArchive, onDelete, onConvert }: MyNoteCardProps) {
             Archive
           </button>
         )}
+        {isInbox && (
+          <button
+            type="button"
+            onClick={startEditing}
+            data-testid="my-note-edit-btn"
+            aria-label="Edit note"
+            style={{
+              padding: '4px 10px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-small)',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            Edit
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onDelete(note.id)}
@@ -458,6 +597,7 @@ function MyNoteCard({ note, onArchive, onDelete, onConvert }: MyNoteCardProps) {
           Delete
         </button>
       </div>
+      )}
     </div>
   );
 }

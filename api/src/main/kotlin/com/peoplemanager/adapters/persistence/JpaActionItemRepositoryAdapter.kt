@@ -7,6 +7,7 @@ import com.peoplemanager.domain.ActionItemOwnerType
 import com.peoplemanager.domain.ActionItemStatus
 import com.peoplemanager.domain.OneOnOneEntryId
 import com.peoplemanager.domain.PersonId
+import com.peoplemanager.domain.QuickNoteId
 import com.peoplemanager.domain.UserId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -145,6 +146,7 @@ class JpaActionItemRepositoryAdapter(
         dueDate = this.dueDate,
         status = ActionItemStatus.valueOf(this.status),
         originatingEntryId = this.originatingEntryId?.let { OneOnOneEntryId(it) },
+        originatingQuickNoteId = this.originatingQuickNoteId?.let { QuickNoteId(it) },
         snoozedUntil = this.snoozedUntil,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
@@ -160,6 +162,7 @@ class JpaActionItemRepositoryAdapter(
         dueDate = this.dueDate,
         status = this.status.name,
         originatingEntryId = this.originatingEntryId?.value,
+        originatingQuickNoteId = this.originatingQuickNoteId?.value,
         snoozedUntil = this.snoozedUntil,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt

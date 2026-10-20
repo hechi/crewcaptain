@@ -13,6 +13,7 @@ jest.mock('@/lib/api-client', () => ({
   archiveQuickNote: jest.fn(),
   deleteQuickNote: jest.fn(),
   convertQuickNote: jest.fn(),
+  updateQuickNote: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -26,6 +27,7 @@ import {
   archiveQuickNote,
   deleteQuickNote,
   convertQuickNote,
+  updateQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 
@@ -35,6 +37,7 @@ const mockCreateQuickNote = createQuickNote as jest.MockedFunction<typeof create
 const mockArchiveQuickNote = archiveQuickNote as jest.MockedFunction<typeof archiveQuickNote>;
 const mockDeleteQuickNote = deleteQuickNote as jest.MockedFunction<typeof deleteQuickNote>;
 const mockConvertQuickNote = convertQuickNote as jest.MockedFunction<typeof convertQuickNote>;
+const mockUpdateQuickNote = updateQuickNote as jest.MockedFunction<typeof updateQuickNote>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 const mockSelfAssignedNotes = {
@@ -354,5 +357,112 @@ describe('MyNotesPage', () => {
         size: 20,
       });
     });
+  });
+
+  it('should enter edit mode when the edit button is clicked', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('my-note-card-note-1');
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-btn"]')!);
+
+    const textInput = card.querySelector('[data-testid="my-note-edit-text-input"]') as HTMLTextAreaElement;
+    const tagInput = card.querySelector('[data-testid="my-note-edit-tag-input"]') as HTMLInputElement;
+    expect(textInput).toBeInTheDocument();
+    expect(tagInput).toBeInTheDocument();
+    // Pre-filled with current values
+    expect(textInput.value).toBe('My personal reminder');
+    expect(tagInput.value).toBe('hiring');
+  });
+
+  it('should save edited text and tag', async () => {
+    mockUpdateQuickNote.mockResolvedValue({
+      id: 'note-1',
+      personId: null,
+      text: 'Edited reminder',
+      sensitive: false,
+      selfAssigned: true,
+      status: 'INBOX',
+      attachedEntryId: null,
+      tag: 'urgent',
+      createdAt: '2026-05-15T10:00:00Z',
+      updatedAt: '2026-05-15T12:00:00Z',
+    });
+
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('my-note-card-note-1');
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-btn"]')!);
+
+    const textInput = card.querySelector('[data-testid="my-note-edit-text-input"]') as HTMLTextAreaElement;
+    const tagInput = card.querySelector('[data-testid="my-note-edit-tag-input"]') as HTMLInputElement;
+    fireEvent.change(textInput, { target: { value: 'Edited reminder' } });
+    fireEvent.change(tagInput, { target: { value: 'urgent' } });
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-save-btn"]')!);
+
+    await waitFor(() => {
+      expect(mockUpdateQuickNote).toHaveBeenCalledWith('test-token', 'note-1', {
+        text: 'Edited reminder',
+        tag: 'urgent',
+        updateTag: true,
+      });
+    });
+  });
+
+  it('should clear the tag when the edit tag field is emptied', async () => {
+    mockUpdateQuickNote.mockResolvedValue({
+      id: 'note-1',
+      personId: null,
+      text: 'My personal reminder',
+      sensitive: false,
+      selfAssigned: true,
+      status: 'INBOX',
+      attachedEntryId: null,
+      tag: null,
+      createdAt: '2026-05-15T10:00:00Z',
+      updatedAt: '2026-05-15T12:00:00Z',
+    });
+
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('my-note-card-note-1');
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-btn"]')!);
+
+    const tagInput = card.querySelector('[data-testid="my-note-edit-tag-input"]') as HTMLInputElement;
+    fireEvent.change(tagInput, { target: { value: '' } });
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-save-btn"]')!);
+
+    await waitFor(() => {
+      expect(mockUpdateQuickNote).toHaveBeenCalledWith('test-token', 'note-1', {
+        text: 'My personal reminder',
+        tag: null,
+        updateTag: true,
+      });
+    });
+  });
+
+  it('should exit edit mode without saving on cancel', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('my-note-card-note-1');
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-btn"]')!);
+    const textInput = card.querySelector('[data-testid="my-note-edit-text-input"]') as HTMLTextAreaElement;
+    fireEvent.change(textInput, { target: { value: 'Discarded change' } });
+    fireEvent.click(card.querySelector('[data-testid="my-note-edit-cancel-btn"]')!);
+
+    expect(mockUpdateQuickNote).not.toHaveBeenCalled();
+    expect(card.querySelector('[data-testid="my-note-edit-text-input"]')).not.toBeInTheDocument();
+    expect(card.querySelector('[data-testid="my-note-text"]')).toHaveTextContent('My personal reminder');
   });
 });

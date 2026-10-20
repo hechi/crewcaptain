@@ -1,6 +1,15 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-10-20T12:00:00Z — Follow-up on the My Notes redesign (same branch `feat/my-notes-inbox-redesign`): **converted-TODO backlink + editable notes/tags**. TDD throughout.
+
+**Backend — backlink:** `ActionItem` gains an optional `originatingQuickNoteId: QuickNoteId?` (alongside the existing `originatingEntryId` for 1:1-raised items). `QuickNoteService.convertQuickNote` now stamps the originating note's id onto the created action item, so a converted TODO can be traced back to the note it came from. Threaded through the JPA entity/adapter and exposed on `ActionItemResponse`. New additive migration `V20251020120002__add_originating_quick_note_id_to_action_items.sql` (`originating_quick_note_id UUID REFERENCES quick_notes(id) ON DELETE SET NULL` + partial index). No behavior change to the existing convert semantics.
+
+**Frontend — editable notes/tags:** the My Notes card gains an inline **Edit** mode (INBOX notes) to change a note's text and tag in place, saving via the existing `PUT /api/v1/quick-notes/{id}` (`updateQuickNote` with `updateTag` so clearing a tag works); Cancel discards. The frontend `ActionItem` type gained an optional `originatingQuickNoteId`.
+
+**Verification:** Backend — full-suite JUnit results **1634 tests, 0 failures/0 errors**; a focused re-run of `ActionItemTest` + `QuickNoteServiceTest` + `QuickNoteIntegrationTest` was **BUILD SUCCESSFUL** (the integration test asserts the converted item's `originatingQuickNoteId` equals the note id; cross-user isolation unchanged). Frontend — **125 suites / 1338 tests pass** (+4 inline-edit tests). README (Action Items + My Notes bullets) and `api/ARCHITECTURE.md` (Aggregate Notes) updated. Not done (deferred, optional): a post-convert toast with a link to the new TODO — the durable backlink data is in place, so this is a small UI-only follow-up if wanted. (2026-10-20)
+
+## Previously Updated
 2026-10-20T00:00:00Z — Feature: **My Notes inbox redesign + person-less TODOs** on branch `feat/my-notes-inbox-redesign`. Turned the capture-only "My Notes" page into a triage inbox and made self-assigned quick notes convertible into the manager's own (person-less) action items end-to-end. TDD throughout (failing tests first, then implementation).
 
 **Domain:** `QuickNote` gains an optional `tag: String?` (≤30 chars, mirroring `PinnedRememberItem`'s tag invariant) plus `updateTag(...)`. `ActionItem.personId` is now **nullable** — a `null` person denotes a manager's own TODO; the existing self-assigned invariant on `QuickNote` (cannot be both `selfAssigned` and have a `personId`) is preserved by keeping converted self-notes person-less. `DashboardActionItem.personId`/`personName` became nullable, and `AuditLogEntry.actionItem{Created,Updated,Deleted}` now accept a nullable `personId`.
