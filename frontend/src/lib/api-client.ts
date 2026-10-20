@@ -36,6 +36,7 @@ import {
   UpdateQuickNoteRequest,
   AssignQuickNoteToPersonRequest,
   AttachQuickNoteToEntryRequest,
+  ConvertQuickNoteRequest,
   PaginatedQuickNoteResponse,
 } from '@/types/quick-note';
 import { DashboardResponse } from '@/types/dashboard';
@@ -538,6 +539,7 @@ export async function listQuickNotes(token: string, params?: {
   status?: QuickNoteStatus;
   personId?: string;
   selfAssigned?: boolean;
+  tag?: string;
   page?: number;
   size?: number;
 }): Promise<PaginatedQuickNoteResponse> {
@@ -545,6 +547,7 @@ export async function listQuickNotes(token: string, params?: {
   if (params?.status) searchParams.set('status', params.status);
   if (params?.personId) searchParams.set('personId', params.personId);
   if (params?.selfAssigned !== undefined) searchParams.set('selfAssigned', params.selfAssigned.toString());
+  if (params?.tag) searchParams.set('tag', params.tag);
   if (params?.page !== undefined) searchParams.set('page', params.page.toString());
   if (params?.size !== undefined) searchParams.set('size', params.size.toString());
 
@@ -577,10 +580,10 @@ export async function attachQuickNote(token: string, quickNoteId: string, data: 
   return response.json();
 }
 
-export async function convertQuickNote(token: string, quickNoteId: string, data: { personId: string }): Promise<QuickNote> {
+export async function convertQuickNote(token: string, quickNoteId: string, data?: ConvertQuickNoteRequest): Promise<QuickNote> {
   const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/convert`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(data ?? {}),
   }, token);
   return response.json();
 }

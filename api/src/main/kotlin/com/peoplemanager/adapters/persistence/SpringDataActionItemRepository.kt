@@ -12,6 +12,8 @@ interface SpringDataActionItemRepository : JpaRepository<ActionItemEntity, UUID>
 
     fun findByIdAndUserIdAndPersonId(id: UUID, userId: UUID, personId: UUID): ActionItemEntity?
 
+    fun findByIdAndUserId(id: UUID, userId: UUID): ActionItemEntity?
+
     fun findAllByUserIdAndPersonId(userId: UUID, personId: UUID, pageable: Pageable): Page<ActionItemEntity>
 
     @Query("SELECT a FROM ActionItemEntity a WHERE a.userId = :userId AND a.personId = :personId AND a.status = :status")
@@ -47,6 +49,8 @@ interface SpringDataActionItemRepository : JpaRepository<ActionItemEntity, UUID>
     ): Page<ActionItemEntity>
 
     fun deleteByIdAndUserIdAndPersonId(id: UUID, userId: UUID, personId: UUID): Long
+
+    fun deleteByIdAndUserId(id: UUID, userId: UUID): Long
 
     @Query("SELECT a FROM ActionItemEntity a WHERE a.userId = :userId AND a.status = 'OPEN' AND a.dueDate >= :fromDate AND a.dueDate <= :toDate ORDER BY a.dueDate ASC")
     fun findDueSoonByUserId(

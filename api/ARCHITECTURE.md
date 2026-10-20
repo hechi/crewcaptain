@@ -81,6 +81,20 @@ The following rules are programmatically enforced by `HexagonalArchitectureTest`
 | Adapter isolation | `web` must NOT depend on `persistence`; `persistence` must NOT depend on `web` |
 | No cycles | No circular dependencies between top-level packages |
 
+## Aggregate Notes
+
+Notable domain invariants worth knowing when touching these aggregates:
+
+- **ActionItem** — `personId` is **nullable**. A `null` person denotes a manager's own
+  (person-less) TODO, typically created by converting a self-assigned quick note. Person-less
+  items are reached through the user-scoped repository finders (`findByIdAndUserId` /
+  `deleteByIdAndUserId`) and the cross-person `/api/v1/action-items` endpoints rather than the
+  per-person (`/api/v1/persons/{personId}/action-items`) routes. Person-oriented features
+  (follow-up notifications, the triage queue) intentionally skip person-less items.
+- **QuickNote** — carries an optional `tag` (≤30 chars) and the invariant that a note cannot be
+  both `selfAssigned` and assigned to a `personId`. Converting a self-assigned note yields a
+  person-less ActionItem and leaves the note person-less (the invariant is preserved).
+
 ## Migration Playbook: Moving an Aggregate to Sub-Packages
 
 To move an aggregate (e.g., `ActionItem`) into `domain/model/actionitem/`:

@@ -38,7 +38,8 @@ class QuickNoteService(
             personId = command.personId,
             text = command.text,
             sensitive = command.sensitive,
-            selfAssigned = command.selfAssigned
+            selfAssigned = command.selfAssigned,
+            tag = command.tag
         )
 
         val saved = quickNoteRepository.save(quickNote)
@@ -59,10 +60,15 @@ class QuickNoteService(
             require(command.text.isNotBlank()) { "Quick note text must not be blank" }
         }
 
+        if (command.updateTag) {
+            require(command.tag == null || command.tag.length <= 30) { "Tag must be 30 characters or fewer" }
+        }
+
         val updated = existing.copy(
             text = command.text ?: existing.text,
             personId = command.personId ?: existing.personId,
             sensitive = command.sensitive ?: existing.sensitive,
+            tag = if (command.updateTag) command.tag else existing.tag,
             updatedAt = java.time.Instant.now()
         )
 
@@ -127,29 +133,39 @@ class QuickNoteService(
         val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
             ?: throw QuickNoteNotFoundException(command.quickNoteId)
 
-        // Validate the person belongs to the user
-        personRepository.findByIdAndUserId(command.personId, command.userId)
-            ?: throw PersonNotFoundException(command.personId)
+        // Resolve the target person for the action item. A null personId produces a
+        // person-less (manager's own) TODO, which is how self-assigned notes convert.
+        // When no person is given on the command, fall back to the note's own person (if any).
+        val targetPersonId = command.personId ?: existing.personId
 
-        // Create an action item from the quick note text
+        // Validate the person belongs to the user when one is involved.
+        if (targetPersonId != null) {
+            personRepository.findByIdAndUserId(targetPersonId, command.userId)
+                ?: throw PersonNotFoundException(targetPersonId)
+        }
+
+        // Create an action item from the quick note text.
         val actionItem = ActionItem(
             id = ActionItemId.generate(),
             userId = command.userId,
-            personId = command.personId,
+            personId = targetPersonId,
             title = existing.text.take(500), // Action item title max 500 chars
             description = if (existing.text.length > 500) existing.text else null,
-            ownerType = ActionItemOwnerType.MANAGER
+            ownerType = ActionItemOwnerType.MANAGER,
+            dueDate = command.dueDate
         )
         actionItemRepository.save(actionItem)
 
-        // Assign person if not already assigned, then mark as converted
-        val noteWithPerson = if (existing.personId == null) {
+        // Assign the note to the person if one was explicitly provided and the note is
+        // not self-assigned; otherwise leave the note's assignment untouched so the
+        // self-assigned invariant (selfAssigned implies no personId) is preserved.
+        val noteToConvert = if (command.personId != null && !existing.selfAssigned && existing.personId == null) {
             existing.assignToPerson(command.personId)
         } else {
             existing
         }
 
-        val updated = noteWithPerson.markConverted()
+        val updated = noteToConvert.markConverted()
         return quickNoteRepository.save(updated)
     }
 
@@ -176,12 +192,18 @@ class QuickNoteService(
         val pageable = PageRequest.of(query.page, query.size, Sort.by(Sort.Direction.DESC, "createdAt"))
 
         return when {
+            query.selfAssigned != null && query.tag != null ->
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndTag(
+                    query.userId, query.selfAssigned, query.tag, pageable
+                )
             query.selfAssigned != null && query.status != null ->
                 quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(
                     query.userId, query.selfAssigned, query.status, pageable
                 )
             query.selfAssigned != null ->
                 quickNoteRepository.findAllByUserIdAndSelfAssigned(query.userId, query.selfAssigned, pageable)
+            query.tag != null ->
+                quickNoteRepository.findAllByUserIdAndTag(query.userId, query.tag, pageable)
             query.status != null && query.personId != null ->
                 quickNoteRepository.findAllByUserIdAndStatusAndPersonId(
                     query.userId, query.status, query.personId, pageable

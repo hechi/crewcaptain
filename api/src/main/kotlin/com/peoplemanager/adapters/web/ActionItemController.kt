@@ -184,4 +184,60 @@ class ActionItemController(
         val result = actionItemQueryPort.listAllActionItems(query)
         return ResponseEntity.ok(PaginatedActionItemResponse.from(result))
     }
+
+    @GetMapping("/action-items/{actionItemId}")
+    fun getActionItemById(
+        @PathVariable actionItemId: UUID
+    ): ResponseEntity<ActionItemResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val query = GetActionItemQuery(
+            userId = userId,
+            personId = null,
+            actionItemId = ActionItemId(actionItemId)
+        )
+        val item = actionItemQueryPort.getActionItem(query)
+        return ResponseEntity.ok(ActionItemResponse.from(item))
+    }
+
+    @PostMapping("/action-items/{actionItemId}/complete")
+    fun completeActionItemById(
+        @PathVariable actionItemId: UUID
+    ): ResponseEntity<ActionItemResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = CompleteActionItemCommand(
+            userId = userId,
+            personId = null,
+            actionItemId = ActionItemId(actionItemId)
+        )
+        val item = actionItemCommandPort.completeActionItem(command)
+        return ResponseEntity.ok(ActionItemResponse.from(item))
+    }
+
+    @PostMapping("/action-items/{actionItemId}/cancel")
+    fun cancelActionItemById(
+        @PathVariable actionItemId: UUID
+    ): ResponseEntity<ActionItemResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = CancelActionItemCommand(
+            userId = userId,
+            personId = null,
+            actionItemId = ActionItemId(actionItemId)
+        )
+        val item = actionItemCommandPort.cancelActionItem(command)
+        return ResponseEntity.ok(ActionItemResponse.from(item))
+    }
+
+    @DeleteMapping("/action-items/{actionItemId}")
+    fun deleteActionItemById(
+        @PathVariable actionItemId: UUID
+    ): ResponseEntity<Void> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = DeleteActionItemCommand(
+            userId = userId,
+            personId = null,
+            actionItemId = ActionItemId(actionItemId)
+        )
+        actionItemCommandPort.deleteActionItem(command)
+        return ResponseEntity.noContent().build()
+    }
 }

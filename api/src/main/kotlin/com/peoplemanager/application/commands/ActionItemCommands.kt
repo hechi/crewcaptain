@@ -9,7 +9,7 @@ import java.time.LocalDate
 
 data class CreateActionItemCommand(
     val userId: UserId,
-    val personId: PersonId,
+    val personId: PersonId? = null,
     val title: String,
     val description: String? = null,
     val ownerType: ActionItemOwnerType = ActionItemOwnerType.MANAGER,
@@ -29,18 +29,18 @@ data class UpdateActionItemCommand(
 
 data class CompleteActionItemCommand(
     val userId: UserId,
-    val personId: PersonId,
+    val personId: PersonId? = null,
     val actionItemId: ActionItemId
 )
 
 data class CancelActionItemCommand(
     val userId: UserId,
-    val personId: PersonId,
+    val personId: PersonId? = null,
     val actionItemId: ActionItemId
 )
 
 data class DeleteActionItemCommand(
     val userId: UserId,
-    val personId: PersonId,
+    val personId: PersonId? = null,
     val actionItemId: ActionItemId
 )

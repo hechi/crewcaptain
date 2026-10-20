@@ -11,6 +11,7 @@ export interface QuickNote {
   selfAssigned: boolean;
   status: QuickNoteStatus;
   attachedEntryId: string | null;
+  tag: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,12 +21,20 @@ export interface CreateQuickNoteRequest {
   personId?: string;
   sensitive?: boolean;
   selfAssigned?: boolean;
+  tag?: string;
 }
 
 export interface UpdateQuickNoteRequest {
   text?: string;
   personId?: string;
   sensitive?: boolean;
+  tag?: string | null;
+  updateTag?: boolean;
+}
+
+export interface ConvertQuickNoteRequest {
+  personId?: string;
+  dueDate?: string;
 }
 
 export interface AssignQuickNoteToPersonRequest {

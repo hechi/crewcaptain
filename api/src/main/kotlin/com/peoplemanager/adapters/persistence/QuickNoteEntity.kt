@@ -32,6 +32,9 @@ class QuickNoteEntity(
     @Column(name = "attached_entry_id")
     val attachedEntryId: UUID? = null,
 
+    @Column(name = "tag")
+    val tag: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

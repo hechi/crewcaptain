@@ -41,7 +41,7 @@ class DashboardService(
             DashboardActionItem(
                 id = item.id,
                 personId = item.personId,
-                personName = personMap[item.personId]?.name ?: "Unknown",
+                personName = item.personId?.let { personMap[it]?.name ?: "Unknown" },
                 title = item.title,
                 dueDate = item.dueDate!!,
                 ownerType = item.ownerType
@@ -56,7 +56,7 @@ class DashboardService(
             DashboardActionItem(
                 id = item.id,
                 personId = item.personId,
-                personName = personMap[item.personId]?.name ?: "Unknown",
+                personName = item.personId?.let { personMap[it]?.name ?: "Unknown" },
                 title = item.title,
                 dueDate = item.dueDate!!,
                 ownerType = item.ownerType

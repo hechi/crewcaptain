@@ -105,6 +105,91 @@ class ActionItemServiceTest {
                 service.createActionItem(command)
             }
         }
+
+        @Test
+        fun `should create a person-less action item without checking person ownership`() {
+            every { actionItemRepository.save(any()) } answers { firstArg() }
+
+            val command = CreateActionItemCommand(
+                userId = userId,
+                personId = null,
+                title = "My personal todo"
+            )
+
+            val result = service.createActionItem(command)
+
+            result.personId shouldBe null
+            result.title shouldBe "My personal todo"
+            verify(exactly = 0) { personRepository.findByIdAndUserId(any(), any()) }
+            verify { actionItemRepository.save(any()) }
+        }
+    }
+
+    @Nested
+    inner class PersonLessActionItemTests {
+
+        private val actionItemId = ActionItemId.generate()
+        private val personLessItem = ActionItem(
+            id = actionItemId,
+            userId = userId,
+            personId = null,
+            title = "My personal todo",
+            status = ActionItemStatus.OPEN
+        )
+
+        @Test
+        fun `should get a person-less action item by id and user`() {
+            every { actionItemRepository.findByIdAndUserId(actionItemId, userId) } returns personLessItem
+
+            val query = GetActionItemQuery(userId = userId, personId = null, actionItemId = actionItemId)
+            val result = service.getActionItem(query)
+
+            result shouldBe personLessItem
+        }
+
+        @Test
+        fun `should throw when person-less action item not found`() {
+            every { actionItemRepository.findByIdAndUserId(actionItemId, userId) } returns null
+
+            val query = GetActionItemQuery(userId = userId, personId = null, actionItemId = actionItemId)
+
+            shouldThrow<ActionItemNotFoundException> {
+                service.getActionItem(query)
+            }
+        }
+
+        @Test
+        fun `should complete a person-less action item`() {
+            every { actionItemRepository.findByIdAndUserId(actionItemId, userId) } returns personLessItem
+            every { actionItemRepository.save(any()) } answers { firstArg() }
+
+            val command = CompleteActionItemCommand(userId = userId, personId = null, actionItemId = actionItemId)
+            val result = service.completeActionItem(command)
+
+            result.status shouldBe ActionItemStatus.DONE
+        }
+
+        @Test
+        fun `should cancel a person-less action item`() {
+            every { actionItemRepository.findByIdAndUserId(actionItemId, userId) } returns personLessItem
+            every { actionItemRepository.save(any()) } answers { firstArg() }
+
+            val command = CancelActionItemCommand(userId = userId, personId = null, actionItemId = actionItemId)
+            val result = service.cancelActionItem(command)
+
+            result.status shouldBe ActionItemStatus.CANCELED
+        }
+
+        @Test
+        fun `should delete a person-less action item`() {
+            every { actionItemRepository.findByIdAndUserId(actionItemId, userId) } returns personLessItem
+            every { actionItemRepository.deleteByIdAndUserId(actionItemId, userId) } returns true
+
+            val command = DeleteActionItemCommand(userId = userId, personId = null, actionItemId = actionItemId)
+            service.deleteActionItem(command)
+
+            verify { actionItemRepository.deleteByIdAndUserId(actionItemId, userId) }
+        }
     }
 
     @Nested

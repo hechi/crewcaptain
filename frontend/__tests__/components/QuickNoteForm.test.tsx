@@ -85,4 +85,34 @@ describe('QuickNoteForm', () => {
 
     expect(mockOnSubmit).not.toHaveBeenCalled();
   });
+
+  it('should render a tag input', () => {
+    render(<QuickNoteForm onSubmit={mockOnSubmit} />);
+    expect(screen.getByTestId('quick-note-tag-input')).toBeInTheDocument();
+  });
+
+  it('should call onSubmit with a tag when provided', () => {
+    render(<QuickNoteForm onSubmit={mockOnSubmit} />);
+    fireEvent.change(screen.getByTestId('quick-note-text-input'), { target: { value: 'Tagged note' } });
+    fireEvent.change(screen.getByTestId('quick-note-tag-input'), { target: { value: 'hiring' } });
+    fireEvent.click(screen.getByTestId('quick-note-submit-btn'));
+
+    expect(mockOnSubmit).toHaveBeenCalledWith({
+      text: 'Tagged note',
+      sensitive: undefined,
+      tag: 'hiring',
+    });
+  });
+
+  it('should omit the tag when left empty', () => {
+    render(<QuickNoteForm onSubmit={mockOnSubmit} />);
+    fireEvent.change(screen.getByTestId('quick-note-text-input'), { target: { value: 'No tag note' } });
+    fireEvent.click(screen.getByTestId('quick-note-submit-btn'));
+
+    expect(mockOnSubmit).toHaveBeenCalledWith({
+      text: 'No tag note',
+      sensitive: undefined,
+      tag: undefined,
+    });
+  });
 });

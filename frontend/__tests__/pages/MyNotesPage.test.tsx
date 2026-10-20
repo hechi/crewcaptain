@@ -12,6 +12,7 @@ jest.mock('@/lib/api-client', () => ({
   createQuickNote: jest.fn(),
   archiveQuickNote: jest.fn(),
   deleteQuickNote: jest.fn(),
+  convertQuickNote: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -19,7 +20,13 @@ jest.mock('@/lib/useStableToken', () => ({
 }));
 
 import { useSession } from 'next-auth/react';
-import { listQuickNotes, createQuickNote, archiveQuickNote, deleteQuickNote } from '@/lib/api-client';
+import {
+  listQuickNotes,
+  createQuickNote,
+  archiveQuickNote,
+  deleteQuickNote,
+  convertQuickNote,
+} from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
@@ -27,6 +34,7 @@ const mockListQuickNotes = listQuickNotes as jest.MockedFunction<typeof listQuic
 const mockCreateQuickNote = createQuickNote as jest.MockedFunction<typeof createQuickNote>;
 const mockArchiveQuickNote = archiveQuickNote as jest.MockedFunction<typeof archiveQuickNote>;
 const mockDeleteQuickNote = deleteQuickNote as jest.MockedFunction<typeof deleteQuickNote>;
+const mockConvertQuickNote = convertQuickNote as jest.MockedFunction<typeof convertQuickNote>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 const mockSelfAssignedNotes = {
@@ -39,6 +47,7 @@ const mockSelfAssignedNotes = {
       selfAssigned: true,
       status: 'INBOX' as const,
       attachedEntryId: null,
+      tag: 'hiring',
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T10:00:00Z',
     },
@@ -50,6 +59,7 @@ const mockSelfAssignedNotes = {
       selfAssigned: true,
       status: 'INBOX' as const,
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-05-14T09:00:00Z',
       updatedAt: '2026-05-14T09:00:00Z',
     },
@@ -106,6 +116,7 @@ describe('MyNotesPage', () => {
       expect(mockListQuickNotes).toHaveBeenCalledWith('test-token', {
         selfAssigned: true,
         status: undefined,
+        tag: undefined,
         page: 0,
         size: 20,
       });
@@ -127,6 +138,17 @@ describe('MyNotesPage', () => {
     });
     const sensitiveCard = screen.getByTestId('my-note-card-note-2');
     expect(sensitiveCard.querySelector('[data-testid="my-note-sensitive-badge"]')).toBeInTheDocument();
+  });
+
+  it('should show a tag chip on tagged notes', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+    const taggedCard = screen.getByTestId('my-note-card-note-1');
+    const chip = taggedCard.querySelector('[data-testid="my-note-tag"]');
+    expect(chip).toBeInTheDocument();
+    expect(chip).toHaveTextContent('hiring');
   });
 
   it('should show empty state when no notes exist', async () => {
@@ -153,6 +175,7 @@ describe('MyNotesPage', () => {
       selfAssigned: true,
       status: 'INBOX',
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-05-15T12:00:00Z',
       updatedAt: '2026-05-15T12:00:00Z',
     });
@@ -170,6 +193,7 @@ describe('MyNotesPage', () => {
       expect(mockCreateQuickNote).toHaveBeenCalledWith('test-token', {
         text: 'New personal note',
         sensitive: undefined,
+        tag: undefined,
         selfAssigned: true,
       });
     });
@@ -184,6 +208,7 @@ describe('MyNotesPage', () => {
       selfAssigned: true,
       status: 'ARCHIVED',
       attachedEntryId: null,
+      tag: 'hiring',
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T11:00:00Z',
     });
@@ -217,6 +242,64 @@ describe('MyNotesPage', () => {
     });
   });
 
+  it('should convert a note to a personal TODO', async () => {
+    mockConvertQuickNote.mockResolvedValue({
+      id: 'note-1',
+      personId: null,
+      text: 'My personal reminder',
+      sensitive: false,
+      selfAssigned: true,
+      status: 'CONVERTED',
+      attachedEntryId: null,
+      tag: 'hiring',
+      createdAt: '2026-05-15T10:00:00Z',
+      updatedAt: '2026-05-15T11:00:00Z',
+    });
+
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const convertBtn = screen.getAllByTestId('my-note-convert-btn')[0];
+    fireEvent.click(convertBtn);
+
+    await waitFor(() => {
+      expect(mockConvertQuickNote).toHaveBeenCalledWith('test-token', 'note-1', { dueDate: undefined });
+    });
+  });
+
+  it('should convert a note to a personal TODO with a due date', async () => {
+    mockConvertQuickNote.mockResolvedValue({
+      id: 'note-1',
+      personId: null,
+      text: 'My personal reminder',
+      sensitive: false,
+      selfAssigned: true,
+      status: 'CONVERTED',
+      attachedEntryId: null,
+      tag: 'hiring',
+      createdAt: '2026-05-15T10:00:00Z',
+      updatedAt: '2026-05-15T11:00:00Z',
+    });
+
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const card = screen.getByTestId('my-note-card-note-1');
+    const dueDateInput = card.querySelector('[data-testid="my-note-due-date-input"]') as HTMLInputElement;
+    fireEvent.change(dueDateInput, { target: { value: '2026-07-01' } });
+
+    const convertBtn = screen.getAllByTestId('my-note-convert-btn')[0];
+    fireEvent.click(convertBtn);
+
+    await waitFor(() => {
+      expect(mockConvertQuickNote).toHaveBeenCalledWith('test-token', 'note-1', { dueDate: '2026-07-01' });
+    });
+  });
+
   it('should show error message on fetch failure', async () => {
     mockListQuickNotes.mockRejectedValue(new Error('Network error'));
 
@@ -247,6 +330,26 @@ describe('MyNotesPage', () => {
       expect(mockListQuickNotes).toHaveBeenCalledWith('test-token', {
         selfAssigned: true,
         status: 'INBOX',
+        tag: undefined,
+        page: 0,
+        size: 20,
+      });
+    });
+  });
+
+  it('should filter by tag when a tag filter chip is clicked', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-notes-tag-filter')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('tag-filter-hiring'));
+
+    await waitFor(() => {
+      expect(mockListQuickNotes).toHaveBeenCalledWith('test-token', {
+        selfAssigned: true,
+        status: undefined,
+        tag: 'hiring',
         page: 0,
         size: 20,
       });

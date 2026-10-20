@@ -140,6 +140,7 @@ describe('QuickNoteOverlay', () => {
       selfAssigned: false,
       status: 'INBOX',
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });
@@ -167,6 +168,7 @@ describe('QuickNoteOverlay', () => {
       selfAssigned: false,
       status: 'INBOX',
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });
@@ -194,6 +196,7 @@ describe('QuickNoteOverlay', () => {
       selfAssigned: false,
       status: 'INBOX',
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });
@@ -267,6 +270,7 @@ describe('QuickNoteOverlay', () => {
       selfAssigned: false,
       status: 'INBOX',
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });
@@ -334,6 +338,7 @@ describe('QuickNoteOverlay', () => {
       selfAssigned: false,
       status: 'INBOX',
       attachedEntryId: null,
+      tag: null,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });

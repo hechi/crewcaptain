@@ -10,7 +10,8 @@ data class CreateQuickNoteCommand(
     val personId: PersonId? = null,
     val text: String,
     val sensitive: Boolean = false,
-    val selfAssigned: Boolean = false
+    val selfAssigned: Boolean = false,
+    val tag: String? = null
 )
 
 data class UpdateQuickNoteCommand(
@@ -18,7 +19,9 @@ data class UpdateQuickNoteCommand(
     val quickNoteId: QuickNoteId,
     val text: String? = null,
     val personId: PersonId? = null,
-    val sensitive: Boolean? = null
+    val sensitive: Boolean? = null,
+    val tag: String? = null,
+    val updateTag: Boolean = false
 )
 
 data class AssignQuickNoteToPersonCommand(
@@ -41,7 +44,8 @@ data class AttachQuickNoteCommand(
 data class ConvertQuickNoteCommand(
     val userId: UserId,
     val quickNoteId: QuickNoteId,
-    val personId: PersonId
+    val personId: PersonId? = null,
+    val dueDate: java.time.LocalDate? = null
 )
 
 data class ArchiveQuickNoteCommand(

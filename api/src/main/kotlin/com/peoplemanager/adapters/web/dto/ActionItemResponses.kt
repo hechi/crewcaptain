@@ -10,7 +10,7 @@ import java.util.UUID
 
 data class ActionItemResponse(
     val id: UUID,
-    val personId: UUID,
+    val personId: UUID?,
     val title: String,
     val description: String?,
     val ownerType: ActionItemOwnerType,
@@ -24,7 +24,7 @@ data class ActionItemResponse(
     companion object {
         fun from(item: ActionItem): ActionItemResponse = ActionItemResponse(
             id = item.id.value,
-            personId = item.personId.value,
+            personId = item.personId?.value,
             title = item.title,
             description = item.description,
             ownerType = item.ownerType,

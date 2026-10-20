@@ -33,7 +33,8 @@ class QuickNoteController(
             personId = request.personId?.let { PersonId(it) },
             text = request.text!!,
             sensitive = request.sensitive ?: false,
-            selfAssigned = request.selfAssigned ?: false
+            selfAssigned = request.selfAssigned ?: false,
+            tag = request.tag?.ifBlank { null }
         )
         val quickNote = quickNoteCommandPort.createQuickNote(command)
         return ResponseEntity.status(HttpStatus.CREATED).body(QuickNoteResponse.from(quickNote))
@@ -44,6 +45,7 @@ class QuickNoteController(
         @RequestParam(required = false) status: QuickNoteStatus?,
         @RequestParam(required = false) personId: UUID?,
         @RequestParam(required = false) selfAssigned: Boolean?,
+        @RequestParam(required = false) tag: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<PaginatedQuickNoteResponse> {
@@ -53,6 +55,7 @@ class QuickNoteController(
             status = status,
             personId = personId?.let { PersonId(it) },
             selfAssigned = selfAssigned,
+            tag = tag?.ifBlank { null },
             page = page,
             size = size
         )
@@ -81,7 +84,9 @@ class QuickNoteController(
             quickNoteId = QuickNoteId(quickNoteId),
             text = request.text,
             personId = request.personId?.let { PersonId(it) },
-            sensitive = request.sensitive
+            sensitive = request.sensitive,
+            tag = request.tag?.ifBlank { null },
+            updateTag = request.updateTag ?: (request.tag != null)
         )
         val quickNote = quickNoteCommandPort.updateQuickNote(command)
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
@@ -139,7 +144,8 @@ class QuickNoteController(
         val command = ConvertQuickNoteCommand(
             userId = userId,
             quickNoteId = QuickNoteId(quickNoteId),
-            personId = PersonId(request.personId)
+            personId = request.personId?.let { PersonId(it) },
+            dueDate = request.dueDate
         )
         val quickNote = quickNoteCommandPort.convertQuickNote(command)
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))

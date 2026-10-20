@@ -99,10 +99,13 @@ class NotificationGenerationService(
                 )) {
                 return@mapNotNull null
             }
-            val personName = personMap[item.personId]?.name ?: "Unknown"
+            // Person-less (self-assigned) TODOs are not tied to a person and do not
+            // generate person-oriented follow-up notifications.
+            val personId = item.personId ?: return@mapNotNull null
+            val personName = personMap[personId]?.name ?: "Unknown"
             Notification.actionItemOverdue(
                 userId = userId,
-                personId = item.personId,
+                personId = personId,
                 personName = personName,
                 actionItemId = item.id,
                 actionItemTitle = item.title,
@@ -127,10 +130,13 @@ class NotificationGenerationService(
                 )) {
                 return@mapNotNull null
             }
-            val personName = personMap[item.personId]?.name ?: "Unknown"
+            // Person-less (self-assigned) TODOs are not tied to a person and do not
+            // generate person-oriented follow-up notifications.
+            val personId = item.personId ?: return@mapNotNull null
+            val personName = personMap[personId]?.name ?: "Unknown"
             Notification.actionItemDueSoon(
                 userId = userId,
-                personId = item.personId,
+                personId = personId,
                 personName = personName,
                 actionItemId = item.id,
                 actionItemTitle = item.title,

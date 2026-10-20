@@ -7,6 +7,7 @@ import {
   createQuickNote,
   archiveQuickNote,
   deleteQuickNote,
+  convertQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteForm from '@/components/quick-notes/QuickNoteForm';
@@ -22,6 +23,7 @@ export default function MyNotesPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>(null);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [page, setPage] = useState(0);
 
   const fetchNotes = useCallback(async () => {
@@ -34,6 +36,7 @@ export default function MyNotesPage() {
       const result = await listQuickNotes(token, {
         selfAssigned: true,
         status: statusFilter || undefined,
+        tag: tagFilter || undefined,
         page,
         size: 20,
       });
@@ -43,7 +46,7 @@ export default function MyNotesPage() {
     } finally {
       setLoading(false);
     }
-  }, [getToken, isAuthenticated, statusFilter, page]);
+  }, [getToken, isAuthenticated, statusFilter, tagFilter, page]);
 
   useEffect(() => {
     fetchNotes();
@@ -85,8 +88,24 @@ export default function MyNotesPage() {
     }
   };
 
+  const handleConvert = async (id: string, dueDate?: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await convertQuickNote(token, id, { dueDate: dueDate || undefined });
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to convert note to a TODO');
+    }
+  };
+
   const handleStatusFilterChange = (newStatus: QuickNoteStatus | null) => {
     setStatusFilter(newStatus);
+    setPage(0);
+  };
+
+  const handleTagFilterChange = (newTag: string | null) => {
+    setTagFilter((current) => (current === newTag ? null : newTag));
     setPage(0);
   };
 
@@ -161,6 +180,55 @@ export default function MyNotesPage() {
         ))}
       </div>
 
+      {/* Tag filter */}
+      {(() => {
+        const tags = Array.from(
+          new Set((notes?.content ?? []).map((n) => n.tag).filter((t): t is string => !!t))
+        );
+        const hasTags = tags.length > 0 || tagFilter !== null;
+        if (!hasTags) return null;
+        const visibleTags = tagFilter && !tags.includes(tagFilter) ? [tagFilter, ...tags] : tags;
+        return (
+          <div
+            data-testid="my-notes-tag-filter"
+            style={{ display: 'flex', gap: '8px', marginBottom: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}
+          >
+            <span
+              style={{
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-text-muted)',
+              }}
+            >
+              Tags:
+            </span>
+            {visibleTags.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => handleTagFilterChange(t)}
+                data-testid={`tag-filter-${t}`}
+                style={{
+                  padding: '4px 12px',
+                  fontSize: 'var(--text-caption)',
+                  fontFamily: 'var(--font-mono)',
+                  border: tagFilter === t
+                    ? '1px solid var(--color-secondary)'
+                    : '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-full)',
+                  backgroundColor: tagFilter === t ? 'var(--color-secondary-hover)' : 'transparent',
+                  color: tagFilter === t ? 'var(--color-bg-base)' : 'var(--color-text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                #{t}
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
       {loading && !notes ? (
         <div data-testid="notes-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
           Loading my notes...
@@ -177,6 +245,7 @@ export default function MyNotesPage() {
                   note={note}
                   onArchive={handleArchive}
                   onDelete={handleDelete}
+                  onConvert={handleConvert}
                 />
               ))}
             </div>
@@ -201,9 +270,12 @@ interface MyNoteCardProps {
   note: QuickNote;
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
+  onConvert: (id: string, dueDate?: string) => void;
 }
 
-function MyNoteCard({ note, onArchive, onDelete }: MyNoteCardProps) {
+function MyNoteCard({ note, onArchive, onDelete, onConvert }: MyNoteCardProps) {
+  const [dueDate, setDueDate] = useState('');
+
   const formattedDate = new Date(note.createdAt).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -258,6 +330,23 @@ function MyNoteCard({ note, onArchive, onDelete }: MyNoteCardProps) {
               Sensitive
             </span>
           )}
+          {note.tag && (
+            <span
+              data-testid="my-note-tag"
+              style={{
+                padding: '2px 8px',
+                fontSize: '10px',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-secondary)',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-secondary-hover)',
+                color: 'var(--color-bg-base)',
+                letterSpacing: '0.5px',
+              }}
+            >
+              #{note.tag}
+            </span>
+          )}
         </div>
         <span
           data-testid="my-note-status"
@@ -291,7 +380,45 @@ function MyNoteCard({ note, onArchive, onDelete }: MyNoteCardProps) {
       </p>
 
       {/* Actions */}
-      <div data-testid="my-note-actions" style={{ display: 'flex', gap: '8px' }}>
+      <div data-testid="my-note-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+        {isInbox && (
+          <>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              data-testid="my-note-due-date-input"
+              aria-label="Due date (optional)"
+              style={{
+                padding: '4px 8px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'var(--color-bg-elevated)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => onConvert(note.id, dueDate || undefined)}
+              data-testid="my-note-convert-btn"
+              aria-label="Convert to TODO"
+              style={{
+                padding: '4px 10px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-primary)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'var(--color-primary-muted)',
+                color: 'var(--color-primary)',
+                cursor: 'pointer',
+              }}
+            >
+              Convert to TODO
+            </button>
+          </>
+        )}
         {isInbox && (
           <button
             type="button"

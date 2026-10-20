@@ -99,6 +99,31 @@ class DashboardServiceTest {
         }
 
         @Test
+        fun `should surface a person-less overdue action item with null person`() {
+            val personLessItem = ActionItem(
+                id = ActionItemId.generate(),
+                userId = userId,
+                personId = null,
+                title = "My personal overdue todo",
+                dueDate = LocalDate.now().minusDays(2),
+                ownerType = ActionItemOwnerType.MANAGER
+            )
+
+            every { personRepository.findAllByUserIdUnpaged(userId) } returns listOf(person1, person2)
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns PageImpl(listOf(personLessItem))
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns emptyList()
+            every { oneOnOneSeriesRepository.findAllByUserId(userId) } returns emptyList()
+
+            val query = GetDashboardQuery(userId = userId)
+            val result = service.getDashboard(query)
+
+            result.overdueActionItems shouldHaveSize 1
+            result.overdueActionItems[0].title shouldBe "My personal overdue todo"
+            result.overdueActionItems[0].personId shouldBe null
+            result.overdueActionItems[0].personName shouldBe null
+        }
+
+        @Test
         fun `should return due soon action items`() {
             val actionItem = ActionItem(
                 id = ActionItemId.generate(),

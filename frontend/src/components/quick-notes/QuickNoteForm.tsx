@@ -15,6 +15,7 @@ interface QuickNoteFormProps {
 export default function QuickNoteForm({ onSubmit, isSubmitting = false }: QuickNoteFormProps) {
   const [text, setText] = useState('');
   const [sensitive, setSensitive] = useState(false);
+  const [tag, setTag] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +24,12 @@ export default function QuickNoteForm({ onSubmit, isSubmitting = false }: QuickN
     onSubmit({
       text: text.trim(),
       sensitive: sensitive || undefined,
+      tag: tag.trim() || undefined,
     });
 
     setText('');
     setSensitive(false);
+    setTag('');
   };
 
   return (
@@ -63,27 +66,49 @@ export default function QuickNoteForm({ onSubmit, isSubmitting = false }: QuickN
         />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: 'var(--text-caption)',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--color-text-secondary)',
-            cursor: 'pointer',
-          }}
-        >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={sensitive}
+              onChange={(e) => setSensitive(e.target.checked)}
+              data-testid="quick-note-sensitive-checkbox"
+              aria-label="Mark as sensitive"
+            />
+            Sensitive
+          </label>
+
           <input
-            type="checkbox"
-            checked={sensitive}
-            onChange={(e) => setSensitive(e.target.checked)}
-            data-testid="quick-note-sensitive-checkbox"
-            aria-label="Mark as sensitive"
+            type="text"
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            placeholder="#tag (optional)"
+            maxLength={30}
+            data-testid="quick-note-tag-input"
+            aria-label="Tag"
+            style={{
+              padding: '4px 10px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              maxWidth: '160px',
+            }}
           />
-          Sensitive
-        </label>
+        </div>
 
         <button
           type="submit"

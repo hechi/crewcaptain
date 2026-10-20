@@ -58,6 +58,14 @@ class JpaQuickNoteRepositoryAdapter(
         return springDataRepository.findAllByUserIdAndSelfAssignedAndStatus(userId.value, selfAssigned, status.name, pageable).map { it.toDomain() }
     }
 
+    override fun findAllByUserIdAndTag(userId: UserId, tag: String, pageable: Pageable): Page<QuickNote> {
+        return springDataRepository.findAllByUserIdAndTag(userId.value, tag, pageable).map { it.toDomain() }
+    }
+
+    override fun findAllByUserIdAndSelfAssignedAndTag(userId: UserId, selfAssigned: Boolean, tag: String, pageable: Pageable): Page<QuickNote> {
+        return springDataRepository.findAllByUserIdAndSelfAssignedAndTag(userId.value, selfAssigned, tag, pageable).map { it.toDomain() }
+    }
+
     override fun deleteByIdAndUserId(quickNoteId: QuickNoteId, userId: UserId): Boolean {
         val deleted = springDataRepository.deleteByIdAndUserId(quickNoteId.value, userId.value)
         return deleted > 0
@@ -84,6 +92,7 @@ class JpaQuickNoteRepositoryAdapter(
             selfAssigned = this.selfAssigned,
             status = QuickNoteStatus.valueOf(this.status),
             attachedEntryId = this.attachedEntryId?.let { OneOnOneEntryId(it) },
+            tag = this.tag,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt
         )
@@ -98,6 +107,7 @@ class JpaQuickNoteRepositoryAdapter(
         selfAssigned = this.selfAssigned,
         status = this.status.name,
         attachedEntryId = this.attachedEntryId?.value,
+        tag = this.tag,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
