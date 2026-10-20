@@ -13,6 +13,7 @@ import {
   assignQuickNoteToPerson,
   assignQuickNoteToSelf,
   deleteQuickNote,
+  updateQuickNote,
   listPersons,
   listOneOnOneEntries,
 } from '@/lib/api-client';
@@ -151,6 +152,17 @@ export default function QuickNotesPage() {
     }
   };
 
+  const handleEdit = async (id: string, text: string, tag: string | null) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await updateQuickNote(token, id, { text, tag, updateTag: true });
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update quick note');
+    }
+  };
+
   const handleFetchEntries = async (personId: string): Promise<OneOnOneEntry[]> => {
     const token = getToken();
     if (!token) return [];
@@ -212,6 +224,7 @@ export default function QuickNotesPage() {
             onAssignPerson={handleAssignPerson}
             onAssignSelf={handleAssignSelf}
             onDelete={handleDelete}
+            onEdit={handleEdit}
             onFetchEntries={handleFetchEntries}
             isSubmitting={submitting}
             statusFilter={statusFilter}

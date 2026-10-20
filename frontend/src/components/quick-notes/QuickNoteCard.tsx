@@ -14,6 +14,7 @@ interface QuickNoteCardProps {
   onAssignPerson: (id: string, personId: string) => void;
   onAssignSelf?: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit?: (id: string, text: string, tag: string | null) => void;
   onFetchEntries?: (personId: string) => Promise<OneOnOneEntry[]>;
 }
 
@@ -30,9 +31,13 @@ export default function QuickNoteCard({
   onAssignPerson,
   onAssignSelf,
   onDelete,
+  onEdit,
   onFetchEntries,
 }: QuickNoteCardProps) {
   const [showPersonPicker, setShowPersonPicker] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(quickNote.text);
+  const [editTag, setEditTag] = useState(quickNote.tag ?? '');
   const [showAttachPersonPicker, setShowAttachPersonPicker] = useState(false);
   const [attachSelectedPersonId, setAttachSelectedPersonId] = useState<string | null>(null);
   const [showConvertPersonPicker, setShowConvertPersonPicker] = useState(false);
@@ -114,6 +119,23 @@ export default function QuickNoteCard({
     setAttachSelectedPersonId(null);
   };
 
+  const startEditing = () => {
+    setEditText(quickNote.text);
+    setEditTag(quickNote.tag ?? '');
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+  };
+
+  const saveEditing = () => {
+    const trimmedText = editText.trim();
+    if (!trimmedText || !onEdit) return;
+    onEdit(quickNote.id, trimmedText, editTag.trim() || null);
+    setIsEditing(false);
+  };
+
   return (
     <div
       data-testid={`quick-note-card-${quickNote.id}`}
@@ -190,6 +212,23 @@ export default function QuickNoteCard({
               Me
             </span>
           )}
+          {quickNote.tag && (
+            <span
+              data-testid="quick-note-tag"
+              style={{
+                padding: '2px 8px',
+                fontSize: '10px',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-secondary)',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-secondary-hover)',
+                color: 'var(--color-bg-base)',
+                letterSpacing: '0.5px',
+              }}
+            >
+              #{quickNote.tag}
+            </span>
+          )}
         </div>
         <span
           data-testid="quick-note-status"
@@ -208,19 +247,103 @@ export default function QuickNoteCard({
         </span>
       </div>
 
-      {/* Text */}
-      <p
-        data-testid="quick-note-text"
-        style={{
-          margin: '0 0 12px',
-          fontSize: 'var(--text-body)',
-          color: 'var(--color-text-primary)',
-          lineHeight: '1.5',
-          whiteSpace: 'pre-wrap',
-        }}
-      >
-        {quickNote.text}
-      </p>
+      {/* Text (view mode) */}
+      {!isEditing && (
+        <p
+          data-testid="quick-note-text"
+          style={{
+            margin: '0 0 12px',
+            fontSize: 'var(--text-body)',
+            color: 'var(--color-text-primary)',
+            lineHeight: '1.5',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {quickNote.text}
+        </p>
+      )}
+
+      {/* Edit mode */}
+      {isEditing && (
+        <div data-testid="quick-note-edit" style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <textarea
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            data-testid="quick-note-edit-text-input"
+            aria-label="Edit note text"
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-medium)',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-ui)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              resize: 'vertical',
+              minHeight: '60px',
+            }}
+          />
+          <input
+            type="text"
+            value={editTag}
+            onChange={(e) => setEditTag(e.target.value)}
+            placeholder="#tag (optional)"
+            maxLength={30}
+            data-testid="quick-note-edit-tag-input"
+            aria-label="Edit tag"
+            style={{
+              padding: '4px 10px',
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              maxWidth: '200px',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={saveEditing}
+              disabled={!editText.trim()}
+              data-testid="quick-note-edit-save-btn"
+              style={{
+                padding: '4px 12px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: editText.trim() ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
+                color: editText.trim() ? 'var(--color-bg-base)' : 'var(--color-text-muted)',
+                cursor: editText.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={cancelEditing}
+              data-testid="quick-note-edit-cancel-btn"
+              style={{
+                padding: '4px 12px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Person Picker */}
       {showPersonPicker && (
@@ -339,8 +462,8 @@ export default function QuickNoteCard({
         </div>
       )}
 
-      {/* Actions — only show for INBOX notes */}
-      {isInbox && (
+      {/* Actions — only show for INBOX notes, and not while editing */}
+      {isInbox && !isEditing && (
         <div data-testid="quick-note-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             type="button"
@@ -416,6 +539,26 @@ export default function QuickNoteCard({
               }}
             >
               Assign to Me
+            </button>
+          )}
+          {onEdit && (
+            <button
+              type="button"
+              onClick={startEditing}
+              data-testid="quick-note-edit-btn"
+              aria-label="Edit note"
+              style={{
+                padding: '4px 10px',
+                fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-mono)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-small)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Edit
             </button>
           )}
           <button

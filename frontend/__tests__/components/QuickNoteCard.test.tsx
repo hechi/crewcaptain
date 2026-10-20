@@ -29,6 +29,7 @@ describe('QuickNoteCard', () => {
   const mockOnAttach = jest.fn();
   const mockOnAssignPerson = jest.fn();
   const mockOnDelete = jest.fn();
+  const mockOnEdit = jest.fn();
   const mockOnFetchEntries = jest.fn().mockResolvedValue([]);
 
   beforeEach(() => {
@@ -45,6 +46,7 @@ describe('QuickNoteCard', () => {
         onAttach={mockOnAttach}
         onAssignPerson={mockOnAssignPerson}
         onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
         onFetchEntries={mockOnFetchEntries}
       />
     );
@@ -269,5 +271,77 @@ describe('QuickNoteCard', () => {
       />
     );
     expect(screen.getByTestId('quick-note-self-badge')).toHaveTextContent('Me');
+  });
+
+  it('should render a tag chip when the note has a tag', () => {
+    const taggedNote: QuickNote = { ...mockNote, tag: 'hiring' };
+    renderCard(taggedNote);
+    expect(screen.getByTestId('quick-note-tag')).toHaveTextContent('hiring');
+  });
+
+  it('should not render a tag chip when the note has no tag', () => {
+    renderCard();
+    expect(screen.queryByTestId('quick-note-tag')).not.toBeInTheDocument();
+  });
+
+  it('should show an edit button for INBOX notes when onEdit is provided', () => {
+    renderCard();
+    expect(screen.getByTestId('quick-note-edit-btn')).toBeInTheDocument();
+  });
+
+  it('should not show an edit button when onEdit is not provided', () => {
+    render(
+      <QuickNoteCard
+        quickNote={mockNote}
+        persons={mockPersons}
+        onArchive={mockOnArchive}
+        onConvert={mockOnConvert}
+        onAttach={mockOnAttach}
+        onAssignPerson={mockOnAssignPerson}
+        onDelete={mockOnDelete}
+        onFetchEntries={mockOnFetchEntries}
+      />
+    );
+    expect(screen.queryByTestId('quick-note-edit-btn')).not.toBeInTheDocument();
+  });
+
+  it('should enter edit mode prefilled with current text and tag', () => {
+    const taggedNote: QuickNote = { ...mockNote, tag: 'hiring' };
+    renderCard(taggedNote);
+    fireEvent.click(screen.getByTestId('quick-note-edit-btn'));
+
+    const textInput = screen.getByTestId('quick-note-edit-text-input') as HTMLTextAreaElement;
+    const tagInput = screen.getByTestId('quick-note-edit-tag-input') as HTMLInputElement;
+    expect(textInput.value).toBe('Remember to follow up on project timeline');
+    expect(tagInput.value).toBe('hiring');
+  });
+
+  it('should call onEdit with updated text and tag on save', () => {
+    const taggedNote: QuickNote = { ...mockNote, tag: 'hiring' };
+    renderCard(taggedNote);
+    fireEvent.click(screen.getByTestId('quick-note-edit-btn'));
+    fireEvent.change(screen.getByTestId('quick-note-edit-text-input'), { target: { value: 'Updated text' } });
+    fireEvent.change(screen.getByTestId('quick-note-edit-tag-input'), { target: { value: 'urgent' } });
+    fireEvent.click(screen.getByTestId('quick-note-edit-save-btn'));
+    expect(mockOnEdit).toHaveBeenCalledWith('note-1', 'Updated text', 'urgent');
+  });
+
+  it('should call onEdit with null tag when the tag is cleared', () => {
+    const taggedNote: QuickNote = { ...mockNote, tag: 'hiring' };
+    renderCard(taggedNote);
+    fireEvent.click(screen.getByTestId('quick-note-edit-btn'));
+    fireEvent.change(screen.getByTestId('quick-note-edit-tag-input'), { target: { value: '' } });
+    fireEvent.click(screen.getByTestId('quick-note-edit-save-btn'));
+    expect(mockOnEdit).toHaveBeenCalledWith('note-1', 'Remember to follow up on project timeline', null);
+  });
+
+  it('should exit edit mode without saving on cancel', () => {
+    renderCard();
+    fireEvent.click(screen.getByTestId('quick-note-edit-btn'));
+    fireEvent.change(screen.getByTestId('quick-note-edit-text-input'), { target: { value: 'Discarded' } });
+    fireEvent.click(screen.getByTestId('quick-note-edit-cancel-btn'));
+    expect(mockOnEdit).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('quick-note-edit-text-input')).not.toBeInTheDocument();
+    expect(screen.getByTestId('quick-note-text')).toHaveTextContent('Remember to follow up on project timeline');
   });
 });

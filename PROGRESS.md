@@ -1,6 +1,9 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-10-20T13:00:00Z — Consistency follow-up (same branch `feat/my-notes-inbox-redesign`): the manager **Quick Notes inbox (`/quick-notes`) now matches My Notes** — it renders a tag chip on tagged notes and supports **inline edit** of a note's text and tag. Frontend-only: `QuickNoteCard` gained an optional `onEdit(id, text, tag)` prop with an in-place edit mode (mirroring the My Notes card, same testids pattern) and a header tag chip; `QuickNoteList` threads the prop; the `/quick-notes` page wires `handleEdit` to the existing `PUT /api/v1/quick-notes/{id}` (`updateQuickNote` with `updateTag`, so clearing a tag works). No backend change (the update endpoint already supported text + tag). TDD: 8 new `QuickNoteCard` tests (tag chip present/absent, edit button gated on `onEdit`, prefilled inputs, save calls `onEdit`, clear-tag → `null`, cancel discards). **Verification:** frontend `jest` → **125 suites / 1346 tests pass** (+8); feature files typecheck clean; no backend files touched so the backend suite is unaffected. README Quick Notes bullet updated. (2026-10-20)
+
+## Previously Updated
 2026-10-20T12:00:00Z — Follow-up on the My Notes redesign (same branch `feat/my-notes-inbox-redesign`): **converted-TODO backlink + editable notes/tags**. TDD throughout.
 
 **Backend — backlink:** `ActionItem` gains an optional `originatingQuickNoteId: QuickNoteId?` (alongside the existing `originatingEntryId` for 1:1-raised items). `QuickNoteService.convertQuickNote` now stamps the originating note's id onto the created action item, so a converted TODO can be traced back to the note it came from. Threaded through the JPA entity/adapter and exposed on `ActionItemResponse`. New additive migration `V20251020120002__add_originating_quick_note_id_to_action_items.sql` (`originating_quick_note_id UUID REFERENCES quick_notes(id) ON DELETE SET NULL` + partial index). No behavior change to the existing convert semantics.
