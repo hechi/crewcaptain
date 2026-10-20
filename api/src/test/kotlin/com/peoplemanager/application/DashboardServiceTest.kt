@@ -4,6 +4,7 @@ import com.peoplemanager.application.port.output.ActionItemRepository
 import com.peoplemanager.application.port.output.OneOnOneEntryRepository
 import com.peoplemanager.application.port.output.OneOnOneSeriesRepository
 import com.peoplemanager.application.port.output.PersonRepository
+import com.peoplemanager.application.port.output.QuickNoteRepository
 import com.peoplemanager.application.queries.GetDashboardQuery
 import com.peoplemanager.domain.*
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -26,9 +27,10 @@ class DashboardServiceTest {
     private val actionItemRepository = mockk<ActionItemRepository>()
     private val oneOnOneSeriesRepository = mockk<OneOnOneSeriesRepository>()
     private val oneOnOneEntryRepository = mockk<OneOnOneEntryRepository>()
+    private val quickNoteRepository = mockk<QuickNoteRepository>()
 
     private val service = DashboardService(
-        personRepository, actionItemRepository, oneOnOneSeriesRepository, oneOnOneEntryRepository
+        personRepository, actionItemRepository, oneOnOneSeriesRepository, oneOnOneEntryRepository, quickNoteRepository
     )
 
     private val userId = UserId.generate()
@@ -52,6 +54,12 @@ class DashboardServiceTest {
     @BeforeEach
     fun setup() {
         clearAllMocks()
+        // Default: no self-assigned inbox notes. Individual tests override as needed.
+        every {
+            quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(
+                userId, true, QuickNoteStatus.INBOX, any()
+            )
+        } returns PageImpl(emptyList())
     }
 
     @Nested
@@ -418,6 +426,138 @@ class DashboardServiceTest {
 
             // Next anniversary is ~355 days away, outside 30-day window
             result.upcomingAnniversaries.shouldBeEmpty()
+        }
+    }
+
+    @Nested
+    inner class TodayPrioritiesTests {
+
+        private fun overdueItem(title: String, daysOverdue: Long) = ActionItem(
+            id = ActionItemId.generate(),
+            userId = userId,
+            personId = personId1,
+            title = title,
+            dueDate = LocalDate.now(ZoneOffset.UTC).minusDays(daysOverdue),
+            status = ActionItemStatus.OPEN
+        )
+
+        private fun dueSoonItem(title: String, daysUntil: Long) = ActionItem(
+            id = ActionItemId.generate(),
+            userId = userId,
+            personId = personId2,
+            title = title,
+            dueDate = LocalDate.now(ZoneOffset.UTC).plusDays(daysUntil),
+            status = ActionItemStatus.OPEN
+        )
+
+        private fun selfNote(text: String) = QuickNote(
+            id = QuickNoteId.generate(),
+            userId = userId,
+            text = text,
+            selfAssigned = true
+        )
+
+        private fun stubBase() {
+            every { personRepository.findAllByUserIdUnpaged(userId) } returns listOf(person1, person2)
+            every { oneOnOneSeriesRepository.findAllByUserId(userId) } returns emptyList()
+        }
+
+        @Test
+        fun `should be empty when there is nothing urgent`() {
+            stubBase()
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns PageImpl(emptyList())
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns emptyList()
+
+            val result = service.getDashboard(GetDashboardQuery(userId = userId))
+
+            result.todayPriorities.shouldBeEmpty()
+        }
+
+        @Test
+        fun `should include self-assigned inbox notes as INBOX_NOTE priorities`() {
+            stubBase()
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns PageImpl(emptyList())
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns emptyList()
+            every {
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, any())
+            } returns PageImpl(listOf(selfNote("Prep board deck")))
+
+            val result = service.getDashboard(GetDashboardQuery(userId = userId))
+
+            result.todayPriorities shouldHaveSize 1
+            result.todayPriorities[0].kind shouldBe PriorityKind.INBOX_NOTE
+            result.todayPriorities[0].title shouldBe "Prep board deck"
+            result.todayPriorities[0].personId shouldBe null
+            result.todayPriorities[0].dueDate shouldBe null
+        }
+
+        @Test
+        fun `should rank overdue before due-soon before inbox notes`() {
+            stubBase()
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
+                PageImpl(listOf(overdueItem("Overdue task", 3)))
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns
+                listOf(dueSoonItem("Due soon task", 2))
+            every {
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, any())
+            } returns PageImpl(listOf(selfNote("Personal note")))
+
+            val result = service.getDashboard(GetDashboardQuery(userId = userId))
+
+            result.todayPriorities shouldHaveSize 3
+            result.todayPriorities[0].kind shouldBe PriorityKind.OVERDUE
+            result.todayPriorities[0].title shouldBe "Overdue task"
+            result.todayPriorities[1].kind shouldBe PriorityKind.DUE_SOON
+            result.todayPriorities[1].title shouldBe "Due soon task"
+            result.todayPriorities[2].kind shouldBe PriorityKind.INBOX_NOTE
+            result.todayPriorities[2].title shouldBe "Personal note"
+        }
+
+        @Test
+        fun `should cap the list at 7 items`() {
+            stubBase()
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
+                PageImpl((1..5).map { overdueItem("Overdue $it", it.toLong()) })
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns
+                (1..5).map { dueSoonItem("Due soon $it", it.toLong()) }
+            every {
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, any())
+            } returns PageImpl((1..5).map { selfNote("Note $it") })
+
+            val result = service.getDashboard(GetDashboardQuery(userId = userId))
+
+            result.todayPriorities shouldHaveSize 7
+            // All overdue (5) come first, then the first 2 due-soon
+            result.todayPriorities.count { it.kind == PriorityKind.OVERDUE } shouldBe 5
+            result.todayPriorities.count { it.kind == PriorityKind.DUE_SOON } shouldBe 2
+            result.todayPriorities.count { it.kind == PriorityKind.INBOX_NOTE } shouldBe 0
+        }
+
+        @Test
+        fun `should carry person details for action item priorities`() {
+            stubBase()
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
+                PageImpl(listOf(overdueItem("Overdue task", 1)))
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns emptyList()
+
+            val result = service.getDashboard(GetDashboardQuery(userId = userId))
+
+            result.todayPriorities shouldHaveSize 1
+            result.todayPriorities[0].personId shouldBe personId1
+            result.todayPriorities[0].personName shouldBe "Alice Smith"
+        }
+
+        @Test
+        fun `should scope the self-assigned note query by userId`() {
+            stubBase()
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns PageImpl(emptyList())
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns emptyList()
+
+            service.getDashboard(GetDashboardQuery(userId = userId))
+
+            verify {
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, any())
+            }
         }
     }
 }

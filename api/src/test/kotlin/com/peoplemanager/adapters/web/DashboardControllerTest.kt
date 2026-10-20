@@ -101,6 +101,52 @@ class DashboardControllerTest {
             .andExpect(jsonPath("$.staleOneOnOnes").isEmpty)
             .andExpect(jsonPath("$.upcomingAnniversaries").isArray)
             .andExpect(jsonPath("$.upcomingAnniversaries").isEmpty)
+            .andExpect(jsonPath("$.todayPriorities").isArray)
+            .andExpect(jsonPath("$.todayPriorities").isEmpty)
+    }
+
+    @Test
+    fun `should return dashboard with today priorities`() {
+        val actionItemId = ActionItemId.generate()
+        val dashboardData = DashboardData(
+            overdueActionItems = emptyList(),
+            dueSoonActionItems = emptyList(),
+            staleOneOnOnes = emptyList(),
+            upcomingAnniversaries = emptyList(),
+            todayPriorities = listOf(
+                TodayPriorityItem(
+                    kind = PriorityKind.OVERDUE,
+                    id = actionItemId.value,
+                    title = "Review PR",
+                    personId = personId,
+                    personName = "Alice Smith",
+                    dueDate = LocalDate.now().minusDays(2)
+                ),
+                TodayPriorityItem(
+                    kind = PriorityKind.INBOX_NOTE,
+                    id = UUID.randomUUID(),
+                    title = "Prep board deck",
+                    personId = null,
+                    personName = null,
+                    dueDate = null
+                )
+            )
+        )
+
+        every { dashboardQueryPort.getDashboard(any()) } returns dashboardData
+
+        mockMvc.perform(
+            get("/api/v1/dashboard")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.todayPriorities[0].kind").value("OVERDUE"))
+            .andExpect(jsonPath("$.todayPriorities[0].title").value("Review PR"))
+            .andExpect(jsonPath("$.todayPriorities[0].personName").value("Alice Smith"))
+            .andExpect(jsonPath("$.todayPriorities[1].kind").value("INBOX_NOTE"))
+            .andExpect(jsonPath("$.todayPriorities[1].title").value("Prep board deck"))
+            .andExpect(jsonPath("$.todayPriorities[1].personId").isEmpty)
+            .andExpect(jsonPath("$.todayPriorities[1].dueDate").isEmpty)
     }
 
     @Test
