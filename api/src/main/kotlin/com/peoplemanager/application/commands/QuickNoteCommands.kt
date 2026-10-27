@@ -69,3 +69,14 @@ data class MoveQuickNoteCommand(
     val quickNoteId: QuickNoteId,
     val direction: MoveDirection
 )
+
+/**
+ * Moves a personal (self-assigned) note to an absolute position in the user's manual
+ * ordering (0-based index among their self-assigned INBOX notes). Used by drag-and-drop,
+ * where a single drop can span multiple positions. The target index is clamped into range.
+ */
+data class ReorderQuickNoteCommand(
+    val userId: UserId,
+    val quickNoteId: QuickNoteId,
+    val targetIndex: Int
+)

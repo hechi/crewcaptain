@@ -43,3 +43,8 @@ data class MoveQuickNoteRequest(
     )
     val direction: String
 )
+
+data class ReorderQuickNoteRequest(
+    @field:jakarta.validation.constraints.Min(value = 0, message = "targetIndex must be zero or greater")
+    val targetIndex: Int
+)

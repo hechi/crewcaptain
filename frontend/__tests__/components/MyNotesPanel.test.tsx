@@ -8,6 +8,7 @@ import {
   updateQuickNote,
   deleteQuickNote,
   moveQuickNote,
+  reorderQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { QuickNote } from '@/types/quick-note';
@@ -18,6 +19,7 @@ jest.mock('@/lib/api-client', () => ({
   updateQuickNote: jest.fn(),
   deleteQuickNote: jest.fn(),
   moveQuickNote: jest.fn(),
+  reorderQuickNote: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -29,7 +31,22 @@ const mockCreate = createQuickNote as jest.MockedFunction<typeof createQuickNote
 const mockUpdate = updateQuickNote as jest.MockedFunction<typeof updateQuickNote>;
 const mockDelete = deleteQuickNote as jest.MockedFunction<typeof deleteQuickNote>;
 const mockMove = moveQuickNote as jest.MockedFunction<typeof moveQuickNote>;
+const mockReorder = reorderQuickNote as jest.MockedFunction<typeof reorderQuickNote>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
+
+// Build a minimal dataTransfer so native drag events work under jsdom.
+function dataTransfer() {
+  const store: Record<string, string> = {};
+  return {
+    setData: (k: string, v: string) => {
+      store[k] = v;
+    },
+    getData: (k: string) => store[k] ?? '',
+    effectAllowed: 'move',
+    dropEffect: 'move',
+    setDragImage: () => {},
+  };
+}
 
 function note(partial: Partial<QuickNote> & { id: string; text: string }): QuickNote {
   return {
@@ -257,5 +274,76 @@ describe('MyNotesPanel', () => {
     await waitFor(() =>
       expect(mockList).toHaveBeenCalledWith('test-token', expect.objectContaining({ tag: 'work' }))
     );
+  });
+
+  it('marks note cards as draggable', async () => {
+    mockList.mockResolvedValue(paginated([note({ id: 'a', text: 'Draggable note' })]));
+    render(<MyNotesPanel />);
+    fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
+    await screen.findByText('Draggable note');
+
+    expect(screen.getByTestId('my-notes-panel-card-a')).toHaveAttribute('draggable', 'true');
+  });
+
+  it('reorders by dragging a note onto another and persists the drop index', async () => {
+    mockList.mockResolvedValue(
+      paginated([
+        note({ id: 'a', text: 'Note A', displayOrder: 0 }),
+        note({ id: 'b', text: 'Note B', displayOrder: 1 }),
+        note({ id: 'c', text: 'Note C', displayOrder: 2 }),
+      ])
+    );
+    mockReorder.mockResolvedValue(note({ id: 'a', text: 'Note A', displayOrder: 2 }));
+    render(<MyNotesPanel />);
+    fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
+    await screen.findByText('Note A');
+
+    const dt = dataTransfer();
+    const source = screen.getByTestId('my-notes-panel-card-a');
+    const target = screen.getByTestId('my-notes-panel-card-c');
+
+    fireEvent.dragStart(source, { dataTransfer: dt });
+    fireEvent.dragOver(target, { dataTransfer: dt });
+    fireEvent.drop(target, { dataTransfer: dt });
+
+    // Dragging A (index 0) onto C (index 2) persists a reorder to index 2.
+    await waitFor(() => expect(mockReorder).toHaveBeenCalledWith('test-token', 'a', 2));
+  });
+
+  it('does not call reorder when dropping a note on itself', async () => {
+    mockList.mockResolvedValue(
+      paginated([
+        note({ id: 'a', text: 'Note A', displayOrder: 0 }),
+        note({ id: 'b', text: 'Note B', displayOrder: 1 }),
+      ])
+    );
+    render(<MyNotesPanel />);
+    fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
+    await screen.findByText('Note A');
+
+    const dt = dataTransfer();
+    const source = screen.getByTestId('my-notes-panel-card-a');
+    fireEvent.dragStart(source, { dataTransfer: dt });
+    fireEvent.drop(source, { dataTransfer: dt });
+
+    expect(mockReorder).not.toHaveBeenCalled();
+  });
+
+  it('still supports the arrow buttons alongside drag-and-drop', async () => {
+    mockList.mockResolvedValue(
+      paginated([
+        note({ id: 'a', text: 'Note A', displayOrder: 0 }),
+        note({ id: 'b', text: 'Note B', displayOrder: 1 }),
+      ])
+    );
+    mockMove.mockResolvedValue(note({ id: 'b', text: 'Note B', displayOrder: 0 }));
+    render(<MyNotesPanel />);
+    fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
+    await screen.findByText('Note B');
+
+    const card = screen.getByTestId('my-notes-panel-card-b');
+    fireEvent.click(within(card).getByTestId('my-notes-panel-move-up-b'));
+
+    await waitFor(() => expect(mockMove).toHaveBeenCalledWith('test-token', 'b', 'UP'));
   });
 });

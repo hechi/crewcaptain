@@ -608,6 +608,18 @@ export async function moveQuickNote(
   return response.json();
 }
 
+export async function reorderQuickNote(
+  token: string,
+  quickNoteId: string,
+  targetIndex: number
+): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/reorder`, {
+    method: 'POST',
+    body: JSON.stringify({ targetIndex }),
+  }, token);
+  return response.json();
+}
+
 // ===== Dashboard =====
 
 export async function getDashboard(

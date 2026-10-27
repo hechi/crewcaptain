@@ -176,6 +176,21 @@ class QuickNoteController(
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
     }
 
+    @PostMapping("/quick-notes/{quickNoteId}/reorder")
+    fun reorderQuickNote(
+        @PathVariable quickNoteId: UUID,
+        @Valid @RequestBody request: ReorderQuickNoteRequest
+    ): ResponseEntity<QuickNoteResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = ReorderQuickNoteCommand(
+            userId = userId,
+            quickNoteId = QuickNoteId(quickNoteId),
+            targetIndex = request.targetIndex
+        )
+        val quickNote = quickNoteCommandPort.reorderQuickNote(command)
+        return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
+    }
+
     @DeleteMapping("/quick-notes/{quickNoteId}")
     fun deleteQuickNote(
         @PathVariable quickNoteId: UUID

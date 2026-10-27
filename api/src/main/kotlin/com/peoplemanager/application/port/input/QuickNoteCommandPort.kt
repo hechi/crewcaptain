@@ -13,4 +13,5 @@ interface QuickNoteCommandPort {
     fun archiveQuickNote(command: ArchiveQuickNoteCommand): QuickNote
     fun deleteQuickNote(command: DeleteQuickNoteCommand)
     fun moveQuickNote(command: MoveQuickNoteCommand): QuickNote
+    fun reorderQuickNote(command: ReorderQuickNoteCommand): QuickNote
 }

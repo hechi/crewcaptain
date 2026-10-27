@@ -1017,5 +1017,61 @@ class QuickNoteIntegrationTest {
                     .content("""{"direction": "UP"}""")
             ).andExpect(status().isNotFound)
         }
+
+        @Test
+        fun `drag-drop reorder moves a note to an absolute position`() {
+            createSelfNote("first")  // bottom
+            createSelfNote("second") // middle
+            val thirdId = createSelfNote("third") // top
+
+            // Order [third, second, first]; drag "third" (index 0) to index 2 -> [second, first, third]
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$thirdId/reorder")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": 2}""")
+            ).andExpect(status().isOk)
+
+            listSelfAssignedTexts() shouldContainExactly listOf("second", "first", "third")
+        }
+
+        @Test
+        fun `drag-drop reorder persists and clamps an out-of-range index`() {
+            val aId = createSelfNote("alpha") // bottom
+            createSelfNote("beta")            // top
+
+            // Order [beta, alpha]; drag "alpha" (index 1) to a too-large index -> clamps to last, [beta, alpha] unchanged;
+            // drag "beta" to index 99 -> clamps to last -> [alpha, beta]
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$aId/reorder")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": 99}""")
+            ).andExpect(status().isOk)
+
+            listSelfAssignedTexts() shouldContainExactly listOf("beta", "alpha")
+        }
+
+        @Test
+        fun `drag-drop reorder rejects a negative index`() {
+            val id = createSelfNote("note")
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$id/reorder")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": -1}""")
+            ).andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should not allow user B to reorder user A note`() {
+            val id = createSelfNote("A's note")
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$id/reorder")
+                    .with(authentication(authenticatedJwt(userB.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": 0}""")
+            ).andExpect(status().isNotFound)
+        }
     }
 }

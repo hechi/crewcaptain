@@ -7,6 +7,7 @@ import {
   updateQuickNote,
   deleteQuickNote,
   moveQuickNote,
+  reorderQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { QuickNote } from '@/types/quick-note';
@@ -35,6 +36,9 @@ export default function MyNotesPanel() {
   const [newText, setNewText] = useState('');
   const [newTag, setNewTag] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Drag-and-drop reordering state: the id being dragged and the id currently hovered.
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -158,6 +162,41 @@ export default function MyNotesPanel() {
       await fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to move note');
+    }
+  };
+
+  const handleDragStart = (id: string) => {
+    setDraggingId(id);
+  };
+
+  const handleDragOverNote = (id: string) => {
+    if (draggingId && id !== draggingId) {
+      setDropTargetId(id);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    setDropTargetId(null);
+  };
+
+  // Drop the dragged note onto a target note: reorder to the target's index and persist.
+  const handleDropOnNote = async (targetId: string) => {
+    const sourceId = draggingId;
+    setDraggingId(null);
+    setDropTargetId(null);
+    if (!sourceId || sourceId === targetId) return;
+
+    const targetIndex = notes.findIndex((n) => n.id === targetId);
+    if (targetIndex < 0) return;
+
+    const token = getToken();
+    if (!token) return;
+    try {
+      await reorderQuickNote(token, sourceId, targetIndex);
+      await fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reorder note');
     }
   };
 
@@ -444,9 +483,15 @@ export default function MyNotesPanel() {
                       note={note}
                       isFirst={index === 0}
                       isLast={index === notes.length - 1}
+                      isDragging={draggingId === note.id}
+                      isDropTarget={dropTargetId === note.id}
                       onMove={handleMove}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onDragStart={handleDragStart}
+                      onDragOverNote={handleDragOverNote}
+                      onDragEnd={handleDragEnd}
+                      onDropOnNote={handleDropOnNote}
                     />
                   ))}
                 </ul>
@@ -478,12 +523,31 @@ interface PanelNoteCardProps {
   note: QuickNote;
   isFirst: boolean;
   isLast: boolean;
+  isDragging: boolean;
+  isDropTarget: boolean;
   onMove: (id: string, direction: 'UP' | 'DOWN') => void;
   onEdit: (id: string, text: string, tag: string | null) => void;
   onDelete: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragOverNote: (id: string) => void;
+  onDragEnd: () => void;
+  onDropOnNote: (id: string) => void;
 }
 
-function PanelNoteCard({ note, isFirst, isLast, onMove, onEdit, onDelete }: PanelNoteCardProps) {
+function PanelNoteCard({
+  note,
+  isFirst,
+  isLast,
+  isDragging,
+  isDropTarget,
+  onMove,
+  onEdit,
+  onDelete,
+  onDragStart,
+  onDragOverNote,
+  onDragEnd,
+  onDropOnNote,
+}: PanelNoteCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(note.text);
   const [editTag, setEditTag] = useState(note.tag ?? '');
@@ -515,18 +579,55 @@ function PanelNoteCard({ note, isFirst, isLast, onMove, onEdit, onDelete }: Pane
   return (
     <li
       data-testid={`my-notes-panel-card-${note.id}`}
+      draggable={!isEditing}
+      onDragStart={(e) => {
+        // Native DnD requires data to be set for a valid drag in some browsers.
+        e.dataTransfer.setData('text/plain', note.id);
+        e.dataTransfer.effectAllowed = 'move';
+        onDragStart(note.id);
+      }}
+      onDragOver={(e) => {
+        // Allow dropping by preventing the default (which would reject the drop).
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        onDragOverNote(note.id);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDropOnNote(note.id);
+      }}
+      onDragEnd={onDragEnd}
       style={{
         padding: 'var(--space-3)',
-        border: '1px solid var(--color-border)',
+        border: isDropTarget ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+        borderTop: isDropTarget ? '3px solid var(--color-primary)' : undefined,
         borderRadius: 'var(--radius-medium)',
         backgroundColor: 'var(--color-bg-surface)',
+        opacity: isDragging ? 0.5 : 1,
+        cursor: isEditing ? 'default' : 'grab',
+        transition: 'opacity 0.15s, border-color 0.15s',
       }}
     >
       {!isEditing ? (
         <>
-          <p style={{ margin: '0 0 8px', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-            {note.text}
-          </p>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+            <span
+              aria-hidden="true"
+              title="Drag to reorder"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-text-muted)',
+                lineHeight: 1.5,
+                userSelect: 'none',
+                flexShrink: 0,
+              }}
+            >
+              ⠿
+            </span>
+            <p style={{ margin: '0 0 8px', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.5, flex: 1 }}>
+              {note.text}
+            </p>
+          </div>
           {note.tag && (
             <span
               data-testid={`my-notes-panel-tag-${note.id}`}

@@ -224,6 +224,38 @@ class QuickNoteService(
         return quickNoteRepository.save(movedTarget)
     }
 
+    override fun reorderQuickNote(command: ReorderQuickNoteCommand): QuickNote {
+        // User-scope the target first so a foreign note surfaces as 404.
+        val target = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
+            ?: throw QuickNoteNotFoundException(command.quickNoteId)
+
+        val ordered = quickNoteRepository.findSelfAssignedOrdered(command.userId, QuickNoteStatus.INBOX)
+        val currentIndex = ordered.indexOfFirst { it.id == target.id }
+
+        // Not part of the ordered personal list — nothing to reorder.
+        if (currentIndex < 0) return target
+
+        // Clamp the requested destination into the valid range.
+        val destination = command.targetIndex.coerceIn(0, ordered.size - 1)
+        if (destination == currentIndex) return target
+
+        // Remove the note from its current slot and reinsert it at the destination.
+        val reordered = ordered.toMutableList()
+        val moved = reordered.removeAt(currentIndex)
+        reordered.add(destination, moved)
+
+        // Renumber contiguously (0..n-1); persist only the notes whose order changed.
+        var result = target
+        reordered.forEachIndexed { index, note ->
+            if (note.displayOrder != index) {
+                val updated = note.withDisplayOrder(index)
+                val saved = quickNoteRepository.save(updated)
+                if (saved.id == target.id) result = saved
+            }
+        }
+        return result
+    }
+
     override fun getQuickNote(query: GetQuickNoteQuery): QuickNote {
         return quickNoteRepository.findByIdAndUserId(query.quickNoteId, query.userId)
             ?: throw QuickNoteNotFoundException(query.quickNoteId)

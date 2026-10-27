@@ -99,13 +99,18 @@ Notable domain invariants worth knowing when touching these aggregates:
   `displayOrder: Int` field drives the manual ordering of a manager's **personal
   (self-assigned) notes**: lower values sort higher, with `createdAt DESC` as the tie-breaker,
   so newly created personal notes land on top (they are inserted just above the current minimum
-  order). Reordering is a pure order **swap** between a note and its adjacent self-assigned INBOX
-  neighbor (`QuickNoteService.moveQuickNote`, exposed as `POST /quick-notes/{id}/move` with an
-  `UP`/`DOWN` direction). Like every other quick-note operation it is strictly `userId`-scoped:
-  the target is loaded via `findByIdAndUserId` (a foreign note surfaces as 404) and both the
-  neighbor lookup (`findSelfAssignedOrdered`) and the new-note top-placement
-  (`findMinSelfAssignedDisplayOrder`) are user-scoped. Moving a note already at the top/bottom is
-  a no-op. `displayOrder` is a non-encrypted, additive column (`V20251028120000`).
+  order). Reordering comes in two flavors, both over the user's self-assigned INBOX list: a
+  single-step **swap** with the adjacent neighbor (`QuickNoteService.moveQuickNote`, exposed as
+  `POST /quick-notes/{id}/move` with an `UP`/`DOWN` direction — the ↑/↓ buttons), and an
+  **absolute reposition** (`QuickNoteService.reorderQuickNote`, exposed as
+  `POST /quick-notes/{id}/reorder` with a 0-based `targetIndex` — drag-and-drop) which removes
+  the note from its slot, reinserts it at the clamped destination, and renumbers the list
+  contiguously, persisting only the notes whose order actually changed. Like every other
+  quick-note operation both are strictly `userId`-scoped: the target is loaded via
+  `findByIdAndUserId` (a foreign note surfaces as 404) and both the ordered-list lookup
+  (`findSelfAssignedOrdered`) and the new-note top-placement (`findMinSelfAssignedDisplayOrder`)
+  are user-scoped. A no-op move (already at the top/bottom) or a drop on the current position
+  writes nothing. `displayOrder` is a non-encrypted, additive column (`V20251028120000`).
 
 ## Migration Playbook: Moving an Aggregate to Sub-Packages
 

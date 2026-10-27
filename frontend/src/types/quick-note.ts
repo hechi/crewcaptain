@@ -23,6 +23,10 @@ export interface MoveQuickNoteRequest {
   direction: MoveDirection;
 }
 
+export interface ReorderQuickNoteRequest {
+  targetIndex: number;
+}
+
 export interface CreateQuickNoteRequest {
   text: string;
   personId?: string;
