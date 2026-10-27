@@ -95,7 +95,17 @@ Notable domain invariants worth knowing when touching these aggregates:
   `originatingEntryId` for items raised from a 1:1); the FK is `ON DELETE SET NULL`.
 - **QuickNote** — carries an optional `tag` (≤30 chars) and the invariant that a note cannot be
   both `selfAssigned` and assigned to a `personId`. Converting a self-assigned note yields a
-  person-less ActionItem and leaves the note person-less (the invariant is preserved).
+  person-less ActionItem and leaves the note person-less (the invariant is preserved). A
+  `displayOrder: Int` field drives the manual ordering of a manager's **personal
+  (self-assigned) notes**: lower values sort higher, with `createdAt DESC` as the tie-breaker,
+  so newly created personal notes land on top (they are inserted just above the current minimum
+  order). Reordering is a pure order **swap** between a note and its adjacent self-assigned INBOX
+  neighbor (`QuickNoteService.moveQuickNote`, exposed as `POST /quick-notes/{id}/move` with an
+  `UP`/`DOWN` direction). Like every other quick-note operation it is strictly `userId`-scoped:
+  the target is loaded via `findByIdAndUserId` (a foreign note surfaces as 404) and both the
+  neighbor lookup (`findSelfAssignedOrdered`) and the new-note top-placement
+  (`findMinSelfAssignedDisplayOrder`) are user-scoped. Moving a note already at the top/bottom is
+  a no-op. `displayOrder` is a non-encrypted, additive column (`V20251028120000`).
 
 ## Migration Playbook: Moving an Aggregate to Sub-Packages
 

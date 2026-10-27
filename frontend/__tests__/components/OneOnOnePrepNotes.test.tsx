@@ -29,6 +29,7 @@ const prepNote1: QuickNote = {
   status: 'INBOX',
   attachedEntryId: null,
   tag: null,
+  displayOrder: 0,
   createdAt: '2026-06-25T09:00:00Z',
   updatedAt: '2026-06-25T09:00:00Z',
 };
@@ -42,6 +43,7 @@ const prepNote2: QuickNote = {
   status: 'INBOX',
   attachedEntryId: null,
   tag: null,
+  displayOrder: 0,
   createdAt: '2026-06-26T14:00:00Z',
   updatedAt: '2026-06-26T14:00:00Z',
 };
@@ -55,6 +57,7 @@ const sensitiveNote: QuickNote = {
   status: 'INBOX',
   attachedEntryId: null,
   tag: null,
+  displayOrder: 0,
   createdAt: '2026-06-27T10:00:00Z',
   updatedAt: '2026-06-27T10:00:00Z',
 };

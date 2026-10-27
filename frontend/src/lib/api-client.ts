@@ -38,6 +38,7 @@ import {
   AttachQuickNoteToEntryRequest,
   ConvertQuickNoteRequest,
   PaginatedQuickNoteResponse,
+  MoveDirection,
 } from '@/types/quick-note';
 import { DashboardResponse } from '@/types/dashboard';
 import {
@@ -591,6 +592,18 @@ export async function convertQuickNote(token: string, quickNoteId: string, data?
 export async function archiveQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
   const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/archive`, {
     method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function moveQuickNote(
+  token: string,
+  quickNoteId: string,
+  direction: MoveDirection
+): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/move`, {
+    method: 'POST',
+    body: JSON.stringify({ direction }),
   }, token);
   return response.json();
 }

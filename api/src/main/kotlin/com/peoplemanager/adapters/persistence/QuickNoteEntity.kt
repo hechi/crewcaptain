@@ -35,6 +35,9 @@ class QuickNoteEntity(
     @Column(name = "tag")
     val tag: String? = null,
 
+    @Column(name = "display_order", nullable = false)
+    val displayOrder: Int = 0,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 

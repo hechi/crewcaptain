@@ -4,6 +4,7 @@ import SessionErrorHandler from '@/components/SessionErrorHandler'
 import Navigation from '@/components/Navigation'
 import ThemeProvider from '@/components/ThemeProvider'
 import QuickNoteOverlay from '@/components/quick-notes/QuickNoteOverlay'
+import MyNotesPanel from '@/components/quick-notes/MyNotesPanel'
 import AiCommandTerminal from '@/components/ai-terminal/AiCommandTerminal'
 import './globals.css'
 
@@ -41,6 +42,7 @@ export default function RootLayout({
             <Navigation />
             <main>{children}</main>
             <QuickNoteOverlay />
+            <MyNotesPanel />
             <AiCommandTerminal />
           </ThemeProvider>
         </SessionProvider>

@@ -51,6 +51,7 @@ const mockSelfAssignedNotes = {
       status: 'INBOX' as const,
       attachedEntryId: null,
       tag: 'hiring',
+      displayOrder: 1,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T10:00:00Z',
     },
@@ -63,6 +64,7 @@ const mockSelfAssignedNotes = {
       status: 'INBOX' as const,
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-05-14T09:00:00Z',
       updatedAt: '2026-05-14T09:00:00Z',
     },
@@ -179,6 +181,7 @@ describe('MyNotesPage', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-05-15T12:00:00Z',
       updatedAt: '2026-05-15T12:00:00Z',
     });
@@ -424,6 +427,7 @@ describe('MyNotesPage', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T12:00:00Z',
     });

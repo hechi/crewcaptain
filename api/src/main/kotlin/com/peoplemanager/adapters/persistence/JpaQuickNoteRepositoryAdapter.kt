@@ -71,6 +71,16 @@ class JpaQuickNoteRepositoryAdapter(
         return deleted > 0
     }
 
+    override fun findSelfAssignedOrdered(userId: UserId, status: QuickNoteStatus): List<QuickNote> {
+        return springDataRepository
+            .findAllByUserIdAndSelfAssignedAndStatusOrderByDisplayOrderAscCreatedAtDesc(userId.value, true, status.name)
+            .map { it.toDomain() }
+    }
+
+    override fun findMinSelfAssignedDisplayOrder(userId: UserId): Int? {
+        return springDataRepository.findMinDisplayOrderByUserIdAndSelfAssigned(userId.value)
+    }
+
     private fun QuickNoteEntity.toDomain(): QuickNote {
         val decryptedText = if (this.sensitive) {
             try {
@@ -93,6 +103,7 @@ class JpaQuickNoteRepositoryAdapter(
             status = QuickNoteStatus.valueOf(this.status),
             attachedEntryId = this.attachedEntryId?.let { OneOnOneEntryId(it) },
             tag = this.tag,
+            displayOrder = this.displayOrder,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt
         )
@@ -108,6 +119,7 @@ class JpaQuickNoteRepositoryAdapter(
         status = this.status.name,
         attachedEntryId = this.attachedEntryId?.value,
         tag = this.tag,
+        displayOrder = this.displayOrder,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

@@ -12,6 +12,7 @@ data class QuickNote(
     val status: QuickNoteStatus = QuickNoteStatus.INBOX,
     val attachedEntryId: OneOnOneEntryId? = null,
     val tag: String? = null,
+    val displayOrder: Int = 0,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()
 ) {
@@ -64,5 +65,13 @@ data class QuickNote(
 
     fun toggleSensitive(): QuickNote {
         return copy(sensitive = !sensitive, updatedAt = Instant.now())
+    }
+
+    /**
+     * Returns a copy of this note placed at the given display order. Lower values sort
+     * higher in a user's personal notes list. Used by manual up/down reordering.
+     */
+    fun withDisplayOrder(newOrder: Int): QuickNote {
+        return copy(displayOrder = newOrder, updatedAt = Instant.now())
     }
 }

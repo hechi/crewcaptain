@@ -57,3 +57,15 @@ data class DeleteQuickNoteCommand(
     val userId: UserId,
     val quickNoteId: QuickNoteId
 )
+
+enum class MoveDirection { UP, DOWN }
+
+/**
+ * Moves a personal (self-assigned) note one position up or down in the user's
+ * manual ordering by swapping its display order with the adjacent note.
+ */
+data class MoveQuickNoteCommand(
+    val userId: UserId,
+    val quickNoteId: QuickNoteId,
+    val direction: MoveDirection
+)

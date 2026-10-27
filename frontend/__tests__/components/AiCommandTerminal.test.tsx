@@ -312,6 +312,7 @@ describe('AiCommandTerminal', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });
@@ -366,6 +367,7 @@ describe('AiCommandTerminal', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     });
