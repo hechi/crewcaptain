@@ -355,6 +355,33 @@ export async function listAllActionItems(token: string, params?: {
   return response.json();
 }
 
+// Cross-person (manager-wide) by-id operations. These reach action items regardless of
+// whether they are tied to a person — including person-less TODOs (e.g. converted notes).
+export async function getActionItemById(token: string, actionItemId: string): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/action-items/${actionItemId}`, {}, token);
+  return response.json();
+}
+
+export async function completeActionItemById(token: string, actionItemId: string): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/action-items/${actionItemId}/complete`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function cancelActionItemById(token: string, actionItemId: string): Promise<ActionItem> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/action-items/${actionItemId}/cancel`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
+export async function deleteActionItemById(token: string, actionItemId: string): Promise<void> {
+  await fetchWithAuth(`${API_BASE_URL}/action-items/${actionItemId}`, {
+    method: 'DELETE',
+  }, token);
+}
+
 // --- PDP Goals ---
 
 export async function createPdpGoal(token: string, personId: string, data: CreatePdpGoalRequest): Promise<PdpGoal> {

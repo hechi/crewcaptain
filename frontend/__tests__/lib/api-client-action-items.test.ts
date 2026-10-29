@@ -7,6 +7,10 @@ import {
   deleteActionItem,
   listActionItemsByPerson,
   listAllActionItems,
+  getActionItemById,
+  completeActionItemById,
+  cancelActionItemById,
+  deleteActionItemById,
 } from '@/lib/api-client';
 import { ApiException } from '@/types/api';
 
@@ -302,6 +306,56 @@ describe('listAllActionItems', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('status=DONE'),
       expect.any(Object)
+    );
+  });
+});
+
+describe('cross-person action item by-id operations', () => {
+  it('getActionItemById sends GET to /action-items/{id}', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ ...mockActionItem, personId: null }) });
+
+    const result = await getActionItemById(mockToken, actionItemId);
+
+    expect(mockFetch).toHaveBeenCalledWith(`/api/v1/action-items/${actionItemId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+    // Person-less items (personId null) are supported.
+    expect(result.personId).toBeNull();
+  });
+
+  it('completeActionItemById sends POST to /action-items/{id}/complete', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ ...mockActionItem, status: 'DONE' }) });
+
+    await completeActionItemById(mockToken, actionItemId);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      `/api/v1/action-items/${actionItemId}/complete`,
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  it('cancelActionItemById sends POST to /action-items/{id}/cancel', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ ...mockActionItem, status: 'CANCELED' }) });
+
+    await cancelActionItemById(mockToken, actionItemId);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      `/api/v1/action-items/${actionItemId}/cancel`,
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  it('deleteActionItemById sends DELETE to /action-items/{id}', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
+
+    await deleteActionItemById(mockToken, actionItemId);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      `/api/v1/action-items/${actionItemId}`,
+      expect.objectContaining({ method: 'DELETE' })
     );
   });
 });

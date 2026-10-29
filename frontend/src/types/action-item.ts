@@ -6,7 +6,8 @@ export type ActionItemOwnerType = 'MANAGER' | 'PERSON';
 
 export interface ActionItem {
   id: string;
-  personId: string;
+  // Null for a manager's own (person-less) TODO, e.g. one converted from a personal note.
+  personId: string | null;
   title: string;
   description: string | null;
   ownerType: ActionItemOwnerType;
