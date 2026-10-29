@@ -97,6 +97,19 @@ export default function Navigation() {
             Dashboard
           </Link>
           <Link
+            href="/action-items"
+            data-testid="nav-action-items"
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              transition: 'color 0.2s',
+            }}
+          >
+            Action Items
+          </Link>
+          <Link
             href="/triage"
             data-testid="nav-triage"
             style={{

@@ -20,4 +20,17 @@ interface QuickNoteRepository {
     fun findAllByUserIdAndTag(userId: UserId, tag: String, pageable: Pageable): Page<QuickNote>
     fun findAllByUserIdAndSelfAssignedAndTag(userId: UserId, selfAssigned: Boolean, tag: String, pageable: Pageable): Page<QuickNote>
     fun deleteByIdAndUserId(quickNoteId: QuickNoteId, userId: UserId): Boolean
+
+    /**
+     * Returns the user's self-assigned notes of the given status ordered by their manual
+     * display order (ascending; ties broken by newest-first). Used to resolve the adjacent
+     * note when moving a note up or down. Always scoped by userId.
+     */
+    fun findSelfAssignedOrdered(userId: UserId, status: QuickNoteStatus): List<QuickNote>
+
+    /**
+     * Returns the lowest (top-most) display order among the user's self-assigned notes, or
+     * null if the user has none. Used to place newly-created personal notes on top.
+     */
+    fun findMinSelfAssignedDisplayOrder(userId: UserId): Int?
 }

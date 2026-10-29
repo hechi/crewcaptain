@@ -14,6 +14,8 @@ jest.mock('@/lib/api-client', () => ({
   deleteQuickNote: jest.fn(),
   convertQuickNote: jest.fn(),
   updateQuickNote: jest.fn(),
+  moveQuickNote: jest.fn(),
+  reorderQuickNote: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -28,6 +30,8 @@ import {
   deleteQuickNote,
   convertQuickNote,
   updateQuickNote,
+  moveQuickNote,
+  reorderQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 
@@ -38,6 +42,8 @@ const mockArchiveQuickNote = archiveQuickNote as jest.MockedFunction<typeof arch
 const mockDeleteQuickNote = deleteQuickNote as jest.MockedFunction<typeof deleteQuickNote>;
 const mockConvertQuickNote = convertQuickNote as jest.MockedFunction<typeof convertQuickNote>;
 const mockUpdateQuickNote = updateQuickNote as jest.MockedFunction<typeof updateQuickNote>;
+const mockMoveQuickNote = moveQuickNote as jest.MockedFunction<typeof moveQuickNote>;
+const mockReorderQuickNote = reorderQuickNote as jest.MockedFunction<typeof reorderQuickNote>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 const mockSelfAssignedNotes = {
@@ -51,6 +57,7 @@ const mockSelfAssignedNotes = {
       status: 'INBOX' as const,
       attachedEntryId: null,
       tag: 'hiring',
+      displayOrder: 1,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T10:00:00Z',
     },
@@ -63,6 +70,7 @@ const mockSelfAssignedNotes = {
       status: 'INBOX' as const,
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-05-14T09:00:00Z',
       updatedAt: '2026-05-14T09:00:00Z',
     },
@@ -179,6 +187,7 @@ describe('MyNotesPage', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-05-15T12:00:00Z',
       updatedAt: '2026-05-15T12:00:00Z',
     });
@@ -212,6 +221,7 @@ describe('MyNotesPage', () => {
       status: 'ARCHIVED',
       attachedEntryId: null,
       tag: 'hiring',
+      displayOrder: 0,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T11:00:00Z',
     });
@@ -255,6 +265,7 @@ describe('MyNotesPage', () => {
       status: 'CONVERTED',
       attachedEntryId: null,
       tag: 'hiring',
+      displayOrder: 0,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T11:00:00Z',
     });
@@ -282,6 +293,7 @@ describe('MyNotesPage', () => {
       status: 'CONVERTED',
       attachedEntryId: null,
       tag: 'hiring',
+      displayOrder: 0,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T11:00:00Z',
     });
@@ -387,6 +399,7 @@ describe('MyNotesPage', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: 'urgent',
+      displayOrder: 0,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T12:00:00Z',
     });
@@ -424,6 +437,7 @@ describe('MyNotesPage', () => {
       status: 'INBOX',
       attachedEntryId: null,
       tag: null,
+      displayOrder: 0,
       createdAt: '2026-05-15T10:00:00Z',
       updatedAt: '2026-05-15T12:00:00Z',
     });
@@ -464,5 +478,70 @@ describe('MyNotesPage', () => {
     expect(mockUpdateQuickNote).not.toHaveBeenCalled();
     expect(card.querySelector('[data-testid="my-note-edit-text-input"]')).not.toBeInTheDocument();
     expect(card.querySelector('[data-testid="my-note-text"]')).toHaveTextContent('My personal reminder');
+  });
+
+  it('renders draggable, reorderable note cards (consistent with the panel)', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+    // The page cards are now the shared card: draggable and with reorder arrows.
+    expect(screen.getByTestId('my-note-card-note-1')).toHaveAttribute('draggable', 'true');
+    const card = screen.getByTestId('my-note-card-note-1');
+    expect(card.querySelector('[data-testid="my-note-move-up-btn"]')).toBeInTheDocument();
+    expect(card.querySelector('[data-testid="my-note-move-down-btn"]')).toBeInTheDocument();
+  });
+
+  it('moves a note via the up arrow', async () => {
+    mockMoveQuickNote.mockResolvedValue(mockSelfAssignedNotes.content[1] as never);
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-2')).toBeInTheDocument();
+    });
+    // note-2 is the second card -> its move-up is enabled.
+    const card = screen.getByTestId('my-note-card-note-2');
+    fireEvent.click(card.querySelector('[data-testid="my-note-move-up-btn"]')!);
+
+    await waitFor(() => expect(mockMoveQuickNote).toHaveBeenCalledWith('test-token', 'note-2', 'UP'));
+  });
+
+  it('reorders via drag-and-drop by persisting the drop index', async () => {
+    mockReorderQuickNote.mockResolvedValue(mockSelfAssignedNotes.content[0] as never);
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+
+    const dt = {
+      setData: jest.fn(),
+      getData: () => 'note-1',
+      effectAllowed: 'move',
+      dropEffect: 'move',
+    };
+    const source = screen.getByTestId('my-note-card-note-1');
+    const target = screen.getByTestId('my-note-card-note-2');
+    fireEvent.dragStart(source, { dataTransfer: dt });
+    fireEvent.dragOver(target, { dataTransfer: dt });
+    fireEvent.drop(target, { dataTransfer: dt });
+
+    // note-1 (index 0) dropped onto note-2 (index 1) -> reorder to index 1.
+    await waitFor(() => expect(mockReorderQuickNote).toHaveBeenCalledWith('test-token', 'note-1', 1));
+  });
+
+  it('disables reordering when viewing the archived filter', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('filter-ARCHIVED')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('filter-ARCHIVED'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('my-note-card-note-1')).toBeInTheDocument();
+    });
+    // Archived view is not reorderable: no drag + no move arrows.
+    expect(screen.getByTestId('my-note-card-note-1')).toHaveAttribute('draggable', 'false');
+    expect(
+      screen.getByTestId('my-note-card-note-1').querySelector('[data-testid="my-note-move-up-btn"]')
+    ).not.toBeInTheDocument();
   });
 });

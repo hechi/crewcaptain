@@ -3,6 +3,7 @@ package com.peoplemanager.adapters.persistence
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
 interface SpringDataQuickNoteRepository : JpaRepository<QuickNoteEntity, UUID> {
@@ -24,6 +25,15 @@ interface SpringDataQuickNoteRepository : JpaRepository<QuickNoteEntity, UUID> {
     fun findAllByUserIdAndTag(userId: UUID, tag: String, pageable: Pageable): Page<QuickNoteEntity>
 
     fun findAllByUserIdAndSelfAssignedAndTag(userId: UUID, selfAssigned: Boolean, tag: String, pageable: Pageable): Page<QuickNoteEntity>
+
+    fun findAllByUserIdAndSelfAssignedAndStatusOrderByDisplayOrderAscCreatedAtDesc(
+        userId: UUID,
+        selfAssigned: Boolean,
+        status: String
+    ): List<QuickNoteEntity>
+
+    @Query("SELECT MIN(q.displayOrder) FROM QuickNoteEntity q WHERE q.userId = :userId AND q.selfAssigned = true")
+    fun findMinDisplayOrderByUserIdAndSelfAssigned(userId: UUID): Int?
 
     fun deleteByIdAndUserId(id: UUID, userId: UUID): Long
 }

@@ -57,3 +57,26 @@ data class DeleteQuickNoteCommand(
     val userId: UserId,
     val quickNoteId: QuickNoteId
 )
+
+enum class MoveDirection { UP, DOWN }
+
+/**
+ * Moves a personal (self-assigned) note one position up or down in the user's
+ * manual ordering by swapping its display order with the adjacent note.
+ */
+data class MoveQuickNoteCommand(
+    val userId: UserId,
+    val quickNoteId: QuickNoteId,
+    val direction: MoveDirection
+)
+
+/**
+ * Moves a personal (self-assigned) note to an absolute position in the user's manual
+ * ordering (0-based index among their self-assigned INBOX notes). Used by drag-and-drop,
+ * where a single drop can span multiple positions. The target index is clamped into range.
+ */
+data class ReorderQuickNoteCommand(
+    val userId: UserId,
+    val quickNoteId: QuickNoteId,
+    val targetIndex: Int
+)

@@ -461,11 +461,13 @@ class QuickNoteServiceTest {
         }
 
         @Test
-        fun `should list self-assigned quick notes`() {
-            val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+        fun `should list self-assigned quick notes ordered by display order`() {
+            val selfAssignedPageable = PageRequest.of(
+                0, 20, Sort.by(Sort.Order.asc("displayOrder"), Sort.Order.desc("createdAt"))
+            )
             val selfAssignedNote = existingNote.copy(selfAssigned = true)
-            val page = PageImpl(listOf(selfAssignedNote), pageable, 1)
-            every { quickNoteRepository.findAllByUserIdAndSelfAssigned(userId, true, pageable) } returns page
+            val page = PageImpl(listOf(selfAssignedNote), selfAssignedPageable, 1)
+            every { quickNoteRepository.findAllByUserIdAndSelfAssigned(userId, true, selfAssignedPageable) } returns page
 
             val query = ListQuickNotesQuery(userId = userId, selfAssigned = true)
             val result = service.listQuickNotes(query)
@@ -475,12 +477,14 @@ class QuickNoteServiceTest {
         }
 
         @Test
-        fun `should list self-assigned quick notes filtered by status`() {
-            val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+        fun `should list self-assigned quick notes filtered by status ordered by display order`() {
+            val selfAssignedPageable = PageRequest.of(
+                0, 20, Sort.by(Sort.Order.asc("displayOrder"), Sort.Order.desc("createdAt"))
+            )
             val selfAssignedNote = existingNote.copy(selfAssigned = true)
-            val page = PageImpl(listOf(selfAssignedNote), pageable, 1)
+            val page = PageImpl(listOf(selfAssignedNote), selfAssignedPageable, 1)
             every {
-                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, pageable)
+                quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, selfAssignedPageable)
             } returns page
 
             val query = ListQuickNotesQuery(userId = userId, selfAssigned = true, status = QuickNoteStatus.INBOX)
@@ -497,6 +501,7 @@ class QuickNoteServiceTest {
 
         @Test
         fun `should create self-assigned quick note`() {
+            every { quickNoteRepository.findMinSelfAssignedDisplayOrder(userId) } returns null
             every { quickNoteRepository.save(any()) } answers { firstArg() }
 
             val command = CreateQuickNoteCommand(
@@ -589,6 +594,272 @@ class QuickNoteServiceTest {
 
             shouldThrow<QuickNoteNotFoundException> {
                 service.assignToSelf(command)
+            }
+        }
+    }
+
+    @Nested
+    inner class DisplayOrderOnCreateTests {
+
+        @Test
+        fun `should place a new self-assigned note above all existing ones`() {
+            // Existing top note has order 3; the new note must get a strictly lower order.
+            every { quickNoteRepository.findMinSelfAssignedDisplayOrder(userId) } returns 3
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = CreateQuickNoteCommand(
+                userId = userId,
+                text = "Newest personal note",
+                selfAssigned = true
+            )
+
+            val result = service.createQuickNote(command)
+
+            (result.displayOrder < 3) shouldBe true
+            verify { quickNoteRepository.findMinSelfAssignedDisplayOrder(userId) }
+        }
+
+        @Test
+        fun `should use order 0 for the first self-assigned note`() {
+            every { quickNoteRepository.findMinSelfAssignedDisplayOrder(userId) } returns null
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = CreateQuickNoteCommand(
+                userId = userId,
+                text = "First personal note",
+                selfAssigned = true
+            )
+
+            val result = service.createQuickNote(command)
+
+            result.displayOrder shouldBe 0
+        }
+
+        @Test
+        fun `should not compute display order for non self-assigned notes`() {
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val command = CreateQuickNoteCommand(
+                userId = userId,
+                text = "A plain inbox note"
+            )
+
+            service.createQuickNote(command)
+
+            verify(exactly = 0) { quickNoteRepository.findMinSelfAssignedDisplayOrder(any()) }
+        }
+    }
+
+    @Nested
+    inner class MoveQuickNoteTests {
+
+        private fun selfNote(order: Int, text: String) = QuickNote(
+            id = QuickNoteId.generate(),
+            userId = userId,
+            text = text,
+            selfAssigned = true,
+            displayOrder = order
+        )
+
+        @Test
+        fun `should move a note up by swapping display order with the note above`() {
+            val top = selfNote(0, "top")
+            val middle = selfNote(1, "middle")
+            val bottom = selfNote(2, "bottom")
+            every { quickNoteRepository.findByIdAndUserId(middle.id, userId) } returns middle
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(top, middle, bottom)
+            val saved = mutableListOf<QuickNote>()
+            every { quickNoteRepository.save(capture(saved)) } answers { firstArg() }
+
+            val command = MoveQuickNoteCommand(userId = userId, quickNoteId = middle.id, direction = MoveDirection.UP)
+            val result = service.moveQuickNote(command)
+
+            // middle takes top's order, top takes middle's order
+            result.id shouldBe middle.id
+            result.displayOrder shouldBe 0
+            saved.first { it.id == top.id }.displayOrder shouldBe 1
+            saved.first { it.id == middle.id }.displayOrder shouldBe 0
+        }
+
+        @Test
+        fun `should move a note down by swapping display order with the note below`() {
+            val top = selfNote(0, "top")
+            val middle = selfNote(1, "middle")
+            val bottom = selfNote(2, "bottom")
+            every { quickNoteRepository.findByIdAndUserId(middle.id, userId) } returns middle
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(top, middle, bottom)
+            val saved = mutableListOf<QuickNote>()
+            every { quickNoteRepository.save(capture(saved)) } answers { firstArg() }
+
+            val command = MoveQuickNoteCommand(userId = userId, quickNoteId = middle.id, direction = MoveDirection.DOWN)
+            val result = service.moveQuickNote(command)
+
+            result.displayOrder shouldBe 2
+            saved.first { it.id == bottom.id }.displayOrder shouldBe 1
+            saved.first { it.id == middle.id }.displayOrder shouldBe 2
+        }
+
+        @Test
+        fun `should be a no-op when moving the top note up`() {
+            val top = selfNote(0, "top")
+            val bottom = selfNote(1, "bottom")
+            every { quickNoteRepository.findByIdAndUserId(top.id, userId) } returns top
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(top, bottom)
+
+            val command = MoveQuickNoteCommand(userId = userId, quickNoteId = top.id, direction = MoveDirection.UP)
+            val result = service.moveQuickNote(command)
+
+            result.id shouldBe top.id
+            result.displayOrder shouldBe 0
+            verify(exactly = 0) { quickNoteRepository.save(any()) }
+        }
+
+        @Test
+        fun `should be a no-op when moving the bottom note down`() {
+            val top = selfNote(0, "top")
+            val bottom = selfNote(1, "bottom")
+            every { quickNoteRepository.findByIdAndUserId(bottom.id, userId) } returns bottom
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(top, bottom)
+
+            val command = MoveQuickNoteCommand(userId = userId, quickNoteId = bottom.id, direction = MoveDirection.DOWN)
+            val result = service.moveQuickNote(command)
+
+            result.id shouldBe bottom.id
+            verify(exactly = 0) { quickNoteRepository.save(any()) }
+        }
+
+        @Test
+        fun `should throw when the note to move is not found for this user`() {
+            val someId = QuickNoteId.generate()
+            every { quickNoteRepository.findByIdAndUserId(someId, userId) } returns null
+
+            val command = MoveQuickNoteCommand(userId = userId, quickNoteId = someId, direction = MoveDirection.UP)
+
+            shouldThrow<QuickNoteNotFoundException> {
+                service.moveQuickNote(command)
+            }
+        }
+    }
+
+    @Nested
+    inner class ReorderQuickNoteTests {
+
+        private fun selfNote(order: Int, text: String) = QuickNote(
+            id = QuickNoteId.generate(),
+            userId = userId,
+            text = text,
+            selfAssigned = true,
+            displayOrder = order
+        )
+
+        @Test
+        fun `should move a note from the top to the bottom and renumber contiguously`() {
+            val a = selfNote(0, "a")
+            val b = selfNote(1, "b")
+            val c = selfNote(2, "c")
+            every { quickNoteRepository.findByIdAndUserId(a.id, userId) } returns a
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(a, b, c)
+            val saved = mutableListOf<QuickNote>()
+            every { quickNoteRepository.save(capture(saved)) } answers { firstArg() }
+
+            // Drag "a" (index 0) to index 2 -> expected order [b, c, a]
+            val result = service.reorderQuickNote(
+                ReorderQuickNoteCommand(userId = userId, quickNoteId = a.id, targetIndex = 2)
+            )
+
+            result.id shouldBe a.id
+            // Final contiguous orders: b=0, c=1, a=2
+            saved.first { it.id == b.id }.displayOrder shouldBe 0
+            saved.first { it.id == c.id }.displayOrder shouldBe 1
+            saved.first { it.id == a.id }.displayOrder shouldBe 2
+        }
+
+        @Test
+        fun `should move a note from the bottom to the top`() {
+            val a = selfNote(0, "a")
+            val b = selfNote(1, "b")
+            val c = selfNote(2, "c")
+            every { quickNoteRepository.findByIdAndUserId(c.id, userId) } returns c
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(a, b, c)
+            val saved = mutableListOf<QuickNote>()
+            every { quickNoteRepository.save(capture(saved)) } answers { firstArg() }
+
+            // Drag "c" (index 2) to index 0 -> [c, a, b]
+            val result = service.reorderQuickNote(
+                ReorderQuickNoteCommand(userId = userId, quickNoteId = c.id, targetIndex = 0)
+            )
+
+            result.id shouldBe c.id
+            saved.first { it.id == c.id }.displayOrder shouldBe 0
+            saved.first { it.id == a.id }.displayOrder shouldBe 1
+            saved.first { it.id == b.id }.displayOrder shouldBe 2
+        }
+
+        @Test
+        fun `should move a note to a middle position`() {
+            val a = selfNote(0, "a")
+            val b = selfNote(1, "b")
+            val c = selfNote(2, "c")
+            val d = selfNote(3, "d")
+            every { quickNoteRepository.findByIdAndUserId(a.id, userId) } returns a
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(a, b, c, d)
+            val saved = mutableListOf<QuickNote>()
+            every { quickNoteRepository.save(capture(saved)) } answers { firstArg() }
+
+            // Drag "a" (index 0) to index 2 -> [b, c, a, d]
+            service.reorderQuickNote(
+                ReorderQuickNoteCommand(userId = userId, quickNoteId = a.id, targetIndex = 2)
+            )
+
+            saved.first { it.id == b.id }.displayOrder shouldBe 0
+            saved.first { it.id == c.id }.displayOrder shouldBe 1
+            saved.first { it.id == a.id }.displayOrder shouldBe 2
+            // "d" stays at index 3 (its order is unchanged), so it is not re-saved.
+            saved.none { it.id == d.id } shouldBe true
+        }
+
+        @Test
+        fun `should clamp a target index beyond the end to the last position`() {
+            val a = selfNote(0, "a")
+            val b = selfNote(1, "b")
+            every { quickNoteRepository.findByIdAndUserId(a.id, userId) } returns a
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(a, b)
+            val saved = mutableListOf<QuickNote>()
+            every { quickNoteRepository.save(capture(saved)) } answers { firstArg() }
+
+            // Target 99 clamps to last -> [b, a]
+            service.reorderQuickNote(
+                ReorderQuickNoteCommand(userId = userId, quickNoteId = a.id, targetIndex = 99)
+            )
+
+            saved.first { it.id == b.id }.displayOrder shouldBe 0
+            saved.first { it.id == a.id }.displayOrder shouldBe 1
+        }
+
+        @Test
+        fun `should be a no-op when dropping a note on its current position`() {
+            val a = selfNote(0, "a")
+            val b = selfNote(1, "b")
+            every { quickNoteRepository.findByIdAndUserId(a.id, userId) } returns a
+            every { quickNoteRepository.findSelfAssignedOrdered(userId, QuickNoteStatus.INBOX) } returns listOf(a, b)
+
+            val result = service.reorderQuickNote(
+                ReorderQuickNoteCommand(userId = userId, quickNoteId = a.id, targetIndex = 0)
+            )
+
+            result.id shouldBe a.id
+            verify(exactly = 0) { quickNoteRepository.save(any()) }
+        }
+
+        @Test
+        fun `should throw when the note to reorder is not found for this user`() {
+            val someId = QuickNoteId.generate()
+            every { quickNoteRepository.findByIdAndUserId(someId, userId) } returns null
+
+            shouldThrow<QuickNoteNotFoundException> {
+                service.reorderQuickNote(
+                    ReorderQuickNoteCommand(userId = userId, quickNoteId = someId, targetIndex = 0)
+                )
             }
         }
     }

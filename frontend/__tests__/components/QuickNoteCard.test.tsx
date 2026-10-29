@@ -15,6 +15,7 @@ describe('QuickNoteCard', () => {
     status: 'INBOX',
     attachedEntryId: null,
     tag: null,
+    displayOrder: 0,
     createdAt: '2026-05-10T10:00:00Z',
     updatedAt: '2026-05-10T10:00:00Z',
   };

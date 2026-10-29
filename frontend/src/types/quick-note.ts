@@ -12,8 +12,19 @@ export interface QuickNote {
   status: QuickNoteStatus;
   attachedEntryId: string | null;
   tag: string | null;
+  displayOrder: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export type MoveDirection = 'UP' | 'DOWN';
+
+export interface MoveQuickNoteRequest {
+  direction: MoveDirection;
+}
+
+export interface ReorderQuickNoteRequest {
+  targetIndex: number;
 }
 
 export interface CreateQuickNoteRequest {

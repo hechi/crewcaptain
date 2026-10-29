@@ -35,3 +35,16 @@ data class ConvertQuickNoteRequest(
     val personId: UUID? = null,
     val dueDate: java.time.LocalDate? = null
 )
+
+data class MoveQuickNoteRequest(
+    @field:jakarta.validation.constraints.Pattern(
+        regexp = "UP|DOWN",
+        message = "Direction must be UP or DOWN"
+    )
+    val direction: String
+)
+
+data class ReorderQuickNoteRequest(
+    @field:jakarta.validation.constraints.Min(value = 0, message = "targetIndex must be zero or greater")
+    val targetIndex: Int
+)

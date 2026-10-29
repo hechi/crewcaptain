@@ -246,6 +246,51 @@ class QuickNoteTest {
     }
 
     @Nested
+    inner class DisplayOrderTests {
+
+        @Test
+        fun `should default displayOrder to 0`() {
+            val note = createQuickNote()
+
+            note.displayOrder shouldBe 0
+        }
+
+        @Test
+        fun `should create quick note with an explicit displayOrder`() {
+            val note = QuickNote(
+                id = QuickNoteId.generate(),
+                userId = userId,
+                text = "Ordered note",
+                selfAssigned = true,
+                displayOrder = 5
+            )
+
+            note.displayOrder shouldBe 5
+        }
+
+        @Test
+        fun `should set a new displayOrder and bump updatedAt`() {
+            val note = createQuickNote()
+            val reordered = note.withDisplayOrder(3)
+
+            reordered.displayOrder shouldBe 3
+            reordered.updatedAt shouldNotBe note.updatedAt
+        }
+
+        @Test
+        fun `should preserve all other fields when changing displayOrder`() {
+            val note = createQuickNote(tag = "hiring", sensitive = true)
+            val reordered = note.withDisplayOrder(9)
+
+            reordered.id shouldBe note.id
+            reordered.text shouldBe note.text
+            reordered.tag shouldBe note.tag
+            reordered.sensitive shouldBe note.sensitive
+            reordered.displayOrder shouldBe 9
+        }
+    }
+
+    @Nested
     inner class SelfAssignedTests {
 
         @Test

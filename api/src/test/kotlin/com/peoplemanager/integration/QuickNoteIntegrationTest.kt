@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import io.kotest.matchers.collections.shouldContainExactly
 import java.time.Instant
 
 /**
@@ -910,6 +911,167 @@ class QuickNoteIntegrationTest {
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.totalElements").value(1))
+        }
+    }
+
+    @Nested
+    inner class Reordering {
+
+        private fun createSelfNote(text: String): String {
+            val result = mockMvc.perform(
+                post("/api/v1/quick-notes")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"text": "$text", "selfAssigned": true}""")
+            ).andExpect(status().isCreated).andReturn()
+            return objectMapper.readTree(result.response.contentAsString).get("id").asText()
+        }
+
+        private fun listSelfAssignedTexts(): List<String> {
+            val result = mockMvc.perform(
+                get("/api/v1/quick-notes?selfAssigned=true")
+                    .with(authentication(authenticatedJwt(userA.id)))
+            ).andExpect(status().isOk).andReturn()
+            val content = objectMapper.readTree(result.response.contentAsString).get("content")
+            return (0 until content.size()).map { content.get(it).get("text").asText() }
+        }
+
+        @Test
+        fun `newest self-assigned note appears on top`() {
+            createSelfNote("first")
+            createSelfNote("second")
+            createSelfNote("third")
+
+            // Newest-first by default.
+            listSelfAssignedTexts() shouldContainExactly listOf("third", "second", "first")
+        }
+
+        @Test
+        fun `moving a note down swaps it with the note below`() {
+            createSelfNote("first")   // ends bottom
+            createSelfNote("second")  // ends middle
+            val thirdId = createSelfNote("third") // ends top
+
+            // Order is [third, second, first]; move "third" down -> [second, third, first]
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$thirdId/move")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"direction": "DOWN"}""")
+            ).andExpect(status().isOk)
+
+            listSelfAssignedTexts() shouldContainExactly listOf("second", "third", "first")
+        }
+
+        @Test
+        fun `moving a note up swaps it with the note above`() {
+            createSelfNote("first")   // bottom
+            val secondId = createSelfNote("second") // middle
+            createSelfNote("third")   // top
+
+            // Order [third, second, first]; move "second" up -> [second, third, first]
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$secondId/move")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"direction": "UP"}""")
+            ).andExpect(status().isOk)
+
+            listSelfAssignedTexts() shouldContainExactly listOf("second", "third", "first")
+        }
+
+        @Test
+        fun `reorder persists across requests`() {
+            createSelfNote("alpha")
+            val betaId = createSelfNote("beta") // top
+
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$betaId/move")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"direction": "DOWN"}""")
+            ).andExpect(status().isOk)
+
+            // A fresh list request reflects the persisted order.
+            listSelfAssignedTexts() shouldContainExactly listOf("alpha", "beta")
+        }
+
+        @Test
+        fun `rejects an invalid direction`() {
+            val id = createSelfNote("note")
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$id/move")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"direction": "SIDEWAYS"}""")
+            ).andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should not allow user B to move user A note`() {
+            val id = createSelfNote("A's note")
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$id/move")
+                    .with(authentication(authenticatedJwt(userB.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"direction": "UP"}""")
+            ).andExpect(status().isNotFound)
+        }
+
+        @Test
+        fun `drag-drop reorder moves a note to an absolute position`() {
+            createSelfNote("first")  // bottom
+            createSelfNote("second") // middle
+            val thirdId = createSelfNote("third") // top
+
+            // Order [third, second, first]; drag "third" (index 0) to index 2 -> [second, first, third]
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$thirdId/reorder")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": 2}""")
+            ).andExpect(status().isOk)
+
+            listSelfAssignedTexts() shouldContainExactly listOf("second", "first", "third")
+        }
+
+        @Test
+        fun `drag-drop reorder persists and clamps an out-of-range index`() {
+            val aId = createSelfNote("alpha") // bottom
+            createSelfNote("beta")            // top
+
+            // Order [beta, alpha]; drag "alpha" (index 1) to a too-large index -> clamps to last, [beta, alpha] unchanged;
+            // drag "beta" to index 99 -> clamps to last -> [alpha, beta]
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$aId/reorder")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": 99}""")
+            ).andExpect(status().isOk)
+
+            listSelfAssignedTexts() shouldContainExactly listOf("beta", "alpha")
+        }
+
+        @Test
+        fun `drag-drop reorder rejects a negative index`() {
+            val id = createSelfNote("note")
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$id/reorder")
+                    .with(authentication(authenticatedJwt(userA.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": -1}""")
+            ).andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should not allow user B to reorder user A note`() {
+            val id = createSelfNote("A's note")
+            mockMvc.perform(
+                post("/api/v1/quick-notes/$id/reorder")
+                    .with(authentication(authenticatedJwt(userB.id)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"targetIndex": 0}""")
+            ).andExpect(status().isNotFound)
         }
     }
 }

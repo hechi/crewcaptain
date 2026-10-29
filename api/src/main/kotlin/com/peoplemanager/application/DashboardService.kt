@@ -46,7 +46,7 @@ class DashboardService(
         val overduePage = actionItemRepository.findOverdueByUserId(
             query.userId, today, PageRequest.of(0, 10)
         )
-        val overdueItems = overduePage.content.map { item ->
+        val allOverdueItems = overduePage.content.map { item ->
             DashboardActionItem(
                 id = item.id,
                 personId = item.personId,
@@ -59,7 +59,7 @@ class DashboardService(
 
         // Due soon action items (status=OPEN, dueDate between today and today+dueSoonDays)
         val dueSoonDate = today.plusDays(query.dueSoonDays.toLong())
-        val dueSoonItems = actionItemRepository.findDueSoonByUserId(
+        val allDueSoonItems = actionItemRepository.findDueSoonByUserId(
             query.userId, today, dueSoonDate
         ).map { item ->
             DashboardActionItem(
@@ -71,6 +71,16 @@ class DashboardService(
                 ownerType = item.ownerType
             )
         }
+
+        // Split by ownership to avoid duplicating items across the dashboard:
+        //  - The Overdue / Due Soon sections show only PERSON-ASSIGNED items (work you're
+        //    tracking for your reports).
+        //  - "Today's Priorities" (built below) shows only the manager's OWN person-less items
+        //    (plus self-assigned notes) — the things only you can act on.
+        val overdueItems = allOverdueItems.filter { it.personId != null }
+        val dueSoonItems = allDueSoonItems.filter { it.personId != null }
+        val personLessOverdueItems = allOverdueItems.filter { it.personId == null }
+        val personLessDueSoonItems = allDueSoonItems.filter { it.personId == null }
 
         // Stale 1:1 reminders
         val allSeries = oneOnOneSeriesRepository.findAllByUserId(query.userId)
@@ -135,14 +145,16 @@ class DashboardService(
             }
             .sortedBy { it.daysUntil }
 
-        // Today's Priorities — a single ranked focus list: overdue action items first, then
-        // due-soon action items, then the manager's self-assigned INBOX quick notes. Capped.
+        // Today's Priorities — the manager's OWN focus list, ranked: person-less overdue items
+        // first, then person-less due-soon items, then self-assigned INBOX quick notes. Capped.
+        // Person-assigned overdue/due-soon items are intentionally excluded here — they live in
+        // the dedicated Overdue / Due Soon sections, so nothing is shown twice.
         val selfAssignedInboxNotes = quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(
             query.userId, true, QuickNoteStatus.INBOX, PageRequest.of(0, TODAY_PRIORITIES_LIMIT)
         ).content
 
         val todayPriorities = buildList {
-            overdueItems.forEach { item ->
+            personLessOverdueItems.forEach { item ->
                 add(
                     TodayPriorityItem(
                         kind = PriorityKind.OVERDUE,
@@ -154,7 +166,7 @@ class DashboardService(
                     )
                 )
             }
-            dueSoonItems.forEach { item ->
+            personLessDueSoonItems.forEach { item ->
                 add(
                     TodayPriorityItem(
                         kind = PriorityKind.DUE_SOON,

@@ -32,6 +32,15 @@ class QuickNoteService(
                 ?: throw PersonNotFoundException(command.personId)
         }
 
+        // Personal (self-assigned) notes keep newest-on-top: a new note is placed strictly
+        // above the current top note so it sorts first by displayOrder ascending.
+        val displayOrder = if (command.selfAssigned) {
+            val currentMin = quickNoteRepository.findMinSelfAssignedDisplayOrder(command.userId)
+            if (currentMin == null) 0 else currentMin - 1
+        } else {
+            0
+        }
+
         val quickNote = QuickNote(
             id = QuickNoteId.generate(),
             userId = command.userId,
@@ -39,7 +48,8 @@ class QuickNoteService(
             text = command.text,
             sensitive = command.sensitive,
             selfAssigned = command.selfAssigned,
-            tag = command.tag
+            tag = command.tag,
+            displayOrder = displayOrder
         )
 
         val saved = quickNoteRepository.save(quickNote)
@@ -184,6 +194,68 @@ class QuickNoteService(
         auditLogService.record(AuditLogEntry.quickNoteDeleted(command.userId, command.quickNoteId))
     }
 
+    override fun moveQuickNote(command: MoveQuickNoteCommand): QuickNote {
+        // Load (and user-scope) the target note first so a foreign note surfaces as 404.
+        val target = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
+            ?: throw QuickNoteNotFoundException(command.quickNoteId)
+
+        // Reordering only applies to the manual personal-notes list (self-assigned, INBOX).
+        val ordered = quickNoteRepository.findSelfAssignedOrdered(command.userId, QuickNoteStatus.INBOX)
+        val index = ordered.indexOfFirst { it.id == target.id }
+
+        // If the note isn't part of the ordered personal list, there's nothing to reorder.
+        if (index < 0) return target
+
+        val neighborIndex = when (command.direction) {
+            MoveDirection.UP -> index - 1
+            MoveDirection.DOWN -> index + 1
+        }
+
+        // At the edge already — no-op (keeps move buttons harmless at the ends of the list).
+        if (neighborIndex < 0 || neighborIndex >= ordered.size) return target
+
+        val neighbor = ordered[neighborIndex]
+
+        // Swap the two notes' display orders. Both saves are user-scoped by construction
+        // (both notes were loaded from this user's ordered list / findByIdAndUserId).
+        val movedTarget = target.withDisplayOrder(neighbor.displayOrder)
+        val movedNeighbor = neighbor.withDisplayOrder(target.displayOrder)
+        quickNoteRepository.save(movedNeighbor)
+        return quickNoteRepository.save(movedTarget)
+    }
+
+    override fun reorderQuickNote(command: ReorderQuickNoteCommand): QuickNote {
+        // User-scope the target first so a foreign note surfaces as 404.
+        val target = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
+            ?: throw QuickNoteNotFoundException(command.quickNoteId)
+
+        val ordered = quickNoteRepository.findSelfAssignedOrdered(command.userId, QuickNoteStatus.INBOX)
+        val currentIndex = ordered.indexOfFirst { it.id == target.id }
+
+        // Not part of the ordered personal list — nothing to reorder.
+        if (currentIndex < 0) return target
+
+        // Clamp the requested destination into the valid range.
+        val destination = command.targetIndex.coerceIn(0, ordered.size - 1)
+        if (destination == currentIndex) return target
+
+        // Remove the note from its current slot and reinsert it at the destination.
+        val reordered = ordered.toMutableList()
+        val moved = reordered.removeAt(currentIndex)
+        reordered.add(destination, moved)
+
+        // Renumber contiguously (0..n-1); persist only the notes whose order changed.
+        var result = target
+        reordered.forEachIndexed { index, note ->
+            if (note.displayOrder != index) {
+                val updated = note.withDisplayOrder(index)
+                val saved = quickNoteRepository.save(updated)
+                if (saved.id == target.id) result = saved
+            }
+        }
+        return result
+    }
+
     override fun getQuickNote(query: GetQuickNoteQuery): QuickNote {
         return quickNoteRepository.findByIdAndUserId(query.quickNoteId, query.userId)
             ?: throw QuickNoteNotFoundException(query.quickNoteId)
@@ -191,18 +263,25 @@ class QuickNoteService(
 
     override fun listQuickNotes(query: ListQuickNotesQuery): Page<QuickNote> {
         val pageable = PageRequest.of(query.page, query.size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        // Personal (self-assigned) notes honor the user's manual ordering: lower displayOrder
+        // sorts higher, with newest-first as the tie-breaker so new notes land on top.
+        val selfAssignedPageable = PageRequest.of(
+            query.page,
+            query.size,
+            Sort.by(Sort.Order.asc("displayOrder"), Sort.Order.desc("createdAt"))
+        )
 
         return when {
             query.selfAssigned != null && query.tag != null ->
                 quickNoteRepository.findAllByUserIdAndSelfAssignedAndTag(
-                    query.userId, query.selfAssigned, query.tag, pageable
+                    query.userId, query.selfAssigned, query.tag, selfAssignedPageable
                 )
             query.selfAssigned != null && query.status != null ->
                 quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(
-                    query.userId, query.selfAssigned, query.status, pageable
+                    query.userId, query.selfAssigned, query.status, selfAssignedPageable
                 )
             query.selfAssigned != null ->
-                quickNoteRepository.findAllByUserIdAndSelfAssigned(query.userId, query.selfAssigned, pageable)
+                quickNoteRepository.findAllByUserIdAndSelfAssigned(query.userId, query.selfAssigned, selfAssignedPageable)
             query.tag != null ->
                 quickNoteRepository.findAllByUserIdAndTag(query.userId, query.tag, pageable)
             query.status != null && query.personId != null ->
