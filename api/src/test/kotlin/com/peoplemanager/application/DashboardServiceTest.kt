@@ -107,7 +107,7 @@ class DashboardServiceTest {
         }
 
         @Test
-        fun `should surface a person-less overdue action item with null person`() {
+        fun `should route a person-less overdue action item to priorities, not the Overdue section`() {
             val personLessItem = ActionItem(
                 id = ActionItemId.generate(),
                 userId = userId,
@@ -125,10 +125,13 @@ class DashboardServiceTest {
             val query = GetDashboardQuery(userId = userId)
             val result = service.getDashboard(query)
 
-            result.overdueActionItems shouldHaveSize 1
-            result.overdueActionItems[0].title shouldBe "My personal overdue todo"
-            result.overdueActionItems[0].personId shouldBe null
-            result.overdueActionItems[0].personName shouldBe null
+            // Person-less items no longer appear in the Overdue section...
+            result.overdueActionItems.shouldBeEmpty()
+            // ...they surface in the manager's own Today's Priorities instead.
+            result.todayPriorities shouldHaveSize 1
+            result.todayPriorities[0].kind shouldBe PriorityKind.OVERDUE
+            result.todayPriorities[0].title shouldBe "My personal overdue todo"
+            result.todayPriorities[0].personId shouldBe null
         }
 
         @Test
@@ -432,6 +435,7 @@ class DashboardServiceTest {
     @Nested
     inner class TodayPrioritiesTests {
 
+        // Person-assigned items — these belong in the Overdue/Due Soon sections, NOT priorities.
         private fun overdueItem(title: String, daysOverdue: Long) = ActionItem(
             id = ActionItemId.generate(),
             userId = userId,
@@ -447,6 +451,27 @@ class DashboardServiceTest {
             personId = personId2,
             title = title,
             dueDate = LocalDate.now(ZoneOffset.UTC).plusDays(daysUntil),
+            status = ActionItemStatus.OPEN
+        )
+
+        // Person-less (manager's own) items — these are the ones that belong in priorities.
+        private fun personLessOverdueItem(title: String, daysOverdue: Long) = ActionItem(
+            id = ActionItemId.generate(),
+            userId = userId,
+            personId = null,
+            title = title,
+            dueDate = LocalDate.now(ZoneOffset.UTC).minusDays(daysOverdue),
+            ownerType = ActionItemOwnerType.MANAGER,
+            status = ActionItemStatus.OPEN
+        )
+
+        private fun personLessDueSoonItem(title: String, daysUntil: Long) = ActionItem(
+            id = ActionItemId.generate(),
+            userId = userId,
+            personId = null,
+            title = title,
+            dueDate = LocalDate.now(ZoneOffset.UTC).plusDays(daysUntil),
+            ownerType = ActionItemOwnerType.MANAGER,
             status = ActionItemStatus.OPEN
         )
 
@@ -492,12 +517,12 @@ class DashboardServiceTest {
         }
 
         @Test
-        fun `should rank overdue before due-soon before inbox notes`() {
+        fun `should rank person-less overdue before person-less due-soon before inbox notes`() {
             stubBase()
             every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
-                PageImpl(listOf(overdueItem("Overdue task", 3)))
+                PageImpl(listOf(personLessOverdueItem("My overdue task", 3)))
             every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns
-                listOf(dueSoonItem("Due soon task", 2))
+                listOf(personLessDueSoonItem("My due soon task", 2))
             every {
                 quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, any())
             } returns PageImpl(listOf(selfNote("Personal note")))
@@ -506,20 +531,45 @@ class DashboardServiceTest {
 
             result.todayPriorities shouldHaveSize 3
             result.todayPriorities[0].kind shouldBe PriorityKind.OVERDUE
-            result.todayPriorities[0].title shouldBe "Overdue task"
+            result.todayPriorities[0].title shouldBe "My overdue task"
             result.todayPriorities[1].kind shouldBe PriorityKind.DUE_SOON
-            result.todayPriorities[1].title shouldBe "Due soon task"
+            result.todayPriorities[1].title shouldBe "My due soon task"
             result.todayPriorities[2].kind shouldBe PriorityKind.INBOX_NOTE
             result.todayPriorities[2].title shouldBe "Personal note"
+        }
+
+        @Test
+        fun `should exclude person-assigned action items from priorities but keep them in the sections`() {
+            stubBase()
+            // One person-assigned overdue + one person-assigned due-soon, plus one of each person-less.
+            every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
+                PageImpl(listOf(overdueItem("Alice's overdue", 3), personLessOverdueItem("My overdue", 1)))
+            every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns
+                listOf(dueSoonItem("Bob's due soon", 2), personLessDueSoonItem("My due soon", 1))
+
+            val result = service.getDashboard(GetDashboardQuery(userId = userId))
+
+            // Priorities contain ONLY the person-less (manager's own) items — no person-assigned ones.
+            result.todayPriorities.map { it.title } shouldBe listOf("My overdue", "My due soon")
+            result.todayPriorities.all { it.personId == null } shouldBe true
+
+            // The Overdue / Due Soon sections contain ONLY the person-assigned items.
+            result.overdueActionItems.map { it.title } shouldBe listOf("Alice's overdue")
+            result.dueSoonActionItems.map { it.title } shouldBe listOf("Bob's due soon")
+
+            // No item appears in both a section and the priorities list (no duplication).
+            val sectionIds = (result.overdueActionItems + result.dueSoonActionItems).map { it.id.value }.toSet()
+            val priorityIds = result.todayPriorities.map { it.id }.toSet()
+            sectionIds.intersect(priorityIds).shouldBeEmpty()
         }
 
         @Test
         fun `should cap the list at 7 items`() {
             stubBase()
             every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
-                PageImpl((1..5).map { overdueItem("Overdue $it", it.toLong()) })
+                PageImpl((1..5).map { personLessOverdueItem("Overdue $it", it.toLong()) })
             every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns
-                (1..5).map { dueSoonItem("Due soon $it", it.toLong()) }
+                (1..5).map { personLessDueSoonItem("Due soon $it", it.toLong()) }
             every {
                 quickNoteRepository.findAllByUserIdAndSelfAssignedAndStatus(userId, true, QuickNoteStatus.INBOX, any())
             } returns PageImpl((1..5).map { selfNote("Note $it") })
@@ -534,17 +584,17 @@ class DashboardServiceTest {
         }
 
         @Test
-        fun `should carry person details for action item priorities`() {
+        fun `should carry a null person for a person-less action item priority`() {
             stubBase()
             every { actionItemRepository.findOverdueByUserId(userId, any(), any()) } returns
-                PageImpl(listOf(overdueItem("Overdue task", 1)))
+                PageImpl(listOf(personLessOverdueItem("My overdue task", 1)))
             every { actionItemRepository.findDueSoonByUserId(userId, any(), any()) } returns emptyList()
 
             val result = service.getDashboard(GetDashboardQuery(userId = userId))
 
             result.todayPriorities shouldHaveSize 1
-            result.todayPriorities[0].personId shouldBe personId1
-            result.todayPriorities[0].personName shouldBe "Alice Smith"
+            result.todayPriorities[0].personId shouldBe null
+            result.todayPriorities[0].personName shouldBe null
         }
 
         @Test
