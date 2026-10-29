@@ -20,6 +20,8 @@ jest.mock('@/lib/api-client', () => ({
   deleteQuickNote: jest.fn(),
   moveQuickNote: jest.fn(),
   reorderQuickNote: jest.fn(),
+  convertQuickNote: jest.fn(),
+  archiveQuickNote: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -177,8 +179,8 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Bottom note');
 
-    const card = screen.getByTestId('my-notes-panel-card-b');
-    fireEvent.click(within(card).getByTestId('my-notes-panel-move-up-b'));
+    const card = screen.getByTestId('my-note-card-b');
+    fireEvent.click(within(card).getByTestId('my-note-move-up-btn'));
 
     await waitFor(() => expect(mockMove).toHaveBeenCalledWith('test-token', 'b', 'UP'));
   });
@@ -195,8 +197,8 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Top note');
 
-    const card = screen.getByTestId('my-notes-panel-card-a');
-    fireEvent.click(within(card).getByTestId('my-notes-panel-move-down-a'));
+    const card = screen.getByTestId('my-note-card-a');
+    fireEvent.click(within(card).getByTestId('my-note-move-down-btn'));
 
     await waitFor(() => expect(mockMove).toHaveBeenCalledWith('test-token', 'a', 'DOWN'));
   });
@@ -212,10 +214,10 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Top note');
 
-    const first = screen.getByTestId('my-notes-panel-card-a');
-    const last = screen.getByTestId('my-notes-panel-card-b');
-    expect(within(first).getByTestId('my-notes-panel-move-up-a')).toBeDisabled();
-    expect(within(last).getByTestId('my-notes-panel-move-down-b')).toBeDisabled();
+    const first = screen.getByTestId('my-note-card-a');
+    const last = screen.getByTestId('my-note-card-b');
+    expect(within(first).getByTestId('my-note-move-up-btn')).toBeDisabled();
+    expect(within(last).getByTestId('my-note-move-down-btn')).toBeDisabled();
   });
 
   it('edits a note text and tag', async () => {
@@ -225,15 +227,15 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Editable');
 
-    const card = screen.getByTestId('my-notes-panel-card-a');
-    fireEvent.click(within(card).getByTestId('my-notes-panel-edit-a'));
-    fireEvent.change(within(card).getByTestId('my-notes-panel-edit-text-a'), {
+    const card = screen.getByTestId('my-note-card-a');
+    fireEvent.click(within(card).getByTestId('my-note-edit-btn'));
+    fireEvent.change(within(card).getByTestId('my-note-edit-text-input'), {
       target: { value: 'Edited' },
     });
-    fireEvent.change(within(card).getByTestId('my-notes-panel-edit-tag-a'), {
+    fireEvent.change(within(card).getByTestId('my-note-edit-tag-input'), {
       target: { value: 'work' },
     });
-    fireEvent.click(within(card).getByTestId('my-notes-panel-edit-save-a'));
+    fireEvent.click(within(card).getByTestId('my-note-edit-save-btn'));
 
     await waitFor(() =>
       expect(mockUpdate).toHaveBeenCalledWith(
@@ -251,8 +253,8 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Delete me');
 
-    const card = screen.getByTestId('my-notes-panel-card-a');
-    fireEvent.click(within(card).getByTestId('my-notes-panel-delete-a'));
+    const card = screen.getByTestId('my-note-card-a');
+    fireEvent.click(within(card).getByTestId('my-note-delete-btn'));
 
     await waitFor(() => expect(mockDelete).toHaveBeenCalledWith('test-token', 'a'));
   });
@@ -282,7 +284,7 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Draggable note');
 
-    expect(screen.getByTestId('my-notes-panel-card-a')).toHaveAttribute('draggable', 'true');
+    expect(screen.getByTestId('my-note-card-a')).toHaveAttribute('draggable', 'true');
   });
 
   it('reorders by dragging a note onto another and persists the drop index', async () => {
@@ -299,8 +301,8 @@ describe('MyNotesPanel', () => {
     await screen.findByText('Note A');
 
     const dt = dataTransfer();
-    const source = screen.getByTestId('my-notes-panel-card-a');
-    const target = screen.getByTestId('my-notes-panel-card-c');
+    const source = screen.getByTestId('my-note-card-a');
+    const target = screen.getByTestId('my-note-card-c');
 
     fireEvent.dragStart(source, { dataTransfer: dt });
     fireEvent.dragOver(target, { dataTransfer: dt });
@@ -322,7 +324,7 @@ describe('MyNotesPanel', () => {
     await screen.findByText('Note A');
 
     const dt = dataTransfer();
-    const source = screen.getByTestId('my-notes-panel-card-a');
+    const source = screen.getByTestId('my-note-card-a');
     fireEvent.dragStart(source, { dataTransfer: dt });
     fireEvent.drop(source, { dataTransfer: dt });
 
@@ -341,8 +343,8 @@ describe('MyNotesPanel', () => {
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     await screen.findByText('Note B');
 
-    const card = screen.getByTestId('my-notes-panel-card-b');
-    fireEvent.click(within(card).getByTestId('my-notes-panel-move-up-b'));
+    const card = screen.getByTestId('my-note-card-b');
+    fireEvent.click(within(card).getByTestId('my-note-move-up-btn'));
 
     await waitFor(() => expect(mockMove).toHaveBeenCalledWith('test-token', 'b', 'UP'));
   });

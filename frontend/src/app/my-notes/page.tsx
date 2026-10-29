@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { QuickNoteStatus, CreateQuickNoteRequest, PaginatedQuickNoteResponse, QuickNote } from '@/types/quick-note';
+import { QuickNoteStatus, CreateQuickNoteRequest, PaginatedQuickNoteResponse } from '@/types/quick-note';
 import {
   listQuickNotes,
   createQuickNote,
@@ -9,9 +9,12 @@ import {
   deleteQuickNote,
   convertQuickNote,
   updateQuickNote,
+  moveQuickNote,
+  reorderQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteForm from '@/components/quick-notes/QuickNoteForm';
+import MyNoteCard from '@/components/quick-notes/MyNoteCard';
 import LoadingScreen from '@/components/LoadingScreen';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
@@ -26,6 +29,9 @@ export default function MyNotesPage() {
   const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // Drag-and-drop reordering state.
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   const fetchNotes = useCallback(async () => {
     const token = getToken();
@@ -108,6 +114,48 @@ export default function MyNotesPage() {
       fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update note');
+    }
+  };
+
+  const handleMove = async (id: string, direction: 'UP' | 'DOWN') => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await moveQuickNote(token, id, direction);
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to move note');
+    }
+  };
+
+  const handleDragStart = (id: string) => setDraggingId(id);
+
+  const handleDragOverNote = (id: string) => {
+    if (draggingId && id !== draggingId) setDropTargetId(id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    setDropTargetId(null);
+  };
+
+  // Drop the dragged note onto a target note: reorder to the target's index and persist.
+  const handleDropOnNote = async (targetId: string) => {
+    const sourceId = draggingId;
+    setDraggingId(null);
+    setDropTargetId(null);
+    if (!sourceId || sourceId === targetId) return;
+
+    const targetIndex = (notes?.content ?? []).findIndex((n) => n.id === targetId);
+    if (targetIndex < 0) return;
+
+    const token = getToken();
+    if (!token) return;
+    try {
+      await reorderQuickNote(token, sourceId, targetIndex);
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reorder note');
     }
   };
 
@@ -251,16 +299,29 @@ export default function MyNotesPage() {
             <EmptyState message="No personal notes yet — capture something above!" />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {notes?.content.map((note) => (
-                <MyNoteCard
-                  key={note.id}
-                  note={note}
-                  onArchive={handleArchive}
-                  onDelete={handleDelete}
-                  onConvert={handleConvert}
-                  onUpdate={handleUpdate}
-                />
-              ))}
+              {notes?.content.map((note, index) => {
+                // Reordering applies to the active (non-archived) list only.
+                const reorderable = statusFilter !== 'ARCHIVED';
+                return (
+                  <MyNoteCard
+                    key={note.id}
+                    note={note}
+                    isFirst={index === 0}
+                    isLast={index === (notes?.content.length ?? 0) - 1}
+                    isDragging={draggingId === note.id}
+                    isDropTarget={dropTargetId === note.id}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                    onConvert={handleConvert}
+                    onEdit={handleUpdate}
+                    onMove={reorderable ? handleMove : undefined}
+                    onDragStart={reorderable ? handleDragStart : undefined}
+                    onDragOverNote={reorderable ? handleDragOverNote : undefined}
+                    onDragEnd={reorderable ? handleDragEnd : undefined}
+                    onDropOnNote={reorderable ? handleDropOnNote : undefined}
+                  />
+                );
+              })}
             </div>
           )}
 
@@ -274,329 +335,6 @@ export default function MyNotesPage() {
             </div>
           )}
         </>
-      )}
-    </div>
-  );
-}
-
-interface MyNoteCardProps {
-  note: QuickNote;
-  onArchive: (id: string) => void;
-  onDelete: (id: string) => void;
-  onConvert: (id: string, dueDate?: string) => void;
-  onUpdate: (id: string, text: string, tag: string | null) => void;
-}
-
-function MyNoteCard({ note, onArchive, onDelete, onConvert, onUpdate }: MyNoteCardProps) {
-  const [dueDate, setDueDate] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(note.text);
-  const [editTag, setEditTag] = useState(note.tag ?? '');
-
-  const formattedDate = new Date(note.createdAt).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  const isInbox = note.status === 'INBOX';
-
-  const startEditing = () => {
-    setEditText(note.text);
-    setEditTag(note.tag ?? '');
-    setIsEditing(true);
-  };
-
-  const cancelEditing = () => {
-    setIsEditing(false);
-  };
-
-  const saveEditing = () => {
-    const trimmedText = editText.trim();
-    if (!trimmedText) return;
-    onUpdate(note.id, trimmedText, editTag.trim() || null);
-    setIsEditing(false);
-  };
-
-  return (
-    <div
-      data-testid={`my-note-card-${note.id}`}
-      style={{
-        padding: 'var(--space-4)',
-        border: note.sensitive
-          ? '1px solid var(--color-warning-muted)'
-          : '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-medium)',
-        backgroundColor: 'var(--color-bg-surface)',
-        transition: 'border-color 0.2s',
-      }}
-    >
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span
-            data-testid="my-note-date"
-            style={{
-              fontSize: 'var(--text-caption)',
-              fontFamily: 'var(--font-mono)',
-              color: 'var(--color-text-muted)',
-            }}
-          >
-            {formattedDate}
-          </span>
-          {note.sensitive && (
-            <span
-              data-testid="my-note-sensitive-badge"
-              style={{
-                padding: '2px 6px',
-                fontSize: '10px',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-warning)',
-                borderRadius: 'var(--radius-full)',
-                backgroundColor: 'var(--color-warning-muted)',
-                color: 'var(--color-warning)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}
-            >
-              Sensitive
-            </span>
-          )}
-          {note.tag && (
-            <span
-              data-testid="my-note-tag"
-              style={{
-                padding: '2px 8px',
-                fontSize: '10px',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-secondary)',
-                borderRadius: 'var(--radius-full)',
-                backgroundColor: 'var(--color-secondary-hover)',
-                color: 'var(--color-bg-base)',
-                letterSpacing: '0.5px',
-              }}
-            >
-              #{note.tag}
-            </span>
-          )}
-        </div>
-        <span
-          data-testid="my-note-status"
-          style={{
-            padding: '2px 8px',
-            fontSize: 'var(--text-caption)',
-            fontFamily: 'var(--font-mono)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-full)',
-            color: 'var(--color-text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
-        >
-          {note.status}
-        </span>
-      </div>
-
-      {/* Text (view mode) */}
-      {!isEditing && (
-        <p
-          data-testid="my-note-text"
-          style={{
-            margin: '0 0 12px',
-            fontSize: 'var(--text-body)',
-            color: 'var(--color-text-primary)',
-            lineHeight: '1.5',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {note.text}
-        </p>
-      )}
-
-      {/* Edit mode */}
-      {isEditing && (
-        <div data-testid="my-note-edit" style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <textarea
-            value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            data-testid="my-note-edit-text-input"
-            aria-label="Edit note text"
-            rows={3}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-medium)',
-              fontSize: 'var(--text-body)',
-              fontFamily: 'var(--font-ui)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              resize: 'vertical',
-              minHeight: '60px',
-            }}
-          />
-          <input
-            type="text"
-            value={editTag}
-            onChange={(e) => setEditTag(e.target.value)}
-            placeholder="#tag (optional)"
-            maxLength={30}
-            data-testid="my-note-edit-tag-input"
-            aria-label="Edit tag"
-            style={{
-              padding: '4px 10px',
-              fontSize: 'var(--text-caption)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              maxWidth: '200px',
-            }}
-          />
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={saveEditing}
-              disabled={!editText.trim()}
-              data-testid="my-note-edit-save-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: '600',
-                border: 'none',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: editText.trim() ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
-                color: editText.trim() ? 'var(--color-bg-base)' : 'var(--color-text-muted)',
-                cursor: editText.trim() ? 'pointer' : 'not-allowed',
-              }}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={cancelEditing}
-              data-testid="my-note-edit-cancel-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: 'transparent',
-                color: 'var(--color-text-secondary)',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Actions */}
-      {!isEditing && (
-      <div data-testid="my-note-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-        {isInbox && (
-          <>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              data-testid="my-note-due-date-input"
-              aria-label="Due date (optional)"
-              style={{
-                padding: '4px 8px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => onConvert(note.id, dueDate || undefined)}
-              data-testid="my-note-convert-btn"
-              aria-label="Convert to TODO"
-              style={{
-                padding: '4px 10px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-primary)',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: 'var(--color-primary-muted)',
-                color: 'var(--color-primary)',
-                cursor: 'pointer',
-              }}
-            >
-              Convert to TODO
-            </button>
-          </>
-        )}
-        {isInbox && (
-          <button
-            type="button"
-            onClick={() => onArchive(note.id)}
-            data-testid="my-note-archive-btn"
-            aria-label="Archive"
-            style={{
-              padding: '4px 10px',
-              fontSize: 'var(--text-caption)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              backgroundColor: 'transparent',
-              color: 'var(--color-text-secondary)',
-              cursor: 'pointer',
-            }}
-          >
-            Archive
-          </button>
-        )}
-        {isInbox && (
-          <button
-            type="button"
-            onClick={startEditing}
-            data-testid="my-note-edit-btn"
-            aria-label="Edit note"
-            style={{
-              padding: '4px 10px',
-              fontSize: 'var(--text-caption)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-small)',
-              backgroundColor: 'transparent',
-              color: 'var(--color-text-secondary)',
-              cursor: 'pointer',
-            }}
-          >
-            Edit
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => onDelete(note.id)}
-          data-testid="my-note-delete-btn"
-          aria-label="Delete note"
-          style={{
-            padding: '4px 10px',
-            fontSize: 'var(--text-caption)',
-            fontFamily: 'var(--font-mono)',
-            border: '1px solid var(--color-alert-muted)',
-            borderRadius: 'var(--radius-small)',
-            backgroundColor: 'transparent',
-            color: 'var(--color-alert)',
-            cursor: 'pointer',
-          }}
-        >
-          Delete
-        </button>
-      </div>
       )}
     </div>
   );

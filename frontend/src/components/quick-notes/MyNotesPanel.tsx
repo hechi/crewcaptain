@@ -8,9 +8,12 @@ import {
   deleteQuickNote,
   moveQuickNote,
   reorderQuickNote,
+  convertQuickNote,
+  archiveQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { QuickNote } from '@/types/quick-note';
+import MyNoteCard from '@/components/quick-notes/MyNoteCard';
 
 /**
  * My Notes panel — a personal notes surface that slides/fades in from the LEFT.
@@ -219,6 +222,28 @@ export default function MyNotesPanel() {
       await fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete note');
+    }
+  };
+
+  const handleConvert = async (id: string, dueDate?: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await convertQuickNote(token, id, { dueDate: dueDate || undefined });
+      await fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to convert note to a TODO');
+    }
+  };
+
+  const handleArchive = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await archiveQuickNote(token, id);
+      await fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to archive note');
     }
   };
 
@@ -476,9 +501,9 @@ export default function MyNotesPanel() {
                   No notes yet — capture one above.
                 </div>
               ) : (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                   {notes.map((note, index) => (
-                    <PanelNoteCard
+                    <MyNoteCard
                       key={note.id}
                       note={note}
                       isFirst={index === 0}
@@ -487,6 +512,8 @@ export default function MyNotesPanel() {
                       isDropTarget={dropTargetId === note.id}
                       onMove={handleMove}
                       onEdit={handleEdit}
+                      onConvert={handleConvert}
+                      onArchive={handleArchive}
                       onDelete={handleDelete}
                       onDragStart={handleDragStart}
                       onDragOverNote={handleDragOverNote}
@@ -494,7 +521,7 @@ export default function MyNotesPanel() {
                       onDropOnNote={handleDropOnNote}
                     />
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           </div>
@@ -516,257 +543,5 @@ export default function MyNotesPanel() {
         }
       `}</style>
     </>
-  );
-}
-
-interface PanelNoteCardProps {
-  note: QuickNote;
-  isFirst: boolean;
-  isLast: boolean;
-  isDragging: boolean;
-  isDropTarget: boolean;
-  onMove: (id: string, direction: 'UP' | 'DOWN') => void;
-  onEdit: (id: string, text: string, tag: string | null) => void;
-  onDelete: (id: string) => void;
-  onDragStart: (id: string) => void;
-  onDragOverNote: (id: string) => void;
-  onDragEnd: () => void;
-  onDropOnNote: (id: string) => void;
-}
-
-function PanelNoteCard({
-  note,
-  isFirst,
-  isLast,
-  isDragging,
-  isDropTarget,
-  onMove,
-  onEdit,
-  onDelete,
-  onDragStart,
-  onDragOverNote,
-  onDragEnd,
-  onDropOnNote,
-}: PanelNoteCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(note.text);
-  const [editTag, setEditTag] = useState(note.tag ?? '');
-
-  const startEdit = () => {
-    setEditText(note.text);
-    setEditTag(note.tag ?? '');
-    setIsEditing(true);
-  };
-
-  const saveEdit = () => {
-    const trimmed = editText.trim();
-    if (!trimmed) return;
-    onEdit(note.id, trimmed, editTag.trim() || null);
-    setIsEditing(false);
-  };
-
-  const iconBtn = (disabled: boolean): React.CSSProperties => ({
-    padding: '2px 8px',
-    fontSize: 'var(--text-caption)',
-    fontFamily: 'var(--font-mono)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-small)',
-    backgroundColor: 'transparent',
-    color: disabled ? 'var(--color-text-muted)' : 'var(--color-text-secondary)',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  });
-
-  return (
-    <li
-      data-testid={`my-notes-panel-card-${note.id}`}
-      draggable={!isEditing}
-      onDragStart={(e) => {
-        // Native DnD requires data to be set for a valid drag in some browsers.
-        e.dataTransfer.setData('text/plain', note.id);
-        e.dataTransfer.effectAllowed = 'move';
-        onDragStart(note.id);
-      }}
-      onDragOver={(e) => {
-        // Allow dropping by preventing the default (which would reject the drop).
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        onDragOverNote(note.id);
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        onDropOnNote(note.id);
-      }}
-      onDragEnd={onDragEnd}
-      style={{
-        padding: 'var(--space-3)',
-        border: isDropTarget ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
-        borderTop: isDropTarget ? '3px solid var(--color-primary)' : undefined,
-        borderRadius: 'var(--radius-medium)',
-        backgroundColor: 'var(--color-bg-surface)',
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isEditing ? 'default' : 'grab',
-        transition: 'opacity 0.15s, border-color 0.15s',
-      }}
-    >
-      {!isEditing ? (
-        <>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-            <span
-              aria-hidden="true"
-              title="Drag to reorder"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--color-text-muted)',
-                lineHeight: 1.5,
-                userSelect: 'none',
-                flexShrink: 0,
-              }}
-            >
-              ⠿
-            </span>
-            <p style={{ margin: '0 0 8px', fontSize: 'var(--text-body)', color: 'var(--color-text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.5, flex: 1 }}>
-              {note.text}
-            </p>
-          </div>
-          {note.tag && (
-            <span
-              data-testid={`my-notes-panel-tag-${note.id}`}
-              style={{
-                display: 'inline-block',
-                marginBottom: '8px',
-                padding: '2px 8px',
-                fontSize: '10px',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-secondary)',
-                borderRadius: 'var(--radius-full)',
-                backgroundColor: 'var(--color-secondary-hover)',
-                color: 'var(--color-bg-base)',
-              }}
-            >
-              #{note.tag}
-            </span>
-          )}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <button
-              type="button"
-              onClick={() => onMove(note.id, 'UP')}
-              disabled={isFirst}
-              data-testid={`my-notes-panel-move-up-${note.id}`}
-              aria-label="Move note up"
-              style={iconBtn(isFirst)}
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              onClick={() => onMove(note.id, 'DOWN')}
-              disabled={isLast}
-              data-testid={`my-notes-panel-move-down-${note.id}`}
-              aria-label="Move note down"
-              style={iconBtn(isLast)}
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              onClick={startEdit}
-              data-testid={`my-notes-panel-edit-${note.id}`}
-              aria-label="Edit note"
-              style={iconBtn(false)}
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(note.id)}
-              data-testid={`my-notes-panel-delete-${note.id}`}
-              aria-label="Delete note"
-              style={{ ...iconBtn(false), border: '1px solid var(--color-alert-muted)', color: 'var(--color-alert)' }}
-            >
-              Delete
-            </button>
-          </div>
-        </>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <textarea
-            value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            data-testid={`my-notes-panel-edit-text-${note.id}`}
-            aria-label="Edit note text"
-            rows={3}
-            style={{
-              width: '100%',
-              padding: '8px 10px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-medium)',
-              fontSize: 'var(--text-body)',
-              fontFamily: 'var(--font-ui)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              resize: 'vertical',
-              boxSizing: 'border-box',
-            }}
-          />
-          <input
-            type="text"
-            value={editTag}
-            onChange={(e) => setEditTag(e.target.value)}
-            placeholder="#tag (optional)"
-            maxLength={30}
-            data-testid={`my-notes-panel-edit-tag-${note.id}`}
-            aria-label="Edit note tag"
-            style={{
-              padding: '4px 10px',
-              fontSize: 'var(--text-caption)',
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              maxWidth: '200px',
-            }}
-          />
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={saveEdit}
-              disabled={!editText.trim()}
-              data-testid={`my-notes-panel-edit-save-${note.id}`}
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: '600',
-                border: 'none',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: editText.trim() ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
-                color: editText.trim() ? 'var(--color-bg-base)' : 'var(--color-text-muted)',
-                cursor: editText.trim() ? 'pointer' : 'not-allowed',
-              }}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsEditing(false)}
-              data-testid={`my-notes-panel-edit-cancel-${note.id}`}
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-small)',
-                backgroundColor: 'transparent',
-                color: 'var(--color-text-secondary)',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-    </li>
   );
 }
