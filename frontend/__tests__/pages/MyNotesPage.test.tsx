@@ -200,7 +200,7 @@ describe('MyNotesPage', () => {
     await waitFor(() => {
       expect(mockListQuickNotes).toHaveBeenCalledWith('test-token', {
         selfAssigned: true,
-        status: undefined,
+        status: 'INBOX',
         tag: undefined,
         page: 0,
         size: 20,
@@ -437,7 +437,7 @@ describe('MyNotesPage', () => {
     await waitFor(() => {
       expect(mockListQuickNotes).toHaveBeenCalledWith('test-token', {
         selfAssigned: true,
-        status: undefined,
+        status: 'INBOX',
         tag: 'hiring',
         page: 0,
         size: 20,
@@ -600,6 +600,42 @@ describe('MyNotesPage', () => {
 
     // note-1 (index 0) dropped onto note-2 (index 1) -> reorder to index 1.
     await waitFor(() => expect(mockReorderQuickNote).toHaveBeenCalledWith('test-token', 'note-1', 1));
+  });
+
+  it('defaults to the Active filter so converted notes do not show twice', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() =>
+      expect(mockListQuickNotes).toHaveBeenCalledWith(
+        'test-token',
+        expect.objectContaining({ status: 'INBOX', selfAssigned: true })
+      )
+    );
+  });
+
+  it('disables reordering under the All filter (indexes would not match the active list)', async () => {
+    render(<MyNotesPage />);
+    await waitFor(() => expect(screen.getByTestId('filter-all')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('filter-all'));
+    await waitFor(() =>
+      expect(mockListQuickNotes).toHaveBeenLastCalledWith(
+        'test-token',
+        expect.objectContaining({ status: undefined })
+      )
+    );
+    await waitFor(() => expect(screen.getByTestId('my-note-card-note-1')).toHaveAttribute('draggable', 'false'));
+    expect(screen.queryByTestId('my-note-move-up-btn')).not.toBeInTheDocument();
+  });
+
+  it('disables reordering while a tag filter is active', async () => {
+    render(<MyNotesPage />);
+    fireEvent.click(await screen.findByTestId('tag-filter-hiring'));
+    await waitFor(() =>
+      expect(mockListQuickNotes).toHaveBeenLastCalledWith(
+        'test-token',
+        expect.objectContaining({ tag: 'hiring' })
+      )
+    );
+    await waitFor(() => expect(screen.getByTestId('my-note-card-note-1')).toHaveAttribute('draggable', 'false'));
   });
 
   it('disables reordering when viewing the archived filter', async () => {

@@ -14,6 +14,8 @@ data class ActionItem(
     val status: ActionItemStatus = ActionItemStatus.OPEN,
     val originatingEntryId: OneOnOneEntryId? = null,
     val originatingQuickNoteId: QuickNoteId? = null,
+    /** Tag carried over from the originating note, so it stays visible after "make action item". */
+    val tag: String? = null,
     val snoozedUntil: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now()

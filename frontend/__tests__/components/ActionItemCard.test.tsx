@@ -67,6 +67,16 @@ describe('ActionItemCard', () => {
     expect(screen.getByTestId('action-item-from-note')).toBeInTheDocument();
   });
 
+  it('shows the tag carried over from a note', () => {
+    render(<ActionItemCard item={{ ...mockItem, tag: 'hiring' }} />);
+    expect(screen.getByTestId('action-item-tag')).toHaveTextContent('#hiring');
+  });
+
+  it('shows no tag chip when untagged', () => {
+    render(<ActionItemCard item={mockItem} />);
+    expect(screen.queryByTestId('action-item-tag')).not.toBeInTheDocument();
+  });
+
   it('shows no "from note" badge otherwise', () => {
     render(<ActionItemCard item={mockItem} />);
     expect(screen.queryByTestId('action-item-from-note')).not.toBeInTheDocument();

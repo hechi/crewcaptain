@@ -306,6 +306,24 @@ class QuickNoteServiceTest {
         }
 
         @Test
+        fun `should carry the note tag over to the action item`() {
+            val taggedNote = QuickNote(
+                id = quickNoteId,
+                userId = userId,
+                text = "Tagged todo",
+                selfAssigned = true,
+                tag = "hiring"
+            )
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns taggedNote
+            every { actionItemRepository.save(any()) } answers { firstArg() }
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            service.convertQuickNote(ConvertQuickNoteCommand(userId = userId, quickNoteId = quickNoteId))
+
+            verify { actionItemRepository.save(match { it.tag == "hiring" }) }
+        }
+
+        @Test
         fun `should convert with a due date`() {
             val dueDate = java.time.LocalDate.of(2026, 7, 1)
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote

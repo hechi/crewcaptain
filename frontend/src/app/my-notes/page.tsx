@@ -31,7 +31,7 @@ export default function MyNotesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>(null);
+  const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>('INBOX');
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   // The manager's own open action items (shown beneath the notes so a note visibly becomes one).
@@ -356,8 +356,9 @@ export default function MyNotesPage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {notes?.content.map((note, index) => {
-                // Reordering applies to the active (non-archived) list only.
-                const reorderable = statusFilter !== 'ARCHIVED';
+                // Reordering is only valid on the full, unfiltered active list: the backend renumbers
+                // the complete INBOX ordering, so indexes from any subset would not match.
+                const reorderable = statusFilter === 'INBOX' && !tagFilter;
                 return (
                   <MyNoteCard
                     key={note.id}

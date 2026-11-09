@@ -163,7 +163,8 @@ class QuickNoteService(
             description = if (existing.text.length > 500) existing.text else null,
             ownerType = ActionItemOwnerType.MANAGER,
             dueDate = command.dueDate,
-            originatingQuickNoteId = existing.id
+            originatingQuickNoteId = existing.id,
+            tag = existing.tag
         )
         actionItemRepository.save(actionItem)
 

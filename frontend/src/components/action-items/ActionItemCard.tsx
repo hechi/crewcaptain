@@ -112,6 +112,23 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
             re: {personName}
           </span>
         )}
+        {item.tag && (
+          <span
+            data-testid="action-item-tag"
+            style={{
+              padding: '2px 8px',
+              fontSize: '10px',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-secondary)',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-secondary-hover)',
+              color: 'var(--color-bg-base)',
+              letterSpacing: '0.5px',
+            }}
+          >
+            #{item.tag}
+          </span>
+        )}
         {item.originatingQuickNoteId && (
           <span
             data-testid="action-item-from-note"

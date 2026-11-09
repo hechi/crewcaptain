@@ -1,6 +1,15 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-11-09T14:00:00Z — Bugfix on `feat/unify-notes-and-action-items`: three regressions reported after the notes/action-items unification. TDD.
+
+1. **Drag-drop reorder broken** — root cause: My Notes defaulted to the *All* filter, so the list included DONE/CONVERTED/ARCHIVED notes while the backend `reorder` renumbers only the INBOX ordering; the drop index no longer matched. Fix: default filter is now **Active (INBOX)**, and reordering is enabled only when `statusFilter === 'INBOX'` and no tag filter is active (a tag-filtered subset has the same index mismatch).
+2. **Tags disappeared on "Make action item"** — action items had no tag. Fix: new `action_items.tag` column (migration `V20261109120000`, backfilled from the originating note), `ActionItem.tag`, carried over in `QuickNoteService.convertQuickNote`, exposed in `ActionItemResponse`, rendered as a chip on `ActionItemCard`.
+3. **Notes shown twice** — a converted note stayed in the Notes list (All filter) while its action item showed under My action items. Fixed by the Active default above; *All* still shows converted notes on purpose.
+
+**Verification:** Backend `./gradlew test` → BUILD SUCCESSFUL, **1679 tests, 0 failures** (+1: tag carried over on convert; the Testcontainers integration tests apply the new migration). Frontend `jest` → **129 suites / 1426 tests pass** (+5: default Active filter, no reorder under All / tag filter, tag chip on action item). Not verified in a browser (drag-drop re-checked via unit tests only; jsdom drag events).
+
+## Previously Updated
 2026-11-09T12:00:00Z — Feature: **unify Notes / My Notes / Action Items flow** on branch `feat/unify-notes-and-action-items`. User feedback: the three surfaces didn't feel like one flow, "Convert to TODO" felt like converting to an action item, notes couldn't be completed, and Action Items didn't separate "mine" from "my reports'". TDD throughout.
 
 **Backend:** new `QuickNoteStatus.DONE`; `QuickNote.complete()` (INBOX only), `CompleteQuickNoteCommand`, `QuickNoteService.completeQuickNote` (userId-scoped via `findByIdAndUserId`, 404 on foreign notes), `POST /api/v1/quick-notes/{id}/complete`. No migration needed (`status` is an unconstrained VARCHAR).
