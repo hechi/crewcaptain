@@ -8,6 +8,7 @@ import {
   attachQuickNote,
   convertQuickNote,
   archiveQuickNote,
+  completeQuickNote,
 } from '@/lib/api-client';
 import { ApiException } from '@/types/api';
 
@@ -378,6 +379,26 @@ describe('archiveQuickNote', () => {
     await archiveQuickNote(mockToken, quickNoteId);
 
     expect(mockFetch).toHaveBeenCalledWith(`/api/v1/quick-notes/${quickNoteId}/archive`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mockToken}`,
+      },
+    });
+  });
+});
+
+describe('completeQuickNote', () => {
+  it('should send POST request to complete endpoint', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...mockQuickNote, status: 'DONE' }),
+    });
+
+    const result = await completeQuickNote(mockToken, quickNoteId);
+
+    expect(result.status).toBe('DONE');
+    expect(mockFetch).toHaveBeenCalledWith(`/api/v1/quick-notes/${quickNoteId}/complete`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -100,7 +100,7 @@ value class QuickNoteId(val value: UUID) {
 }
 
 enum class QuickNoteStatus {
-    INBOX, ATTACHED, CONVERTED, ARCHIVED
+    INBOX, ATTACHED, CONVERTED, ARCHIVED, DONE
 }
 
 @JvmInline

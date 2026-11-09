@@ -24,7 +24,31 @@ describe('MyNoteCard (shared card)', () => {
     render(<MyNoteCard note={note({ id: 'a', text: 'Hello note' })} />);
     expect(screen.getByTestId('my-note-text')).toHaveTextContent('Hello note');
     expect(screen.getByTestId('my-note-date')).toBeInTheDocument();
-    expect(screen.getByTestId('my-note-status')).toHaveTextContent('INBOX');
+    expect(screen.getByTestId('my-note-status')).toHaveTextContent('Note');
+  });
+
+  it('shows a Complete button for INBOX notes that calls onComplete', () => {
+    const onComplete = jest.fn();
+    render(<MyNoteCard note={note({ id: 'a', text: 'x' })} onComplete={onComplete} />);
+    fireEvent.click(screen.getByTestId('my-note-complete-btn'));
+    expect(onComplete).toHaveBeenCalledWith('a');
+  });
+
+  it('hides Complete for non-INBOX notes and marks DONE notes', () => {
+    render(<MyNoteCard note={note({ id: 'a', text: 'x', status: 'DONE' })} onComplete={jest.fn()} onConvert={jest.fn()} />);
+    expect(screen.queryByTestId('my-note-complete-btn')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('my-note-convert-btn')).not.toBeInTheDocument();
+    expect(screen.getByTestId('my-note-status')).toHaveTextContent('Done');
+  });
+
+  it('labels a converted note as an action item', () => {
+    render(<MyNoteCard note={note({ id: 'a', text: 'x', status: 'CONVERTED' })} />);
+    expect(screen.getByTestId('my-note-status')).toHaveTextContent('Action item');
+  });
+
+  it('words the conversion button as "Make action item"', () => {
+    render(<MyNoteCard note={note({ id: 'a', text: 'x' })} onConvert={jest.fn()} />);
+    expect(screen.getByTestId('my-note-convert-btn')).toHaveTextContent('Make action item');
   });
 
   it('shows a tag chip when tagged', () => {

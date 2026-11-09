@@ -336,6 +336,25 @@ class QuickNoteServiceTest {
         }
 
         @Test
+        fun `should complete quick note`() {
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns inboxNote
+            every { quickNoteRepository.save(any()) } answers { firstArg() }
+
+            val result = service.completeQuickNote(CompleteQuickNoteCommand(userId = userId, quickNoteId = quickNoteId))
+
+            result.status shouldBe QuickNoteStatus.DONE
+        }
+
+        @Test
+        fun `should throw not found when completing note of another user`() {
+            every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns null
+
+            shouldThrow<QuickNoteNotFoundException> {
+                service.completeQuickNote(CompleteQuickNoteCommand(userId = userId, quickNoteId = quickNoteId))
+            }
+        }
+
+        @Test
         fun `should throw when attaching non-INBOX note`() {
             val attachedNote = inboxNote.copy(status = QuickNoteStatus.ATTACHED)
             every { quickNoteRepository.findByIdAndUserId(quickNoteId, userId) } returns attachedNote

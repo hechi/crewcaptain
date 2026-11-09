@@ -1,24 +1,27 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { ActionItemStatus, PaginatedActionItemResponse } from '@/types/action-item';
+import { ActionItem, ActionItemStatus, PaginatedActionItemResponse } from '@/types/action-item';
 import {
   listAllActionItems,
   completeActionItemById,
   cancelActionItemById,
   deleteActionItemById,
+  listPersons,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import ActionItemCard from '@/components/action-items/ActionItemCard';
 import LoadingScreen from '@/components/LoadingScreen';
-import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 
+type Scope = 'mine' | 'team';
+
 /**
- * Cross-person "Action Items" page — a manager-wide list of every action item, including
- * person-less TODOs (e.g. notes converted to a personal TODO). This is the destination the
- * dashboard "Today's Priorities" widget links person-less items to, so it must exist for
- * those links to resolve. All data is userId-scoped by the backend.
+ * Cross-person "Action Items" page, split into two tabs so ownership is obvious:
+ *  - Mine: items the manager owns (including person-less TODOs made from notes).
+ *  - My team: items owned by reports, grouped by person name.
+ * Person-less TODOs from converted notes land here, so dashboard links must resolve to it.
+ * All data is userId-scoped by the backend; the split is done client-side on `ownerType`.
  */
 export default function ActionItemsPage() {
   const { getToken, isAuthenticated, status } = useStableToken();
@@ -27,7 +30,8 @@ export default function ActionItemsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<ActionItemStatus | null>(null);
-  const [page, setPage] = useState(0);
+  const [scope, setScope] = useState<Scope>('mine');
+  const [personNames, setPersonNames] = useState<Record<string, string>>({});
 
   const fetchItems = useCallback(async () => {
     const token = getToken();
@@ -38,8 +42,8 @@ export default function ActionItemsPage() {
     try {
       const result = await listAllActionItems(token, {
         status: statusFilter || undefined,
-        page,
-        size: 20,
+        page: 0,
+        size: 100,
       });
       setItems(result);
     } catch (err) {
@@ -47,11 +51,28 @@ export default function ActionItemsPage() {
     } finally {
       setLoading(false);
     }
-  }, [getToken, isAuthenticated, statusFilter, page]);
+  }, [getToken, isAuthenticated, statusFilter]);
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  // Resolve person names once so team items can show who they belong to.
+  useEffect(() => {
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
+    listPersons(token, { page: 0, size: 100 })
+      .then((res) => {
+        const map: Record<string, string> = {};
+        res.content.forEach((p) => {
+          map[p.id] = p.name;
+        });
+        setPersonNames(map);
+      })
+      .catch(() => {
+        /* names are a nicety; the list still works without them */
+      });
+  }, [getToken, isAuthenticated]);
 
   const handleComplete = async (id: string) => {
     const token = getToken();
@@ -86,11 +107,6 @@ export default function ActionItemsPage() {
     }
   };
 
-  const handleStatusFilterChange = (newStatus: ActionItemStatus | null) => {
-    setStatusFilter(newStatus);
-    setPage(0);
-  };
-
   if (status === 'loading') {
     return <LoadingScreen message="Loading action items" />;
   }
@@ -98,6 +114,35 @@ export default function ActionItemsPage() {
   if (status === 'unauthenticated') {
     return <div data-testid="unauthenticated">Please sign in to access this page.</div>;
   }
+
+  const all = items?.content ?? [];
+  const mine = all.filter((i) => i.ownerType === 'MANAGER');
+  const team = all.filter((i) => i.ownerType === 'PERSON');
+
+  const teamGroups = new Map<string, ActionItem[]>();
+  team.forEach((i) => {
+    const key = i.personId ?? 'unknown';
+    teamGroups.set(key, [...(teamGroups.get(key) ?? []), i]);
+  });
+  const sortedTeamGroups = Array.from(teamGroups.entries()).sort(([a], [b]) =>
+    (personNames[a] ?? '\uffff').localeCompare(personNames[b] ?? '\uffff')
+  );
+
+  const renderCard = (item: ActionItem) => (
+    <ActionItemCard
+      key={item.id}
+      item={item}
+      personName={item.personId ? personNames[item.personId] : undefined}
+      onComplete={handleComplete}
+      onCancel={handleCancel}
+      onDelete={handleDelete}
+    />
+  );
+
+  const tabs: { key: Scope; label: string; count: number }[] = [
+    { key: 'mine', label: '👤 Mine', count: mine.length },
+    { key: 'team', label: '👥 My team', count: team.length },
+  ];
 
   const statuses: (ActionItemStatus | null)[] = [null, 'OPEN', 'DONE', 'CANCELED'];
   const statusLabels: Record<string, string> = {
@@ -122,7 +167,7 @@ export default function ActionItemsPage() {
         Action Items
       </h1>
       <p style={{ margin: '0 0 var(--space-6)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-body)' }}>
-        Every follow-up across your reports, plus your own TODOs.
+        What you need to do, and what your reports need to do.
       </p>
 
       {error && (
@@ -130,6 +175,37 @@ export default function ActionItemsPage() {
           {error}
         </div>
       )}
+
+      {/* Scope tabs: whose action items */}
+      <div
+        role="tablist"
+        aria-label="Whose action items"
+        data-testid="action-items-scope-tabs"
+        style={{ display: 'flex', gap: '8px', marginBottom: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}
+      >
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={scope === t.key}
+            onClick={() => setScope(t.key)}
+            data-testid={`scope-tab-${t.key}`}
+            style={{
+              padding: '8px 16px',
+              fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-mono)',
+              border: 'none',
+              borderBottom: scope === t.key ? '2px solid var(--color-primary)' : '2px solid transparent',
+              backgroundColor: 'transparent',
+              color: scope === t.key ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            {t.label} ({t.count})
+          </button>
+        ))}
+      </div>
 
       {/* Status filter */}
       <div
@@ -140,7 +216,7 @@ export default function ActionItemsPage() {
           <button
             key={s ?? 'all'}
             type="button"
-            onClick={() => handleStatusFilterChange(s)}
+            onClick={() => setStatusFilter(s)}
             data-testid={`filter-${s ?? 'all'}`}
             style={{
               padding: '4px 12px',
@@ -163,34 +239,36 @@ export default function ActionItemsPage() {
         <div data-testid="action-items-loading" style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
           Loading action items...
         </div>
+      ) : scope === 'mine' ? (
+        mine.length === 0 ? (
+          <EmptyState message="Nothing on your plate. Make an action item from a note, or add a follow-up in a 1:1." />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            {mine.map(renderCard)}
+          </div>
+        )
+      ) : team.length === 0 ? (
+        <EmptyState message="No action items owned by your reports yet." />
       ) : (
-        <>
-          {items && items.content.length === 0 ? (
-            <EmptyState message="No action items yet — convert a note or add a follow-up from a 1:1." />
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {items?.content.map((item) => (
-                <ActionItemCard
-                  key={item.id}
-                  item={item}
-                  onComplete={handleComplete}
-                  onCancel={handleCancel}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          )}
-
-          {items && items.totalPages > 1 && (
-            <div style={{ marginTop: 'var(--space-4)' }}>
-              <Pagination
-                currentPage={items.page}
-                totalPages={items.totalPages}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
-        </>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          {sortedTeamGroups.map(([personId, groupItems]) => (
+            <section key={personId} data-testid={`team-group-${personId}`}>
+              <h2
+                style={{
+                  margin: '0 0 var(--space-3)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-heading)',
+                  color: 'var(--color-text-primary)',
+                }}
+              >
+                👥 {personNames[personId] ?? 'Unknown person'} ({groupItems.length})
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {groupItems.map(renderCard)}
+              </div>
+            </section>
+          ))}
+        </div>
       )}
     </div>
   );

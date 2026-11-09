@@ -16,6 +16,9 @@ jest.mock('@/lib/api-client', () => ({
   updateQuickNote: jest.fn(),
   moveQuickNote: jest.fn(),
   reorderQuickNote: jest.fn(),
+  completeQuickNote: jest.fn(),
+  listAllActionItems: jest.fn(),
+  completeActionItemById: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -32,6 +35,9 @@ import {
   updateQuickNote,
   moveQuickNote,
   reorderQuickNote,
+  completeQuickNote,
+  listAllActionItems,
+  completeActionItemById,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 
@@ -44,6 +50,9 @@ const mockConvertQuickNote = convertQuickNote as jest.MockedFunction<typeof conv
 const mockUpdateQuickNote = updateQuickNote as jest.MockedFunction<typeof updateQuickNote>;
 const mockMoveQuickNote = moveQuickNote as jest.MockedFunction<typeof moveQuickNote>;
 const mockReorderQuickNote = reorderQuickNote as jest.MockedFunction<typeof reorderQuickNote>;
+const mockCompleteQuickNote = completeQuickNote as jest.MockedFunction<typeof completeQuickNote>;
+const mockListAllActionItems = listAllActionItems as jest.MockedFunction<typeof listAllActionItems>;
+const mockCompleteActionItem = completeActionItemById as jest.MockedFunction<typeof completeActionItemById>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 const mockSelfAssignedNotes = {
@@ -90,6 +99,71 @@ describe('MyNotesPage', () => {
       status: 'authenticated',
     });
     mockListQuickNotes.mockResolvedValue(mockSelfAssignedNotes);
+    mockListAllActionItems.mockResolvedValue({
+      content: [
+        {
+          id: 'ai-1', personId: null, title: 'Prepare budget deck', description: null,
+          ownerType: 'MANAGER', dueDate: null, status: 'OPEN', originatingEntryId: null,
+          originatingQuickNoteId: 'note-9', createdAt: '2026-05-15T10:00:00Z', updatedAt: '2026-05-15T10:00:00Z',
+        },
+        {
+          id: 'ai-2', personId: 'p1', title: 'Alice owns this', description: null,
+          ownerType: 'PERSON', dueDate: null, status: 'OPEN', originatingEntryId: null,
+          originatingQuickNoteId: null, createdAt: '2026-05-15T10:00:00Z', updatedAt: '2026-05-15T10:00:00Z',
+        },
+      ],
+      page: 0, size: 100, totalElements: 2, totalPages: 1,
+    });
+  });
+
+  it('shows separate Notes and My action items sections', async () => {
+    render(<MyNotesPage />);
+    expect(await screen.findByTestId('my-notes-section-notes')).toBeInTheDocument();
+    expect(screen.getByTestId('my-notes-section-action-items')).toBeInTheDocument();
+  });
+
+  it('lists only my own open action items in the action items section', async () => {
+    render(<MyNotesPage />);
+    const section = await screen.findByTestId('my-notes-section-action-items');
+    await waitFor(() => expect(section).toHaveTextContent('Prepare budget deck'));
+    expect(section).not.toHaveTextContent('Alice owns this');
+    expect(mockListAllActionItems).toHaveBeenCalledWith('test-token', { status: 'OPEN', page: 0, size: 100 });
+  });
+
+  it('completes a note via the Complete button', async () => {
+    mockCompleteQuickNote.mockResolvedValue({ ...mockSelfAssignedNotes.content[0], status: 'DONE' as const });
+    render(<MyNotesPage />);
+    const buttons = await screen.findAllByTestId('my-note-complete-btn');
+    fireEvent.click(buttons[0]);
+    await waitFor(() => expect(mockCompleteQuickNote).toHaveBeenCalledWith('test-token', 'note-1'));
+  });
+
+  it('completes one of my action items from the action items section', async () => {
+    mockCompleteActionItem.mockResolvedValue({} as never);
+    render(<MyNotesPage />);
+    const btn = await screen.findByTestId('action-item-complete-btn');
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockCompleteActionItem).toHaveBeenCalledWith('test-token', 'ai-1'));
+  });
+
+  it('offers a Done filter for notes', async () => {
+    render(<MyNotesPage />);
+    fireEvent.click(await screen.findByTestId('filter-DONE'));
+    await waitFor(() =>
+      expect(mockListQuickNotes).toHaveBeenCalledWith(
+        'test-token',
+        expect.objectContaining({ status: 'DONE', selfAssigned: true })
+      )
+    );
+  });
+
+  it('refreshes my action items after making a note an action item', async () => {
+    mockConvertQuickNote.mockResolvedValue({ ...mockSelfAssignedNotes.content[0], status: 'CONVERTED' as const });
+    render(<MyNotesPage />);
+    const btns = await screen.findAllByTestId('my-note-convert-btn');
+    mockListAllActionItems.mockClear();
+    fireEvent.click(btns[0]);
+    await waitFor(() => expect(mockListAllActionItems).toHaveBeenCalled());
   });
 
   it('should show loading screen when session is loading', () => {

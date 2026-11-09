@@ -623,6 +623,13 @@ export async function archiveQuickNote(token: string, quickNoteId: string): Prom
   return response.json();
 }
 
+export async function completeQuickNote(token: string, quickNoteId: string): Promise<QuickNote> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/quick-notes/${quickNoteId}/complete`, {
+    method: 'POST',
+  }, token);
+  return response.json();
+}
+
 export async function moveQuickNote(
   token: string,
   quickNoteId: string,

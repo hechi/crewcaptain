@@ -1,6 +1,17 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-11-09T12:00:00Z — Feature: **unify Notes / My Notes / Action Items flow** on branch `feat/unify-notes-and-action-items`. User feedback: the three surfaces didn't feel like one flow, "Convert to TODO" felt like converting to an action item, notes couldn't be completed, and Action Items didn't separate "mine" from "my reports'". TDD throughout.
+
+**Backend:** new `QuickNoteStatus.DONE`; `QuickNote.complete()` (INBOX only), `CompleteQuickNoteCommand`, `QuickNoteService.completeQuickNote` (userId-scoped via `findByIdAndUserId`, 404 on foreign notes), `POST /api/v1/quick-notes/{id}/complete`. No migration needed (`status` is an unconstrained VARCHAR).
+
+**Frontend:** `MyNoteCard` gets a green `✓ Complete` button (same look as Action Item), "Convert to TODO" → "→ Make action item", friendly status labels (Note/Done/Action item/Archived), strikethrough for DONE. `/my-notes` has **Notes** and **My action items** sections (own OPEN items only, completable) plus a Done filter; side panel gets Complete. `/action-items` has **Mine / My team** tabs with counts, team items grouped by person name (names resolved via `listPersons`, so no new backend field was needed). `ActionItemCard` shows "You" / person name, "re: name", and a "📝 from note" badge. New client fn `completeQuickNote`.
+
+**Known limits:** the tab split is client-side over the first 100 items (pagination on `/action-items` removed); person names resolve for the first 100 persons. Side panel intentionally does not show action items yet (per user).
+
+**Verification:** Backend `./gradlew test` → **BUILD SUCCESSFUL, 1678 tests, 0 failures** (+6: domain `complete()` x2, service x2, controller x2). Frontend `jest` → **129 suites / 1421 tests pass** (+19). `tsc` shows no errors in touched files (remaining errors are the pre-existing settings/PdpGoal ones). README feature bullet + endpoint table updated. Not verified: visual check in a browser (layout/styling was not eyeballed).
+
+## Previously Updated
 2026-10-29T09:15:00Z — Bugfix: **dashboard duplication between "Today's Priorities" and the Overdue/Due Soon sections** on branch `fix/dashboard-priorities-dedup` (from `fix/action-items-page-404`). The priorities card unioned overdue + due-soon action items + self-assigned notes, but the dashboard also has dedicated Overdue and Due Soon sections, so every overdue/due-soon item showed up **twice** and overloaded the card. Per the user's preference, the split is now by ownership: priorities = **the manager's own** work, sections = **work tracked for reports**. Backend-only change (the frontend renders whatever the backend returns). TDD.
 
 **Change (`DashboardService.getDashboard`):** overdue and due-soon action items are partitioned by `personId`. The `overdueActionItems` / `dueSoonActionItems` lists (the dedicated sections) now contain **person-assigned items only** (`personId != null`). "Today's Priorities" (`todayPriorities`) now contains **person-less items only** (`personId == null`, a manager's own TODO — e.g. a converted note) in the order person-less-overdue → person-less-due-soon → self-assigned INBOX notes, still capped at 7. Net effect: each action item appears in exactly one place; the card is no longer overloaded and surfaces only what the manager can act on directly. No change to stale-1:1s / anniversaries. The `TodayPriorityItem.personId`/`personName` for action-item rows are now always null (person-less), which is fine — the frontend already links those rows to `/action-items`. All queries remain `userId`-scoped.

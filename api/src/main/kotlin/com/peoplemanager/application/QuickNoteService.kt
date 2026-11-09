@@ -188,6 +188,12 @@ class QuickNoteService(
         return quickNoteRepository.save(updated)
     }
 
+    override fun completeQuickNote(command: CompleteQuickNoteCommand): QuickNote {
+        val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
+            ?: throw QuickNoteNotFoundException(command.quickNoteId)
+        return quickNoteRepository.save(existing.complete())
+    }
+
     override fun deleteQuickNote(command: DeleteQuickNoteCommand) {
         val deleted = quickNoteRepository.deleteByIdAndUserId(command.quickNoteId, command.userId)
         if (!deleted) throw QuickNoteNotFoundException(command.quickNoteId)

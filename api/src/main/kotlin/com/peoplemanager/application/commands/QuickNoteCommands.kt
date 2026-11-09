@@ -53,6 +53,11 @@ data class ArchiveQuickNoteCommand(
     val quickNoteId: QuickNoteId
 )
 
+data class CompleteQuickNoteCommand(
+    val userId: UserId,
+    val quickNoteId: QuickNoteId
+)
+
 data class DeleteQuickNoteCommand(
     val userId: UserId,
     val quickNoteId: QuickNoteId

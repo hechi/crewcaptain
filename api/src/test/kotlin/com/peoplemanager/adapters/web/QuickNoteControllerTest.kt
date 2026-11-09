@@ -373,6 +373,24 @@ class QuickNoteControllerTest {
     }
 
     @Test
+    fun `POST complete - marks quick note as done`() {
+        every { quickNoteCommandPort.completeQuickNote(any()) } returns sampleQuickNote(status = QuickNoteStatus.DONE)
+
+        mockMvc.perform(
+            post("/api/v1/quick-notes/${quickNoteId.value}/complete")
+                .with(authentication(authenticatedJwt(userId)))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("DONE"))
+    }
+
+    @Test
+    fun `POST complete - returns 401 when unauthenticated`() {
+        mockMvc.perform(post("/api/v1/quick-notes/${quickNoteId.value}/complete"))
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
     fun `POST attach - returns 400 when not in INBOX status`() {
         every { quickNoteCommandPort.attachQuickNote(any()) } throws
             IllegalArgumentException("Can only attach a quick note with status INBOX, current status is ARCHIVED")

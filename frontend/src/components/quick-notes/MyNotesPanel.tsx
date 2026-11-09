@@ -10,6 +10,7 @@ import {
   reorderQuickNote,
   convertQuickNote,
   archiveQuickNote,
+  completeQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { QuickNote } from '@/types/quick-note';
@@ -232,7 +233,18 @@ export default function MyNotesPanel() {
       await convertQuickNote(token, id, { dueDate: dueDate || undefined });
       await fetchNotes();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert note to a TODO');
+      setError(err instanceof Error ? err.message : 'Failed to make note an action item');
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await completeQuickNote(token, id);
+      await fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete note');
     }
   };
 
@@ -513,6 +525,7 @@ export default function MyNotesPanel() {
                       onMove={handleMove}
                       onEdit={handleEdit}
                       onConvert={handleConvert}
+                      onComplete={handleComplete}
                       onArchive={handleArchive}
                       onDelete={handleDelete}
                       onDragStart={handleDragStart}

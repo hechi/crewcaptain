@@ -9,6 +9,8 @@ interface ActionItemCardProps {
   onCancel?: (id: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string) => void;
+  /** Name of the person this item is about / owned by, when known. */
+  personName?: string;
 }
 
 /**
@@ -16,7 +18,7 @@ interface ActionItemCardProps {
  * and action buttons (complete, cancel, delete).
  * Overdue items are visually highlighted with alert styling.
  */
-export default function ActionItemCard({ item, onComplete, onCancel, onDelete, onEdit }: ActionItemCardProps) {
+export default function ActionItemCard({ item, onComplete, onCancel, onDelete, onEdit, personName }: ActionItemCardProps) {
   const isOverdue = item.status === 'OPEN' && item.dueDate && new Date(item.dueDate) < new Date();
   const isOpen = item.status === 'OPEN';
 
@@ -100,8 +102,32 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
             borderRadius: 'var(--radius-full)',
           }}
         >
-          {item.ownerType === 'MANAGER' ? '👤 Manager' : '👥 Report'}
+          {item.ownerType === 'MANAGER' ? '👤 You' : `👥 ${personName ?? 'Report'}`}
         </span>
+        {item.ownerType === 'MANAGER' && personName && (
+          <span
+            data-testid="action-item-person"
+            style={{ fontSize: 'var(--text-caption)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
+          >
+            re: {personName}
+          </span>
+        )}
+        {item.originatingQuickNoteId && (
+          <span
+            data-testid="action-item-from-note"
+            title="Created from one of your notes"
+            style={{
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-primary)',
+              border: '1px solid var(--color-primary)',
+              padding: '1px 8px',
+              borderRadius: 'var(--radius-full)',
+            }}
+          >
+            📝 from note
+          </span>
+        )}
       </div>
 
       {/* Action buttons */}

@@ -39,15 +39,37 @@ describe('ActionItemCard', () => {
     expect(screen.getByTestId('action-item-due-date')).toBeInTheDocument();
   });
 
-  it('renders owner type badge for MANAGER', () => {
+  it('renders "You" owner badge for MANAGER', () => {
     render(<ActionItemCard item={mockItem} />);
-    expect(screen.getByTestId('action-item-owner')).toHaveTextContent('Manager');
+    expect(screen.getByTestId('action-item-owner')).toHaveTextContent('You');
   });
 
-  it('renders owner type badge for PERSON', () => {
+  it('renders the person name for a PERSON-owned item', () => {
+    const item = { ...mockItem, ownerType: 'PERSON' as const };
+    render(<ActionItemCard item={item} personName="Alice Smith" />);
+    expect(screen.getByTestId('action-item-owner')).toHaveTextContent('Alice Smith');
+  });
+
+  it('falls back to "Report" when the person name is unknown', () => {
     const item = { ...mockItem, ownerType: 'PERSON' as const };
     render(<ActionItemCard item={item} />);
     expect(screen.getByTestId('action-item-owner')).toHaveTextContent('Report');
+  });
+
+  it('shows who a manager-owned item is about', () => {
+    render(<ActionItemCard item={{ ...mockItem, personId: 'p1' }} personName="Alice Smith" />);
+    expect(screen.getByTestId('action-item-owner')).toHaveTextContent('You');
+    expect(screen.getByTestId('action-item-person')).toHaveTextContent('Alice Smith');
+  });
+
+  it('shows a "from note" badge when created from a note', () => {
+    render(<ActionItemCard item={{ ...mockItem, originatingQuickNoteId: 'n1' }} />);
+    expect(screen.getByTestId('action-item-from-note')).toBeInTheDocument();
+  });
+
+  it('shows no "from note" badge otherwise', () => {
+    render(<ActionItemCard item={mockItem} />);
+    expect(screen.queryByTestId('action-item-from-note')).not.toBeInTheDocument();
   });
 
   it('renders status badge', () => {
