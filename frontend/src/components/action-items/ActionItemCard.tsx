@@ -2,6 +2,7 @@
 
 import { ActionItem } from '@/types/action-item';
 import ActionItemStatusBadge from './ActionItemStatusBadge';
+import { itemButtonStyle } from '@/components/ui/itemButtonStyle';
 
 interface ActionItemCardProps {
   item: ActionItem;
@@ -9,6 +10,8 @@ interface ActionItemCardProps {
   onCancel?: (id: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string) => void;
+  /** Name of the person this item is about / owned by, when known. */
+  personName?: string;
 }
 
 /**
@@ -16,7 +19,7 @@ interface ActionItemCardProps {
  * and action buttons (complete, cancel, delete).
  * Overdue items are visually highlighted with alert styling.
  */
-export default function ActionItemCard({ item, onComplete, onCancel, onDelete, onEdit }: ActionItemCardProps) {
+export default function ActionItemCard({ item, onComplete, onCancel, onDelete, onEdit, personName }: ActionItemCardProps) {
   const isOverdue = item.status === 'OPEN' && item.dueDate && new Date(item.dueDate) < new Date();
   const isOpen = item.status === 'OPEN';
 
@@ -100,8 +103,49 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
             borderRadius: 'var(--radius-full)',
           }}
         >
-          {item.ownerType === 'MANAGER' ? '👤 Manager' : '👥 Report'}
+          {item.ownerType === 'MANAGER' ? '👤 You' : `👥 ${personName ?? 'Report'}`}
         </span>
+        {item.ownerType === 'MANAGER' && personName && (
+          <span
+            data-testid="action-item-person"
+            style={{ fontSize: 'var(--text-caption)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
+          >
+            re: {personName}
+          </span>
+        )}
+        {item.tag && (
+          <span
+            data-testid="action-item-tag"
+            style={{
+              padding: '2px 8px',
+              fontSize: '10px',
+              fontFamily: 'var(--font-mono)',
+              border: '1px solid var(--color-secondary)',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-secondary-hover)',
+              color: 'var(--color-bg-base)',
+              letterSpacing: '0.5px',
+            }}
+          >
+            #{item.tag}
+          </span>
+        )}
+        {item.originatingQuickNoteId && (
+          <span
+            data-testid="action-item-from-note"
+            title="Created from one of your notes"
+            style={{
+              fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-primary)',
+              border: '1px solid var(--color-primary)',
+              padding: '1px 8px',
+              borderRadius: 'var(--radius-full)',
+            }}
+          >
+            📝 from note
+          </span>
+        )}
       </div>
 
       {/* Action buttons */}
@@ -112,17 +156,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onComplete(item.id)}
               data-testid="action-item-complete-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-morale-green)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                color: 'var(--color-morale-green)',
-                cursor: 'pointer',
-                fontWeight: 'var(--weight-medium)',
-              }}
+              style={itemButtonStyle('success')}
             >
               ✓ Complete
             </button>
@@ -132,16 +166,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onCancel(item.id)}
               data-testid="action-item-cancel-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                color: 'var(--color-text-muted)',
-                cursor: 'pointer',
-              }}
+              style={itemButtonStyle('muted')}
             >
               ✕ Cancel
             </button>
@@ -151,16 +176,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onEdit(item.id)}
               data-testid="action-item-edit-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                color: 'var(--color-text-secondary)',
-                cursor: 'pointer',
-              }}
+              style={itemButtonStyle('default')}
             >
               ✎ Edit
             </button>
@@ -170,16 +186,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onDelete(item.id)}
               data-testid="action-item-delete-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-alert-muted)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'var(--color-alert-muted)',
-                color: 'var(--color-alert)',
-                cursor: 'pointer',
-              }}
+              style={itemButtonStyle('danger')}
             >
               🗑 Delete
             </button>

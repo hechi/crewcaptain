@@ -46,6 +46,13 @@ data class QuickNote(
         return copy(status = QuickNoteStatus.CONVERTED, updatedAt = Instant.now())
     }
 
+    fun complete(): QuickNote {
+        require(status == QuickNoteStatus.INBOX) {
+            "Can only complete a quick note with status INBOX, current status is $status"
+        }
+        return copy(status = QuickNoteStatus.DONE, updatedAt = Instant.now())
+    }
+
     fun archive(): QuickNote {
         require(status == QuickNoteStatus.INBOX) {
             "Can only archive a quick note with status INBOX, current status is $status"

@@ -15,6 +15,8 @@ export interface ActionItem {
   status: ActionItemStatus;
   originatingEntryId: string | null;
   originatingQuickNoteId?: string | null;
+  /** Tag carried over from the originating note. */
+  tag?: string | null;
   createdAt: string;
   updatedAt: string;
 }

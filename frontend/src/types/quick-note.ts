@@ -1,7 +1,7 @@
 // Quick Note Types
 // Matches API contract from QuickNoteResponses.kt and QuickNoteRequests.kt
 
-export type QuickNoteStatus = 'INBOX' | 'ATTACHED' | 'CONVERTED' | 'ARCHIVED';
+export type QuickNoteStatus = 'INBOX' | 'ATTACHED' | 'CONVERTED' | 'ARCHIVED' | 'DONE';
 
 export interface QuickNote {
   id: string;

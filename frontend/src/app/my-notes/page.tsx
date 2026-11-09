@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { ActionItem } from '@/types/action-item';
 import { QuickNoteStatus, CreateQuickNoteRequest, PaginatedQuickNoteResponse } from '@/types/quick-note';
 import {
   listQuickNotes,
@@ -11,10 +12,16 @@ import {
   updateQuickNote,
   moveQuickNote,
   reorderQuickNote,
+  completeQuickNote,
+  listAllActionItems,
+  completeActionItemById,
+  cancelActionItemById,
+  deleteActionItemById,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteForm from '@/components/quick-notes/QuickNoteForm';
 import MyNoteCard from '@/components/quick-notes/MyNoteCard';
+import ActionItemCard from '@/components/action-items/ActionItemCard';
 import LoadingScreen from '@/components/LoadingScreen';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
@@ -26,9 +33,11 @@ export default function MyNotesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>(null);
+  const [statusFilter, setStatusFilter] = useState<QuickNoteStatus | null>('INBOX');
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // The manager's own open action items (shown beneath the notes so a note visibly becomes one).
+  const [myItems, setMyItems] = useState<ActionItem[]>([]);
   // Drag-and-drop reordering state.
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
@@ -58,6 +67,21 @@ export default function MyNotesPage() {
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
+
+  const fetchMyItems = useCallback(async () => {
+    const token = getToken();
+    if (!isAuthenticated || !token) return;
+    try {
+      const result = await listAllActionItems(token, { status: 'OPEN', page: 0, size: 100 });
+      setMyItems(result.content.filter((i) => i.ownerType === 'MANAGER'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load action items');
+    }
+  }, [getToken, isAuthenticated]);
+
+  useEffect(() => {
+    fetchMyItems();
+  }, [fetchMyItems]);
 
   const handleCreate = async (data: CreateQuickNoteRequest) => {
     const token = getToken();
@@ -101,8 +125,53 @@ export default function MyNotesPage() {
     try {
       await convertQuickNote(token, id, { dueDate: dueDate || undefined });
       fetchNotes();
+      fetchMyItems();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert note to a TODO');
+      setError(err instanceof Error ? err.message : 'Failed to make note an action item');
+    }
+  };
+
+  const handleCompleteNote = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await completeQuickNote(token, id);
+      fetchNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete note');
+    }
+  };
+
+  const handleCancelItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await cancelActionItemById(token, id);
+      fetchMyItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel action item');
+    }
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await deleteActionItemById(token, id);
+      fetchMyItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete action item');
+    }
+  };
+
+  const handleCompleteItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await completeActionItemById(token, id);
+      fetchMyItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete action item');
     }
   };
 
@@ -177,10 +246,11 @@ export default function MyNotesPage() {
     return <div data-testid="unauthenticated">Please sign in to access this page.</div>;
   }
 
-  const statuses: (QuickNoteStatus | null)[] = [null, 'INBOX', 'ARCHIVED'];
+  const statuses: (QuickNoteStatus | null)[] = [null, 'INBOX', 'DONE', 'ARCHIVED'];
   const statusLabels: Record<string, string> = {
     '': 'All',
     INBOX: 'Active',
+    DONE: 'Done',
     ARCHIVED: 'Archived',
   };
 
@@ -188,7 +258,7 @@ export default function MyNotesPage() {
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'var(--space-6)' }}>
       <h1
         style={{
-          margin: '0 0 var(--space-6)',
+          margin: '0 0 var(--space-2)',
           fontSize: 'var(--text-h2)',
           fontWeight: '700',
           fontFamily: 'var(--font-heading)',
@@ -198,12 +268,22 @@ export default function MyNotesPage() {
       >
         My Notes
       </h1>
+      <p style={{ margin: '0 0 var(--space-6)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-body)' }}>
+        Capture notes now, refine them later. When a note needs doing, make it an action item.
+      </p>
 
       {error && (
         <div data-testid="error-message" style={{ color: 'var(--color-alert)', marginBottom: 'var(--space-4)' }}>
           {error}
         </div>
       )}
+
+      {/* Section 1: Notes */}
+      <section data-testid="my-notes-section-notes" style={{ marginBottom: 'var(--space-8, 48px)' }}>
+      <h2 style={{ margin: '0 0 var(--space-1)', fontSize: 'var(--text-h3, 20px)', fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }}>
+        📝 Notes
+      </h2>
+      <p style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)' }}>Things to remember. Complete them, or make them an action item.</p>
 
       {/* Create form */}
       <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -300,8 +380,9 @@ export default function MyNotesPage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {notes?.content.map((note, index) => {
-                // Reordering applies to the active (non-archived) list only.
-                const reorderable = statusFilter !== 'ARCHIVED';
+                // Reordering is only valid on the full, unfiltered active list: the backend renumbers
+                // the complete INBOX ordering, so indexes from any subset would not match.
+                const reorderable = statusFilter === 'INBOX' && !tagFilter;
                 return (
                   <MyNoteCard
                     key={note.id}
@@ -313,6 +394,7 @@ export default function MyNotesPage() {
                     onArchive={handleArchive}
                     onDelete={handleDelete}
                     onConvert={handleConvert}
+                    onComplete={handleCompleteNote}
                     onEdit={handleUpdate}
                     onMove={reorderable ? handleMove : undefined}
                     onDragStart={reorderable ? handleDragStart : undefined}
@@ -336,6 +418,37 @@ export default function MyNotesPage() {
           )}
         </>
       )}
+      </section>
+
+      {/* Section 2: my own open action items */}
+      <section data-testid="my-notes-section-action-items">
+        <h2 style={{ margin: '0 0 var(--space-1)', fontSize: 'var(--text-h3, 20px)', fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }}>
+          ✅ My action items ({myItems.length})
+        </h2>
+        <p style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-small)', color: 'var(--color-text-secondary)' }}>
+          Things you committed to do. Your reports&apos; items are under Action Items.
+        </p>
+        {myItems.length === 0 ? (
+          <div
+            data-testid="my-action-items-empty"
+            style={{ padding: 'var(--space-4)', border: '1px dashed var(--color-border)', borderRadius: 'var(--radius-medium)', color: 'var(--color-text-muted)', textAlign: 'center' }}
+          >
+            No open action items. Make a note an action item to see it here.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            {myItems.map((item) => (
+              <ActionItemCard
+                key={item.id}
+                item={item}
+                onComplete={handleCompleteItem}
+                onCancel={handleCancelItem}
+                onDelete={handleDeleteItem}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

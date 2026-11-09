@@ -18,6 +18,7 @@ data class ActionItemResponse(
     val status: ActionItemStatus,
     val originatingEntryId: UUID?,
     val originatingQuickNoteId: UUID?,
+    val tag: String?,
     val snoozedUntil: Instant?,
     val createdAt: Instant,
     val updatedAt: Instant
@@ -33,6 +34,7 @@ data class ActionItemResponse(
             status = item.status,
             originatingEntryId = item.originatingEntryId?.value,
             originatingQuickNoteId = item.originatingQuickNoteId?.value,
+            tag = item.tag,
             snoozedUntil = item.snoozedUntil,
             createdAt = item.createdAt,
             updatedAt = item.updatedAt

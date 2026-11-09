@@ -11,6 +11,7 @@ interface QuickNoteCommandPort {
     fun attachQuickNote(command: AttachQuickNoteCommand): QuickNote
     fun convertQuickNote(command: ConvertQuickNoteCommand): QuickNote
     fun archiveQuickNote(command: ArchiveQuickNoteCommand): QuickNote
+    fun completeQuickNote(command: CompleteQuickNoteCommand): QuickNote
     fun deleteQuickNote(command: DeleteQuickNoteCommand)
     fun moveQuickNote(command: MoveQuickNoteCommand): QuickNote
     fun reorderQuickNote(command: ReorderQuickNoteCommand): QuickNote

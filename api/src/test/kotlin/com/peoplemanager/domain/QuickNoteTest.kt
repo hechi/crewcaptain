@@ -148,6 +148,24 @@ class QuickNoteTest {
         }
 
         @Test
+        fun `should complete from INBOX`() {
+            val note = createQuickNote()
+            val done = note.complete()
+
+            done.status shouldBe QuickNoteStatus.DONE
+            done.updatedAt shouldNotBe note.updatedAt
+        }
+
+        @Test
+        fun `should reject complete from non-INBOX status`() {
+            val note = createQuickNote(status = QuickNoteStatus.CONVERTED)
+
+            shouldThrow<IllegalArgumentException> {
+                note.complete()
+            }.message shouldBe "Can only complete a quick note with status INBOX, current status is CONVERTED"
+        }
+
+        @Test
         fun `should reject archive from non-INBOX status`() {
             val note = createQuickNote(status = QuickNoteStatus.CONVERTED)
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { QuickNote } from '@/types/quick-note';
+import { itemButtonStyle, ITEM_CONTROL_SIZE } from '@/components/ui/itemButtonStyle';
 
 export interface MyNoteCardProps {
   note: QuickNote;
@@ -15,6 +16,7 @@ export interface MyNoteCardProps {
   onMove?: (id: string, direction: 'UP' | 'DOWN') => void;
   onEdit?: (id: string, text: string, tag: string | null) => void;
   onConvert?: (id: string, dueDate?: string) => void;
+  onComplete?: (id: string) => void;
   onArchive?: (id: string) => void;
   onDelete?: (id: string) => void;
   /** Drag-and-drop handlers. Dragging is enabled only when all are provided. */
@@ -30,7 +32,7 @@ export interface MyNoteCardProps {
  *
  * Shows the note's date, sensitive/tag/status badges, the text (with an inline edit
  * mode for text + tag), and the full action set: reorder (↑/↓ + mouse drag-and-drop),
- * convert-to-TODO (with an optional due date), archive, edit, and delete. Each action
+ * complete, make-action-item (with an optional due date), archive, edit, and delete. Each action
  * renders only when its callback is supplied. Drag-and-drop is enabled when the drag
  * handlers are supplied and the card is not in edit mode (so text selection still works).
  */
@@ -43,6 +45,7 @@ export default function MyNoteCard({
   onMove,
   onEdit,
   onConvert,
+  onComplete,
   onArchive,
   onDelete,
   onDragStart,
@@ -64,6 +67,15 @@ export default function MyNoteCard({
   });
 
   const isInbox = note.status === 'INBOX';
+  const isDone = note.status === 'DONE';
+  // Friendly status labels: an INBOX note is simply a "Note"; a converted note became an action item.
+  const statusLabel: Record<string, string> = {
+    INBOX: 'Note',
+    DONE: 'Done',
+    CONVERTED: 'Action item',
+    ARCHIVED: 'Archived',
+    ATTACHED: 'Attached',
+  };
   const draggable = Boolean(onDragStart && onDragOverNote && onDropOnNote && onDragEnd) && !isEditing;
 
   const startEditing = () => {
@@ -81,27 +93,8 @@ export default function MyNoteCard({
     setIsEditing(false);
   };
 
-  const smallBtn = (variant: 'default' | 'primary' | 'alert' = 'default', disabled = false): React.CSSProperties => ({
-    padding: '4px 10px',
-    fontSize: 'var(--text-caption)',
-    fontFamily: 'var(--font-mono)',
-    border:
-      variant === 'alert'
-        ? '1px solid var(--color-alert-muted)'
-        : variant === 'primary'
-        ? '1px solid var(--color-primary)'
-        : '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-small)',
-    backgroundColor: variant === 'primary' ? 'var(--color-primary-muted)' : 'transparent',
-    color: disabled
-      ? 'var(--color-text-muted)'
-      : variant === 'alert'
-      ? 'var(--color-alert)'
-      : variant === 'primary'
-      ? 'var(--color-primary)'
-      : 'var(--color-text-secondary)',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  });
+  const smallBtn = (variant: 'default' | 'primary' | 'alert' = 'default', disabled = false): React.CSSProperties =>
+    itemButtonStyle(variant === 'alert' ? 'danger' : variant, disabled);
 
   return (
     <div
@@ -226,7 +219,7 @@ export default function MyNoteCard({
             letterSpacing: '0.5px',
           }}
         >
-          {note.status}
+          {statusLabel[note.status] ?? note.status}
         </span>
       </div>
 
@@ -237,7 +230,8 @@ export default function MyNoteCard({
           style={{
             margin: '0 0 12px',
             fontSize: 'var(--text-body)',
-            color: 'var(--color-text-primary)',
+            color: isDone ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+            textDecoration: isDone ? 'line-through' : 'none',
             lineHeight: '1.5',
             whiteSpace: 'pre-wrap',
           }}
@@ -356,6 +350,17 @@ export default function MyNoteCard({
               </button>
             </>
           )}
+          {isInbox && onComplete && (
+            <button
+              type="button"
+              onClick={() => onComplete(note.id)}
+              data-testid="my-note-complete-btn"
+              aria-label="Complete note"
+              style={itemButtonStyle('success')}
+            >
+              ✓ Complete
+            </button>
+          )}
           {isInbox && onConvert && (
             <>
               <input
@@ -365,11 +370,10 @@ export default function MyNoteCard({
                 data-testid="my-note-due-date-input"
                 aria-label="Due date (optional)"
                 style={{
-                  padding: '4px 8px',
+                  ...ITEM_CONTROL_SIZE,
                   fontSize: 'var(--text-caption)',
                   fontFamily: 'var(--font-mono)',
                   border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-small)',
                   backgroundColor: 'var(--color-bg-elevated)',
                   color: 'var(--color-text-primary)',
                 }}
@@ -378,10 +382,10 @@ export default function MyNoteCard({
                 type="button"
                 onClick={() => onConvert(note.id, dueDate || undefined)}
                 data-testid="my-note-convert-btn"
-                aria-label="Convert to TODO"
+                aria-label="Make action item"
                 style={smallBtn('primary')}
               >
-                Convert to TODO
+                → Make action item
               </button>
             </>
           )}
@@ -393,7 +397,7 @@ export default function MyNoteCard({
               aria-label="Archive"
               style={smallBtn('default')}
             >
-              Archive
+              📥 Archive
             </button>
           )}
           {isInbox && onEdit && (
@@ -404,7 +408,7 @@ export default function MyNoteCard({
               aria-label="Edit note"
               style={smallBtn('default')}
             >
-              Edit
+              ✎ Edit
             </button>
           )}
           {onDelete && (
@@ -415,7 +419,7 @@ export default function MyNoteCard({
               aria-label="Delete note"
               style={smallBtn('alert')}
             >
-              Delete
+              🗑 Delete
             </button>
           )}
         </div>

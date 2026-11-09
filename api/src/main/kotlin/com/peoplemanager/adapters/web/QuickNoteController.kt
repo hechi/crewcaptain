@@ -161,6 +161,16 @@ class QuickNoteController(
         return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
     }
 
+    @PostMapping("/quick-notes/{quickNoteId}/complete")
+    fun completeQuickNote(
+        @PathVariable quickNoteId: UUID
+    ): ResponseEntity<QuickNoteResponse> {
+        val userId = AuthenticatedUser.getUserId()
+        val command = CompleteQuickNoteCommand(userId = userId, quickNoteId = QuickNoteId(quickNoteId))
+        val quickNote = quickNoteCommandPort.completeQuickNote(command)
+        return ResponseEntity.ok(QuickNoteResponse.from(quickNote))
+    }
+
     @PostMapping("/quick-notes/{quickNoteId}/move")
     fun moveQuickNote(
         @PathVariable quickNoteId: UUID,

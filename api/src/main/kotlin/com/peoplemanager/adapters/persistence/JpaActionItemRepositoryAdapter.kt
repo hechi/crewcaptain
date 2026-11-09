@@ -147,6 +147,7 @@ class JpaActionItemRepositoryAdapter(
         status = ActionItemStatus.valueOf(this.status),
         originatingEntryId = this.originatingEntryId?.let { OneOnOneEntryId(it) },
         originatingQuickNoteId = this.originatingQuickNoteId?.let { QuickNoteId(it) },
+        tag = this.tag,
         snoozedUntil = this.snoozedUntil,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
@@ -163,6 +164,7 @@ class JpaActionItemRepositoryAdapter(
         status = this.status.name,
         originatingEntryId = this.originatingEntryId?.value,
         originatingQuickNoteId = this.originatingQuickNoteId?.value,
+        tag = this.tag,
         snoozedUntil = this.snoozedUntil,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt

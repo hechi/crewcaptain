@@ -163,7 +163,8 @@ class QuickNoteService(
             description = if (existing.text.length > 500) existing.text else null,
             ownerType = ActionItemOwnerType.MANAGER,
             dueDate = command.dueDate,
-            originatingQuickNoteId = existing.id
+            originatingQuickNoteId = existing.id,
+            tag = existing.tag
         )
         actionItemRepository.save(actionItem)
 
@@ -186,6 +187,12 @@ class QuickNoteService(
 
         val updated = existing.archive()
         return quickNoteRepository.save(updated)
+    }
+
+    override fun completeQuickNote(command: CompleteQuickNoteCommand): QuickNote {
+        val existing = quickNoteRepository.findByIdAndUserId(command.quickNoteId, command.userId)
+            ?: throw QuickNoteNotFoundException(command.quickNoteId)
+        return quickNoteRepository.save(existing.complete())
     }
 
     override fun deleteQuickNote(command: DeleteQuickNoteCommand) {

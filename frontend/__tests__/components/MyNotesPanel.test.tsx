@@ -9,6 +9,7 @@ import {
   deleteQuickNote,
   moveQuickNote,
   reorderQuickNote,
+  completeQuickNote,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import { QuickNote } from '@/types/quick-note';
@@ -22,6 +23,7 @@ jest.mock('@/lib/api-client', () => ({
   reorderQuickNote: jest.fn(),
   convertQuickNote: jest.fn(),
   archiveQuickNote: jest.fn(),
+  completeQuickNote: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -34,6 +36,7 @@ const mockUpdate = updateQuickNote as jest.MockedFunction<typeof updateQuickNote
 const mockDelete = deleteQuickNote as jest.MockedFunction<typeof deleteQuickNote>;
 const mockMove = moveQuickNote as jest.MockedFunction<typeof moveQuickNote>;
 const mockReorder = reorderQuickNote as jest.MockedFunction<typeof reorderQuickNote>;
+const mockComplete = completeQuickNote as jest.MockedFunction<typeof completeQuickNote>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 // Build a minimal dataTransfer so native drag events work under jsdom.
@@ -99,6 +102,15 @@ describe('MyNotesPanel', () => {
     render(<MyNotesPanel />);
     fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
     expect(await screen.findByTestId('my-notes-panel')).toBeInTheDocument();
+  });
+
+  it('completes a note from the panel', async () => {
+    mockList.mockResolvedValue(paginated([note({ id: 'n1', text: 'Remember this' })]));
+    mockComplete.mockResolvedValue(note({ id: 'n1', text: 'Remember this', status: 'DONE' }));
+    render(<MyNotesPanel />);
+    fireEvent.click(screen.getByTestId('my-notes-panel-trigger'));
+    fireEvent.click(await screen.findByTestId('my-note-complete-btn'));
+    await waitFor(() => expect(mockComplete).toHaveBeenCalledWith('test-token', 'n1'));
   });
 
   it('opens on Ctrl+Shift+N', async () => {
