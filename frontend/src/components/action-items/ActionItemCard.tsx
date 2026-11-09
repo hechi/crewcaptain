@@ -2,6 +2,7 @@
 
 import { ActionItem } from '@/types/action-item';
 import ActionItemStatusBadge from './ActionItemStatusBadge';
+import { itemButtonStyle } from '@/components/ui/itemButtonStyle';
 
 interface ActionItemCardProps {
   item: ActionItem;
@@ -155,17 +156,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onComplete(item.id)}
               data-testid="action-item-complete-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-morale-green)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                color: 'var(--color-morale-green)',
-                cursor: 'pointer',
-                fontWeight: 'var(--weight-medium)',
-              }}
+              style={itemButtonStyle('success')}
             >
               ✓ Complete
             </button>
@@ -175,16 +166,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onCancel(item.id)}
               data-testid="action-item-cancel-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                color: 'var(--color-text-muted)',
-                cursor: 'pointer',
-              }}
+              style={itemButtonStyle('muted')}
             >
               ✕ Cancel
             </button>
@@ -194,16 +176,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onEdit(item.id)}
               data-testid="action-item-edit-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                color: 'var(--color-text-secondary)',
-                cursor: 'pointer',
-              }}
+              style={itemButtonStyle('default')}
             >
               ✎ Edit
             </button>
@@ -213,16 +186,7 @@ export default function ActionItemCard({ item, onComplete, onCancel, onDelete, o
               type="button"
               onClick={() => onDelete(item.id)}
               data-testid="action-item-delete-btn"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-alert-muted)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'var(--color-alert-muted)',
-                color: 'var(--color-alert)',
-                cursor: 'pointer',
-              }}
+              style={itemButtonStyle('danger')}
             >
               🗑 Delete
             </button>

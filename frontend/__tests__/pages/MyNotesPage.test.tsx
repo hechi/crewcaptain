@@ -19,6 +19,8 @@ jest.mock('@/lib/api-client', () => ({
   completeQuickNote: jest.fn(),
   listAllActionItems: jest.fn(),
   completeActionItemById: jest.fn(),
+  cancelActionItemById: jest.fn(),
+  deleteActionItemById: jest.fn(),
 }));
 
 jest.mock('@/lib/useStableToken', () => ({
@@ -38,6 +40,8 @@ import {
   completeQuickNote,
   listAllActionItems,
   completeActionItemById,
+  cancelActionItemById,
+  deleteActionItemById,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 
@@ -53,6 +57,8 @@ const mockReorderQuickNote = reorderQuickNote as jest.MockedFunction<typeof reor
 const mockCompleteQuickNote = completeQuickNote as jest.MockedFunction<typeof completeQuickNote>;
 const mockListAllActionItems = listAllActionItems as jest.MockedFunction<typeof listAllActionItems>;
 const mockCompleteActionItem = completeActionItemById as jest.MockedFunction<typeof completeActionItemById>;
+const mockCancelActionItem = cancelActionItemById as jest.MockedFunction<typeof cancelActionItemById>;
+const mockDeleteActionItem = deleteActionItemById as jest.MockedFunction<typeof deleteActionItemById>;
 const mockUseStableToken = useStableToken as jest.MockedFunction<typeof useStableToken>;
 
 const mockSelfAssignedNotes = {
@@ -144,6 +150,20 @@ describe('MyNotesPage', () => {
     const btn = await screen.findByTestId('action-item-complete-btn');
     fireEvent.click(btn);
     await waitFor(() => expect(mockCompleteActionItem).toHaveBeenCalledWith('test-token', 'ai-1'));
+  });
+
+  it('cancels one of my action items from the action items section', async () => {
+    mockCancelActionItem.mockResolvedValue({} as never);
+    render(<MyNotesPage />);
+    fireEvent.click(await screen.findByTestId('action-item-cancel-btn'));
+    await waitFor(() => expect(mockCancelActionItem).toHaveBeenCalledWith('test-token', 'ai-1'));
+  });
+
+  it('deletes one of my action items from the action items section', async () => {
+    mockDeleteActionItem.mockResolvedValue(undefined);
+    render(<MyNotesPage />);
+    fireEvent.click(await screen.findByTestId('action-item-delete-btn'));
+    await waitFor(() => expect(mockDeleteActionItem).toHaveBeenCalledWith('test-token', 'ai-1'));
   });
 
   it('offers a Done filter for notes', async () => {

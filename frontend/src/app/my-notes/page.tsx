@@ -15,6 +15,8 @@ import {
   completeQuickNote,
   listAllActionItems,
   completeActionItemById,
+  cancelActionItemById,
+  deleteActionItemById,
 } from '@/lib/api-client';
 import { useStableToken } from '@/lib/useStableToken';
 import QuickNoteForm from '@/components/quick-notes/QuickNoteForm';
@@ -137,6 +139,28 @@ export default function MyNotesPage() {
       fetchNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete note');
+    }
+  };
+
+  const handleCancelItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await cancelActionItemById(token, id);
+      fetchMyItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel action item');
+    }
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await deleteActionItemById(token, id);
+      fetchMyItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete action item');
     }
   };
 
@@ -414,7 +438,13 @@ export default function MyNotesPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             {myItems.map((item) => (
-              <ActionItemCard key={item.id} item={item} onComplete={handleCompleteItem} />
+              <ActionItemCard
+                key={item.id}
+                item={item}
+                onComplete={handleCompleteItem}
+                onCancel={handleCancelItem}
+                onDelete={handleDeleteItem}
+              />
             ))}
           </div>
         )}

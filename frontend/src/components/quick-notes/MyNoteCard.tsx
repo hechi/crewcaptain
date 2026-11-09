@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { QuickNote } from '@/types/quick-note';
+import { itemButtonStyle } from '@/components/ui/itemButtonStyle';
 
 export interface MyNoteCardProps {
   note: QuickNote;
@@ -92,27 +93,8 @@ export default function MyNoteCard({
     setIsEditing(false);
   };
 
-  const smallBtn = (variant: 'default' | 'primary' | 'alert' = 'default', disabled = false): React.CSSProperties => ({
-    padding: '4px 10px',
-    fontSize: 'var(--text-caption)',
-    fontFamily: 'var(--font-mono)',
-    border:
-      variant === 'alert'
-        ? '1px solid var(--color-alert-muted)'
-        : variant === 'primary'
-        ? '1px solid var(--color-primary)'
-        : '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-small)',
-    backgroundColor: variant === 'primary' ? 'var(--color-primary-muted)' : 'transparent',
-    color: disabled
-      ? 'var(--color-text-muted)'
-      : variant === 'alert'
-      ? 'var(--color-alert)'
-      : variant === 'primary'
-      ? 'var(--color-primary)'
-      : 'var(--color-text-secondary)',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  });
+  const smallBtn = (variant: 'default' | 'primary' | 'alert' = 'default', disabled = false): React.CSSProperties =>
+    itemButtonStyle(variant === 'alert' ? 'danger' : variant, disabled);
 
   return (
     <div
@@ -374,17 +356,7 @@ export default function MyNoteCard({
               onClick={() => onComplete(note.id)}
               data-testid="my-note-complete-btn"
               aria-label="Complete note"
-              style={{
-                padding: '4px 12px',
-                fontSize: 'var(--text-caption)',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-morale-green)',
-                borderRadius: 'var(--radius-medium)',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                color: 'var(--color-morale-green)',
-                cursor: 'pointer',
-                fontWeight: 'var(--weight-medium)',
-              }}
+              style={itemButtonStyle('success')}
             >
               ✓ Complete
             </button>

@@ -1,6 +1,9 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-11-09T16:00:00Z — UI consistency on `feat/unify-notes-and-action-items`. Frontend-only, TDD. (1) Action Item buttons had a different size/radius than the note buttons: extracted `components/ui/itemButtonStyle.ts` (padding `4px 10px`, small radius, mono caption; variants default/muted/primary/success/danger) and used it in both `MyNoteCard` and `ActionItemCard`, so My Notes, the side panel and Action Items match. (2) The "My action items" section on `/my-notes` only had Complete; it now also has Cancel and Delete (same by-id endpoints as `/action-items`). New `ItemButtonConsistency.test.tsx` asserts identical size props across all 9 buttons; 2 new MyNotesPage tests for cancel/delete. Not checked visually in a browser.
+
+## Previously Updated
 2026-11-09T14:00:00Z — Bugfix on `feat/unify-notes-and-action-items`: three regressions reported after the notes/action-items unification. TDD.
 
 1. **Drag-drop reorder broken** — root cause: My Notes defaulted to the *All* filter, so the list included DONE/CONVERTED/ARCHIVED notes while the backend `reorder` renumbers only the INBOX ordering; the drop index no longer matched. Fix: default filter is now **Active (INBOX)**, and reordering is enabled only when `statusFilter === 'INBOX'` and no tag filter is active (a tag-filtered subset has the same index mismatch).
