@@ -16,7 +16,9 @@ const item: ActionItem = {
   originatingEntryId: null, originatingQuickNoteId: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
 };
 
-const SIZE_PROPS = ['padding', 'fontSize', 'fontFamily', 'borderRadius'] as const;
+const SIZE_PROPS = [
+  'padding', 'fontSize', 'fontFamily', 'borderRadius', 'height', 'lineHeight', 'boxSizing', 'display', 'whiteSpace',
+] as const;
 
 function sizeOf(el: HTMLElement) {
   return SIZE_PROPS.map((p) => el.style[p]);
@@ -33,6 +35,7 @@ describe('item button style consistency (notes, my-notes, action items)', () => 
           onArchive={jest.fn()}
           onEdit={jest.fn()}
           onDelete={jest.fn()}
+          onMove={jest.fn()}
         />
         <ActionItemCard
           item={item}
@@ -44,6 +47,7 @@ describe('item button style consistency (notes, my-notes, action items)', () => 
       </>
     );
     const ids = [
+      'my-note-move-up-btn', 'my-note-move-down-btn', 'my-note-due-date-input',
       'my-note-complete-btn', 'my-note-convert-btn', 'my-note-archive-btn', 'my-note-edit-btn', 'my-note-delete-btn',
       'action-item-complete-btn', 'action-item-cancel-btn', 'action-item-edit-btn', 'action-item-delete-btn',
     ];

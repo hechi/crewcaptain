@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { QuickNote } from '@/types/quick-note';
-import { itemButtonStyle } from '@/components/ui/itemButtonStyle';
+import { itemButtonStyle, ITEM_CONTROL_SIZE } from '@/components/ui/itemButtonStyle';
 
 export interface MyNoteCardProps {
   note: QuickNote;
@@ -370,11 +370,10 @@ export default function MyNoteCard({
                 data-testid="my-note-due-date-input"
                 aria-label="Due date (optional)"
                 style={{
-                  padding: '4px 8px',
+                  ...ITEM_CONTROL_SIZE,
                   fontSize: 'var(--text-caption)',
                   fontFamily: 'var(--font-mono)',
                   border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-small)',
                   backgroundColor: 'var(--color-bg-elevated)',
                   color: 'var(--color-text-primary)',
                 }}
@@ -398,7 +397,7 @@ export default function MyNoteCard({
               aria-label="Archive"
               style={smallBtn('default')}
             >
-              Archive
+              📥 Archive
             </button>
           )}
           {isInbox && onEdit && (
@@ -409,7 +408,7 @@ export default function MyNoteCard({
               aria-label="Edit note"
               style={smallBtn('default')}
             >
-              Edit
+              ✎ Edit
             </button>
           )}
           {onDelete && (
@@ -420,7 +419,7 @@ export default function MyNoteCard({
               aria-label="Delete note"
               style={smallBtn('alert')}
             >
-              Delete
+              🗑 Delete
             </button>
           )}
         </div>

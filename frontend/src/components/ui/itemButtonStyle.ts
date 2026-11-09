@@ -1,5 +1,22 @@
 import type { CSSProperties } from 'react';
 
+/**
+ * Fixed box for every control in an item's action row (buttons and the due-date input).
+ * An explicit height + line-height keeps rows uniform even when a label contains an emoji
+ * (which otherwise falls back to another font and makes that button taller).
+ */
+export const ITEM_CONTROL_SIZE: CSSProperties = {
+  boxSizing: 'border-box',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '28px',
+  padding: '0 10px',
+  lineHeight: '1',
+  whiteSpace: 'nowrap',
+  borderRadius: 'var(--radius-small)',
+};
+
 export type ItemButtonVariant = 'default' | 'primary' | 'success' | 'danger' | 'muted';
 
 /**
@@ -17,11 +34,10 @@ export function itemButtonStyle(variant: ItemButtonVariant = 'default', disabled
   };
   const c = colors[variant];
   return {
-    padding: '4px 10px',
+    ...ITEM_CONTROL_SIZE,
     fontSize: 'var(--text-caption)',
     fontFamily: 'var(--font-mono)',
     border: `1px solid ${c.border}`,
-    borderRadius: 'var(--radius-small)',
     backgroundColor: c.bg,
     color: disabled ? 'var(--color-text-muted)' : c.color,
     cursor: disabled ? 'not-allowed' : 'pointer',

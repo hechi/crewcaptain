@@ -1,6 +1,9 @@
 # PROGRESS.md
 
 ## Last Updated
+2026-11-09T17:00:00Z — Follow-up on button sizing (`feat/unify-notes-and-action-items`). Identical padding was not enough: action item labels contain emoji (✎ 🗑 ✓ ✕) which render in a fallback font and made those buttons taller than the plain-text note buttons, and the due-date input had its own padding. Shared `ITEM_CONTROL_SIZE` (fixed 28px height, `line-height: 1`, border-box, inline-flex, nowrap) now backs every button and the due-date input; note labels got matching icons (✎ Edit, 🗑 Delete, 📥 Archive). `ItemButtonConsistency.test.tsx` now also compares height/line-height/box-sizing/display/white-space and includes the ↑/↓ arrows and the date input. Frontend jest 130 suites / 1430 tests pass. Could NOT verify visually: the app sits behind OIDC sign-in and I had no session, so the real rendering is unchecked.
+
+## Previously Updated
 2026-11-09T16:00:00Z — UI consistency on `feat/unify-notes-and-action-items`. Frontend-only, TDD. (1) Action Item buttons had a different size/radius than the note buttons: extracted `components/ui/itemButtonStyle.ts` (padding `4px 10px`, small radius, mono caption; variants default/muted/primary/success/danger) and used it in both `MyNoteCard` and `ActionItemCard`, so My Notes, the side panel and Action Items match. (2) The "My action items" section on `/my-notes` only had Complete; it now also has Cancel and Delete (same by-id endpoints as `/action-items`). New `ItemButtonConsistency.test.tsx` asserts identical size props across all 9 buttons; 2 new MyNotesPage tests for cancel/delete. Not checked visually in a browser.
 
 ## Previously Updated
